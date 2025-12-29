@@ -1,0 +1,773 @@
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* --background: #0a0a0a; */
+    --foreground: #ededed;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
+  /* overflow-x: hidden; */
+}
+
+body {
+  color: #000;
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: small;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  padding: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+/* @media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+} */
+
+input[type="submit"] {
+  padding: 5px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    /* font-size: 0.6em; */
+  }
+}
+
+.headerGenerico {
+  display: flex;
+  /* align-items: center; */
+  padding: 10px;
+}
+
+.buscarHeaderUser {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 5px 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+
+  .buscarHeaderUserIcon {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #000;
+  }
+
+  .userLoginTokenDiv {
+    display: flex;
+    align-items: center;
+
+    .userLoginUsername {
+      font-weight: bold;
+      font-size: large;
+      text-transform: capitalize;
+      color: #000;
+      margin-right: 10px;
+    }
+
+    .userLoginFunctions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      svg:last-child {
+        margin: 0 5px 0 15px;
+      }
+    }
+  }
+  /* UserLoginToken styles can be added here if needed */
+}
+
+.totalRegistros {
+  display: flex;
+  align-items: end;
+  /* margin: 0 10px; */
+  justify-content: flex-end;
+  font-weight: bold;
+  font-size: x-small;
+
+  .qntCodigosSpan {
+    color: #007bff;
+  }
+}
+
+.buscarHeader {
+  position: sticky;
+  top: 36px;
+  padding: 5px 0px 0px;
+  background-color: #fff;
+
+  h1 {
+    margin: 5px 10px;
+  }
+
+  .formBuscarProdutos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 10px 5px 10px;
+
+    input {
+      padding: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+  }
+}
+
+.cadastroProdutos,
+.editarCodigoProdutos,
+.removerCodigoProdutos {
+  display: flex;
+  flex-direction: column;
+
+  .removerCodigoProdutosContent {
+    margin: 10px 0;
+  }
+
+  .formProdutos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  button,
+  input[type="submit"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+  }
+
+  .buttonsCodigoProdutos {
+    display: flex;
+    gap: 5px;
+
+    button[name="cancelar"],
+    button[name="deletar"] {
+      background-color: #e74c3c;
+    }
+  }
+}
+
+/* .removerCodigoProdutos {
+  display: flex;
+  flex-direction: column;
+
+  .removerCodigoProdutosContent {
+    margin: 10px 0;
+  }
+
+  .buttonsRemoverCodigoProdutos {
+    display: flex;
+    flex-direction: row;
+
+    gap: 5px;
+
+    button {
+      margin: 5px 0;
+      flex-grow: 1;
+    }
+
+    button[name="deletar"] {
+      background-color: #e74c3c;
+    }
+  }
+} */
+
+.loginPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 90vh;
+
+  .formLogin {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+
+    input {
+      padding: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    button {
+      padding: 5px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
+  }
+}
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px; /* Adjust as needed */
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  display: flex;
+  margin: 5px;
+  width: 50px;
+  height: 28px;
+  --_g: no-repeat radial-gradient(farthest-side, #007bff 94%, #0000);
+  background:
+    var(--_g) 50% 0,
+    var(--_g) 100% 0;
+  background-size: 10px 10px;
+  position: relative;
+  animation: l23-0 1.5s linear infinite;
+}
+
+.loader:before {
+  content: "";
+  position: absolute;
+  height: 10px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #007bff;
+  left: 0;
+  top: 0;
+  animation:
+    l23-1 1.5s linear infinite,
+    l23-2 0.5s cubic-bezier(0, 200, 0.8, 200) infinite;
+}
+
+@keyframes l23-0 {
+  0%,
+  31% {
+    background-position:
+      50% 0,
+      100% 0;
+  }
+  33% {
+    background-position:
+      50% 100%,
+      100% 0;
+  }
+  43%,
+  64% {
+    background-position:
+      50% 0,
+      100% 0;
+  }
+  66% {
+    background-position:
+      50% 0,
+      100% 100%;
+  }
+  79% {
+    background-position:
+      50% 0,
+      100% 0;
+  }
+  100% {
+    transform: translateX(calc(-100% / 3));
+  }
+}
+
+@keyframes l23-1 {
+  100% {
+    left: calc(100% + 7px);
+  }
+}
+
+@keyframes l23-2 {
+  100% {
+    top: -0.1px;
+  }
+}
+
+.divisoria {
+  height: 1px;
+  border: 1px solid #ccc;
+}
+
+.produtosBusca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin: 10px;
+  padding: 5px 5px 60px;
+  /* height: 100vh; */
+
+  .marcaDiv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #dee2e6;
+
+    h2 {
+      /* margin-top: 5px;*/
+      /* margin-bottom: 5px; */
+      color: #000;
+    }
+
+    .qntCodigosSpan {
+      color: #007bff;
+      font-weight: bold;
+      font-size: x-small;
+    }
+  }
+
+  .produtosItemsMarca {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 5px;
+
+    .produtosItems {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding-top: 5px;
+
+      /* background-color: red; */
+
+      div {
+        display: flex;
+        flex-grow: 1;
+        /* width: 100px; */
+        /* justify-content: center;
+        text-align: center; */
+      }
+
+      div:nth-child(1) {
+        width: 100%;
+        color: rgba(0, 0, 0, 0.666);
+        font-weight: bold;
+        padding-left: 5px;
+        flex-grow: 1;
+      }
+
+      div:nth-child(2) {
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.autocompleteContainer {
+  position: relative;
+  width: 100%;
+  /* max-width: 400px; */
+  margin: auto;
+
+  .autocompleteResults {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #007bff;
+    z-index: 1000;
+    max-height: 200px;
+    box-shadow: 0 15px 5px -5px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+
+    .autocompleteItem {
+      padding: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+  }
+}
+
+.validadesPage {
+  padding: 5px;
+  padding-bottom: 80px;
+
+  h2 {
+    padding: 10px 0px;
+    color: #000;
+  }
+
+  .tabela-validades {
+    width: auto;
+    border: 1px solid #ccc;
+    /* border-radius: 8px; Adicionado para arredondar as bordas da tabela */
+    overflow: hidden; /* Para garantir que as bordas arredondadas funcionem corretamente */
+  }
+
+  /* Estilo para as linhas (cabeçalho e dados) */
+  .linha-header,
+  .linha-dados {
+    display: flex;
+    /* justify-content: space-between; /* Removido: flex-grow já cuidará disso */
+    align-items: center;
+    padding: 3px;
+    /* border-bottom: 1px solid #eee; */
+    /* font-size: 0.9em; Ajuste o tamanho da fonte se necessário */
+  }
+
+  .linha-dados {
+    color: #333; /* Cor mais escura para os dados */
+
+    .coluna-dados {
+      display: flex;
+      justify-content: center; /* Centraliza o conteúdo dentro da coluna */
+      align-items: center;
+      white-space: nowrap; /* Essencial: mantém o texto em uma linha */
+      overflow: hidden; /* Essencial: esconde o conteúdo que transborda */
+      text-overflow: ellipsis; /* Adiciona os ... onde o texto é cortado */
+      /* padding: 0 5px; */ /* Pode ser removido se o padding da linha for suficiente */
+      min-width: 0; /* Essencial para que o texto longo não transborde */
+
+      /* Estilos específicos para o balão, se aplicável */
+      .toogleDescription {
+        --balloon-color: #007bff;
+        --balloon-font-size: 15px;
+        position: absolute;
+      }
+    }
+  }
+
+  .linha-header {
+    font-size: small;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    color: #555; /* Cor mais escura para o cabeçalho */
+    border-bottom: 2px solid #ccc; /* Linha mais grossa para o cabeçalho */
+  }
+
+  .linha-dados:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  .linha-dados:last-child {
+    border-bottom: none; /* Remove a borda da última linha para não ter borda dupla com a do footer */
+  }
+
+  /* --- Estilo para as Colunas (Cabeçalho e Dados) --- */
+  .coluna-header,
+  .coluna-dados {
+    flex: 1; /* Cresce e encolhe igualmente */
+    text-align: center; /* Garante que o texto esteja centralizado */
+    overflow: hidden;
+    white-space: nowrap; /* Impede que o texto quebre linhas, forçando o ellipsis */
+  }
+
+  /* --- COLUNA DE PRODUTO (PRIMEIRA COLUNA) --- */
+  .linha-header > .coluna-header:nth-child(1), /* Cabeçalho da 1ª coluna */
+  .linha-dados > .coluna-dados:nth-child(1) {
+    /* Dados da 1ª coluna */
+    flex: 1.5; /* Dê a esta coluna o dobro do espaço das outras */
+    /* text-align: left; /* Opcional: Alinhar o texto do produto à esquerda */
+    /* white-space: normal; Permite que o texto do produto quebre linha se necessário */
+    text-overflow: ellipsis;
+    /* text-overflow: unset; Remove ellipsis para quebra de linha */
+    min-width: auto; /* Defina uma largura mínima razoável */
+    font-weight: bold;
+    text-transform: capitalize;
+  }
+
+  /* --- COLUNAS ESPECÍFICAS (Ex: Validade, Quant., Restam, Status) --- */
+  /* Ajuste flex ou width para as outras colunas se elas tiverem tamanhos mais fixos */
+  .linha-header > .coluna-header:nth-child(2), /* Validade */
+  .linha-dados > .coluna-dados:nth-child(2) {
+    flex: 0.6; /* Um pouco menor que as padrão, já que a data é fixa */
+    min-width: 60px;
+  }
+
+  .linha-header > .coluna-header:nth-child(3), /* Quantidade */
+  .linha-dados > .coluna-dados:nth-child(3) {
+    flex: 0.6; /* Quantidade é geralmente um número pequeno */
+    min-width: 50px;
+  }
+
+  .linha-header > .coluna-header:nth-child(4), /* Restam */
+  .linha-dados > .coluna-dados:nth-child(4) {
+    flex: 0.8; /* Dias restantes */
+    min-width: 60px;
+  }
+
+  .linha-header > .coluna-header:nth-child(5), /* Status / Verificado / Finalizado */
+  .linha-dados > .coluna-dados:nth-child(5) {
+    flex: 1.2; /* Pode precisar de um pouco mais de espaço para os ícones/componentes */
+    /* min-width: 100px; */
+  }
+
+  /* Opcional: Media Queries para telas menores */
+}
+
+/* Container que envolve o modal */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Fundo escurecido */
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Conteúdo do modal */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  /* border-radius: 8px; */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  position: relative; /* Essencial para o botão de fechar */
+  max-width: 500px;
+  width: 90%;
+}
+
+/* Botão de fechar */
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.buttonAddContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  .buttonAdd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* position: fixed; */
+    /* bottom: 20px;
+    right: 20px; */
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 100%;
+
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
+  }
+
+  .buttonAddUser {
+    width: 30px;
+    height: 30px;
+    background-color: #007bff;
+  }
+}
+
+.formularioAdicionarValidade,
+.formularioEditarValidade {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 8px;
+
+  input:not([type="checkbox"]) {
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 100%;
+  }
+
+  button {
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 100%;
+  }
+
+  .statusValidade {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0px;
+    gap: 5px;
+
+    input[type="checkbox"],
+    label {
+    }
+  }
+}
+
+.toast-container {
+  display: flex;
+  flex-direction: column;
+  transition: all 500ms ease-in-out 0s;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  gap: 5px;
+  z-index: 9999;
+
+  .toast {
+    display: flex;
+    padding: 10px;
+    font-size: small;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: center;
+    background-color: #fff;
+    align-items: flex-start;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: 0 6px 6px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    color: #fff;
+    z-index: 9999;
+  }
+
+  .toast.info {
+    background-color: #0056b3;
+  }
+
+  .toast.success {
+    background-color: #28a745;
+  }
+
+  .toast.error {
+    background-color: #e74c3c;
+  }
+}
+
+.filtrarPorMarca {
+  display: flex;
+  flex-direction: column;
+
+  form {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+
+    .selectFiltroMarca {
+      display: flex;
+      flex-direction: row;
+
+      padding: 5px;
+    }
+
+    input {
+      display: flex;
+      flex-direction: row;
+      padding: 10px;
+    }
+  }
+}
+
+.response {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  gap: 10px;
+}
