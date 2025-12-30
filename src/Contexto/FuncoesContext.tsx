@@ -210,7 +210,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 			setProduto({});
 			setTotalRegistros(0);
 			const response = await fetch(
-				`/api/codigos/consulta?consultaProdutoBusca=${prodName}`,
+				`${acesso_fetch}/consulta?consultaProdutoBusca=${prodName}`,
 				{
 					method: 'GET',
 					headers: {
@@ -310,7 +310,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		}
 
 		try {
-			const response = await fetch(`/api/codigos/editar`, {
+			const response = await fetch(`${acesso_fetch}/editar`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -420,7 +420,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		// 	return;
 		// } else {
 		try {
-			const response = await fetch(`/api/codigos/remover`, {
+			const response = await fetch(`${acesso_fetch}/remover`, {
 				//method: 'DELETE', //FIX PARA UTILIZAR NO INFINITY FREE
 				method: 'POST',
 				headers: {
