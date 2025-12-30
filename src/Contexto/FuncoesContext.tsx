@@ -210,7 +210,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 			setProduto({});
 			setTotalRegistros(0);
 			const response = await fetch(
-				`${acesso_fetch}?consultaProdutoBusca=${prodName}`,
+				`/api/codigos/consulta?consultaProdutoBusca=${prodName}`,
 				{
 					method: 'GET',
 					headers: {
@@ -242,6 +242,47 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		}
 	};
 
+	// const fetchProds = async (e?: React.FormEvent, prodName: string = '') => {
+	// 	if (e && typeof e.preventDefault === 'function') {
+	// 		e.preventDefault();
+	// 	}
+	// 	try {
+	// 		setLoading(true);
+	// 		setProduto({});
+	// 		setTotalRegistros(0);
+	// 		const response = await fetch(
+	// 			`${acesso_fetch}?consultaProdutoBusca=${prodName}`,
+	// 			{
+	// 				method: 'GET',
+	// 				headers: {
+	// 					'Content-Type': 'application/json',
+	// 				},
+	// 				cache: 'no-cache',
+	// 				credentials: 'include', //ADICIONADO PARA TENTAR FIX 27/12
+	// 			}
+	// 		);
+	// 		if (!response.ok) {
+	// 			throw new Error('Network response was not ok');
+	// 		}
+	// 		const data = await response.json();
+	// 		const produtosAgrupadosPorMarca = _.groupBy(data.dados, 'marca_produto');
+	// 		const contaQuantidadeMarcas = _.countBy(data.dados, 'marca_produto');
+
+	// 		setqntCodigosMarca(contaQuantidadeMarcas);
+	// 		setProduto(produtosAgrupadosPorMarca);
+
+	// 		//console.log(produtosAgrupadosPorMarca);
+	// 		//const total = _.sumBy(Object.values(data), 'length');
+	// 		setTotalRegistros(data.dados.length);
+
+	// 		setLoading(false);
+	// 	} catch (error) {
+	// 		console.error('Fetch error:', error);
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// };
+
 	const editarCodigo = async (
 		e: React.FormEvent<HTMLFormElement>,
 		callbackSucesso: () => void
@@ -269,13 +310,13 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		}
 
 		try {
-			const response = await fetch(`${acesso_fetch}`, {
+			const response = await fetch(`/api/codigos/editar`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(produto),
-				credentials: 'include', // Necessário para enviar o cookie de autenticação
+				//credentials: 'include', // Necessário para enviar o cookie de autenticação
 			});
 
 			if (!response.ok || response.status === 401) {
@@ -286,11 +327,12 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 
 			const responseData = await response.json();
 
-			if (responseData?.auth === false) {
-				//setLoading(false); // Desativa o loading antes de sair
-				logout();
-				return;
-			}
+			// if (responseData?.auth === false) {
+			// 	//setLoading(false); // Desativa o loading antes de sair
+			// 	logout();
+			// 	return;
+			// }
+			//CORRIGIR NOVO METODO USUANDO SERVER DO NEXTJS
 
 			if (responseData.status === 'info') {
 				addToast(responseData.message, responseData.status);
@@ -307,6 +349,70 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		}
 	};
 
+	// const editarCodigo = async (
+	// 	e: React.FormEvent<HTMLFormElement>,
+	// 	callbackSucesso: () => void
+	// ) => {
+	// 	e.preventDefault();
+
+	// 	const formData = new FormData(e.currentTarget);
+
+	// 	const nomeProduto = (formData.get('nomeProduto') as string).trim();
+	// 	const marcaProduto = (formData.get('marcaProduto') as string).trim();
+	// 	const codigoProduto = (formData.get('codigoProduto') as string).trim();
+	// 	const idProduto = (formData.get('idProduto') as string).trim();
+
+	// 	const produto = {
+	// 		editarCodigoProduto: true, // Indicador para o backend que é um cadastro de produto
+	// 		idProduto: idProduto,
+	// 		nomeProduto: nomeProduto,
+	// 		marcaProduto: marcaProduto,
+	// 		codigoProduto: codigoProduto,
+	// 		responsavelCadastro: 'Thiago', // Substitua pelo nome do responsável ou
+	// 	};
+
+	// 	if (!checkCampos(nomeProduto, marcaProduto, codigoProduto)) {
+	// 		return;
+	// 	}
+
+	// 	try {
+	// 		const response = await fetch(`${acesso_fetch}`, {
+	// 			method: 'POST',
+	// 			headers: {
+	// 				'Content-Type': 'application/json',
+	// 			},
+	// 			body: JSON.stringify(produto),
+	// 			credentials: 'include', // Necessário para enviar o cookie de autenticação
+	// 		});
+
+	// 		if (!response.ok || response.status === 401) {
+	// 			//throw new Error('Erro ao cadastrar produto.');
+	// 			logout();
+	// 			return;
+	// 		}
+
+	// 		const responseData = await response.json();
+
+	// 		if (responseData?.auth === false) {
+	// 			//setLoading(false); // Desativa o loading antes de sair
+	// 			logout();
+	// 			return;
+	// 		}
+
+	// 		if (responseData.status === 'info') {
+	// 			addToast(responseData.message, responseData.status);
+	// 			//setLoading(false);
+	// 		} else {
+	// 			addToast(responseData.message, responseData.status);
+	// 			fetchProds();
+	// 			//setLoading(false);
+	// 			callbackSucesso();
+	// 		}
+	// 	} catch (error) {
+	// 		console.error('Error:', error);
+	// 		return;
+	// 	}
+	// };
 	const deletarProduto = async (id: number, callbackSucesso: () => void) => {
 		// const confirma = confirm(`Tem certeza que deseja deletar o ${id}?`);
 
@@ -314,25 +420,23 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		// 	return;
 		// } else {
 		try {
-			const response = await fetch(
-				`${acesso_fetch}?action=deleteProduct&id=${id}`,
-				{
-					//method: 'DELETE', //FIX PARA UTILIZAR NO INFINITY FREE
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					credentials: 'include', // Se seu backend usa cookies (como o JWT que configuramos)
-				}
-			);
+			const response = await fetch(`/api/codigos/remover`, {
+				//method: 'DELETE', //FIX PARA UTILIZAR NO INFINITY FREE
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				credentials: 'include', // Se seu backend usa cookies (como o JWT que configuramos)
+				body: JSON.stringify({ idProduto: id }),
+			});
 
 			const resposta = await response.json();
 
-			if (resposta?.auth === false) {
-				setLoading(false); // Desativa o loading antes de sair
-				logout();
-				return;
-			}
+			// if (resposta?.auth === false) {
+			// 	setLoading(false); // Desativa o loading antes de sair
+			// 	logout();
+			// 	return;
+			// }
 
 			if (!response.ok) {
 				addToast(resposta.message, resposta.status);
