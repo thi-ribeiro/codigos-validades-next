@@ -27,9 +27,9 @@ export default function page({}: Props) {
 			addToast('Por favor, preencha todos os campos!', 'error');
 			return;
 		}
-		const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
+		const acesso_fetch = process.env.NEXT_PUBLIC_AUTH_API;
 
-		fetch(`${acesso_fetch}`, {
+		fetch(`${acesso_fetch}/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -39,12 +39,12 @@ export default function page({}: Props) {
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				//console.log('Success:', data);
+				console.log(data);
 				login(data.user);
 				//alert(data.message);
 				addToast(data.message, data.status);
 
-				if (data.login) {
+				if (data.status === 'success') {
 					router.push('/');
 				}
 			})

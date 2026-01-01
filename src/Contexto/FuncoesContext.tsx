@@ -237,6 +237,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 			setLoading(false);
 		} catch (error) {
 			console.error('Fetch error:', error);
+			addToast(`Erro ao buscar produtos: ${error}`, 'error');
 		} finally {
 			setLoading(false);
 		}
