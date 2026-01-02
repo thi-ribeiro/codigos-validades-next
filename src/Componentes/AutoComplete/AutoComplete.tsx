@@ -22,7 +22,8 @@ const AutoComplete = (props: AutoCompleteProps) => {
 	} = props;
 
 	const [loading, setLoading] = useState<boolean>(false);
-	const [resultado, setResultado] = useState<Record<string, any>>({});
+	//const [resultado, setResultado] = useState<Record<string, any>>({});
+	const [resultado, setResultado] = useState<any[]>([]);
 	const [produtoSelecionado, setProdutoSelecionado] = useState<string>(
 		valorPadrao || ''
 	);
@@ -68,20 +69,26 @@ const AutoComplete = (props: AutoCompleteProps) => {
 		e?: React.FormEvent,
 		produtoDetail: string = ''
 	) => {
+		// 1. Prevenção de comportamento padrão do form
 		if (e && typeof e.preventDefault === 'function') {
 			e.preventDefault();
 		}
 
-		if (!produtoDetail) {
-			setResultado({}); // Limpa resultados se o termo estiver vazio
+		// 2. Se o campo estiver vazio ou for muito curto, limpa e nem faz o fetch
+		if (!produtoDetail || produtoDetail.length < 2) {
+			setResultado([]);
 			return;
 		}
 
 		try {
 			setLoading(true);
-			const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
+
+			// 3. Chamada para a nossa nova API interna
+			// Note que passamos 'term' em vez de 'autoCompleteSearch' para bater com a rota
 			const response = await fetch(
-				`${acesso_fetch}?autoCompleteSearch=${produtoDetail}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
+				`/api/autocomplete?term=${encodeURIComponent(
+					produtoDetail
+				)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
 				{
 					method: 'GET',
 					headers: {
@@ -89,22 +96,24 @@ const AutoComplete = (props: AutoCompleteProps) => {
 					},
 				}
 			);
+
 			if (!response.ok) {
-				throw new Error('Network response was not ok');
-			}
-			const data = await response.json();
-			//const agruparPorMarca = _.groupBy(data[0].dados, 'marca_produto');
-			if (data && Array.isArray(data.dados) && data.dados.length > 0) {
-				setResultado(data.dados); // Define os resultados, o que faz a div aparecer
-			} else {
-				setResultado({}); // Limpa se não houver dados válidos, o que faz a div desaparecer
+				throw new Error('Falha ao buscar sugestões');
 			}
 
-			setLoading(false);
+			const data = await response.json();
+
+			// 4. Verificação dos dados
+			if (data && Array.isArray(data.dados) && data.dados.length > 0) {
+				setResultado(data.dados);
+			} else {
+				setResultado([]); // Se o banco retornar vazio, escondemos a div de sugestões
+			}
 		} catch (error) {
 			console.error('Fetch error:', error);
-			setLoading(false);
-			setResultado({}); // Limpa resultados em caso de erro
+			setResultado([]); // Limpa em caso de erro para não travar a UI aberta
+		} finally {
+			setLoading(false); // O finally garante que o loading pare independente do resultado
 		}
 	};
 
@@ -116,13 +125,13 @@ const AutoComplete = (props: AutoCompleteProps) => {
 		if (value.length >= 3) {
 			fetchNameProducts(marca, nome, e, value);
 		} else {
-			setResultado({});
+			setResultado([]);
 		}
 	};
 
 	const selecionarProdutoHandler = (produto: string) => {
 		setProdutoSelecionado(produto);
-		setResultado({});
+		setResultado([]);
 	};
 
 	return (
@@ -139,7 +148,20 @@ const AutoComplete = (props: AutoCompleteProps) => {
 						required={required} // Adiciona o atributo required se necessário
 					/>
 
-					{resultado?.length >= 1 && (
+					{Array.isArray(resultado) && resultado.length >= 1 && (
+						<div className='autocompleteResults' ref={autocompleteRef}>
+							{resultado.map((item: any, index: number) => (
+								<div
+									key={index}
+									className='autocompleteItem'
+									onClick={() => selecionarProdutoHandler(item.valor)}>
+									{item.valor}
+								</div>
+							))}
+						</div>
+					)}
+
+					{/* {resultado?.length >= 1 && (
 						<div className='autocompleteResults' ref={autocompleteRef}>
 							{resultado.map((produto: any, index: number) => {
 								const displayParts = [];
@@ -179,7 +201,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 								// }
 							})}
 						</div>
-					)}
+					)} */}
 				</div>
 			}
 		</React.Fragment>

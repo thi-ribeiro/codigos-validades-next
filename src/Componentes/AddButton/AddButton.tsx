@@ -48,14 +48,12 @@ export default function AddButton({
 			return;
 		}
 
-		const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
-
-		fetch(`${acesso_fetch}`, {
+		fetch('/api/usuarios', {
+			// O Next.js já sabe que é no seu próprio servidor
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			credentials: 'include',
 			body: JSON.stringify(loginData),
 		})
 			.then((response) => response.json())

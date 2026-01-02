@@ -86,7 +86,7 @@ interface ResponseData {
 	dataFimIntervalo?: Date;
 }
 
-const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
+const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 const ValidadesContexto = createContext<ValuesInterface | undefined>(undefined);
 
@@ -113,31 +113,34 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const fetchValidades = async (produtoMarca: string = '') => {
 		setLoading(true);
 		try {
+			// Agora apontamos para a nossa nova API interna do Next.js
+			// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
 			const response = await fetch(
-				`${acesso_fetch}?consultaValidades=true&idUsuario=${user?.uid}&produtoMarca=${produtoMarca}`,
+				`${acesso_validades}/listar/?marca=${produtoMarca}`,
 				{
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					credentials: 'include', // Se seu backend usa cookies (como o JWT que configuramos)
+					// Importante manter para o Middleware ler o seu cookie auth_token
+					credentials: 'include',
 				}
 			);
 
-			const data: ResponseData = await response.json();
+			const data = await response.json();
 
-			//console.log(data);
-			//console.log(data.auth);
-
-			if (data?.auth === false) {
-				setLoading(false); // Desativa o loading antes de sair
+			// Se a API retornar erro de autenticação (ex: 401)
+			if (response.status === 401) {
+				setLoading(false);
 				logout();
 				return;
 			}
 
-			if (data && Array.isArray(data.marcas) && Array.isArray(data.dados)) {
+			// data.dados contém os produtos e data.marcas as marcas para o filtro
+			if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
 				setmarcasProdutos(data.marcas);
 
+				// Mantendo sua lógica de agrupamento com lodash (_)
 				const agrupamentoValidadePorMarcaProduto = _.groupBy(
 					data.dados,
 					'marca_produto'
@@ -145,23 +148,25 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				setProdutosValidades(agrupamentoValidadePorMarcaProduto);
 
-				setdataFimIntervalo(
-					format(data.dataFimIntervalo || new Date(), 'MMMM/yyyy', {
-						locale: ptBR,
-					})
-				);
+				// Formatação do intervalo (Ex: "Janeiro/2026")
+				if (data.dataFimIntervalo) {
+					setdataFimIntervalo(
+						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
+							locale: ptBR,
+						})
+					);
+				}
 			} else {
-				setProdutosValidades({}); // Limpa se não houver dados válidos
+				// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
+				setProdutosValidades({});
+				if (data.marcas) setmarcasProdutos(data.marcas);
 			}
-
-			//console.log(data.message);
-		} catch (error: string | any) {
+		} catch (error: any) {
 			console.error('Fetch error:', error);
-			//addToast(error, 'error');
+			// addToast('Erro ao carregar dados', 'error');
+		} finally {
+			setLoading(false);
 		}
-
-		setLoading(false);
-		return;
 	};
 
 	const formatarDataParaMySQL = (data: Date): string => {
@@ -182,10 +187,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		callbackSucesso: () => void
 	) => {
 		e.preventDefault();
-
 		setLoading(true);
-
-		//console.log('Tentando adicionar validade');
 
 		const formData = new FormData(e.target as HTMLFormElement);
 		const produto = formData.get('produto') as string;
@@ -197,7 +199,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
 
 		try {
-			const response = await fetch(`${acesso_fetch}?adicionarValidade=true`, {
+			// Aponta para a nova rota da API no Next.js
+			const response = await fetch('/api/validades/adicionar', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -209,36 +212,40 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					quantidadeDesc,
 					responsavel: user?.usuario,
 					id_responsavel: user?.uid,
+					// Mantemos sua função de formatar data para o MySQL
 					data_inserido: formatarDataParaMySQL(new Date()),
 				}),
 				credentials: 'include',
 			});
 
-			const data = await response.json();
-
-			//console.log('Adicionada validade', data);
-
-			if (data?.auth === false) {
-				setLoading(false); // Desativa o loading antes de sair
+			// Se o servidor retornar 401 (Não autorizado), o Middleware ou a API avisam
+			if (response.status === 401) {
+				setLoading(false);
 				logout();
 				return;
 			}
 
+			const data = await response.json();
+
 			if (data && data.status === 'success') {
 				addToast(data.message, data.status);
-				fetchValidades();
+				// Atualiza a lista após inserir
+				await fetchValidades();
+				// Executa o callback (geralmente fechar o modal ou limpar form)
+				callbackSucesso();
 			} else {
-				addToast(data.message, data.status);
+				addToast(data.message || 'Erro ao cadastrar', data.status || 'error');
 			}
 		} catch (error) {
 			console.error('Fetch error:', error);
-			addToast('Erro ao adicionar validade. Tente novamente.', 'error');
+			addToast(
+				'Erro ao conectar com o servidor. Verifique sua conexão.',
+				'error'
+			);
+		} finally {
+			setLoading(false);
 		}
-
-		callbackSucesso();
-		setLoading(false);
 	};
-
 	const fetchEditarValidade = async (
 		e: React.FormEvent,
 		callbackSucesso: () => void
@@ -264,7 +271,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const rebaixa = formData.get('rebaixa') ? 1 : 0;
 
 		try {
-			const response = await fetch(`${acesso_fetch}?editarValidade=true`, {
+			const response = await fetch(`${acesso_validades}?editarValidade=true`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

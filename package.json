@@ -12,6 +12,7 @@
     "@react-icons/all-files": "^4.1.0",
     "balloon-css": "^1.2.0",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.6",
     "html5-qrcode": "^2.3.8",
