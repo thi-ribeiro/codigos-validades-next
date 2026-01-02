@@ -37,27 +37,28 @@ export async function POST(request: Request) {
         // 3. Cria o Token JWT
         const token = jwt.sign(
             {
-                id: user.idusuario,
-                nome: user.nome_usuario,
+                uid: user.idusuario,
+                usuario: user.nome_usuario,
                 role: user.role_usuario,
-                empresa: user.empresa_usuario
+                empresa: user.empresa_usuario,
+                auth: true
             },
             process.env.JWT_SECRET || 'chave_segura_provisoria_123', // Defina no painel da Vercel
-            { expiresIn: '7d' } // Expira em 7 dias para facilitar seu uso no Atacadão
+            { expiresIn: '3h' } // Expira em 7 dias para facilitar seu uso no Atacadão
         );
 
         // 4. Prepara a resposta e injeta o Cookie HTTPOnly
         const response = NextResponse.json({
             status: 'success',
             message: 'Login realizado com sucesso!',
-            user: { nome: user.nome_usuario, role: user.role_usuario, empresa: user.empresa_usuario }
+            user: { usuario: user.nome_usuario, role: user.role_usuario, empresa: user.empresa_usuario }
         });
 
         response.cookies.set('auth_token', token, {
             httpOnly: true, // Protege contra ataques XSS
             secure: process.env.NODE_ENV === 'production', // Só envia via HTTPS na Vercel
             sameSite: 'strict', // Protege contra CSRF
-            maxAge: 60 * 60 * 24 * 7, // 7 dias em segundos
+            maxAge: 60 * 60 * 3, // 3hrs 
             path: '/', // Disponível em todo o site
         });
 

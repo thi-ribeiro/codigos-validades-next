@@ -9,7 +9,7 @@ type Props = {};
 
 export default function page({}: Props) {
 	const router = useRouter();
-	const { login } = useAuth();
+	const { login, logout } = useAuth();
 	const { addToast } = useToast();
 
 	const enviarDados = (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,18 +34,20 @@ export default function page({}: Props) {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			credentials: 'include',
+			//credentials: 'include',
 			body: JSON.stringify(loginData),
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				console.log(data);
+				console.log(data.user);
 				login(data.user);
 				//alert(data.message);
 				addToast(data.message, data.status);
 
 				if (data.status === 'success') {
 					router.push('/');
+				} else if (data.status === 'error') {
+					logout();
 				}
 			})
 			.catch((error) => {

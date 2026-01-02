@@ -40,7 +40,7 @@ interface AuthProviderProps {
 	children: ReactNode; // 'children' é uma propriedade padrão para componentes que envolvem outros
 }
 
-const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
+const acesso_auth = process.env.NEXT_PUBLIC_AUTH_API;
 
 // 5. O Componente AuthProvider
 // Este é o componente que você vai usar para envolver sua aplicação (ou partes dela)
@@ -56,14 +56,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		setError(null); // Limpa qualquer erro anterior
 		try {
 			// Use process.env.NEXT_PUBLIC_API_URL, que deve ser definido no seu arquivo .env.local
-			const response = await fetch(`${acesso_fetch}`, {
+			const response = await fetch(`${acesso_auth}`, {
 				// OU um endpoint específico como /verify-auth.php
 				method: 'POST', // Ou GET, dependendo de como você configura a verificação
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ verifyAuth: true }), // Um indicador para o backend verificar o token
-				credentials: 'include', // Necessário se seu frontend e backend estiverem em subdomínios diferentes (ex: app.site.com e api.site.com)
+				//body: JSON.stringify({ verifyAuth: true }), // Um indicador para o backend verificar o token
+				//credentials: 'include', // Necessário se seu frontend e backend estiverem em subdomínios diferentes (ex: app.site.com e api.site.com)
 			});
 
 			const data = await response.json(); // Converte a resposta para JSON
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			}
 
 			if (data.auth === true) {
-				setUser(data); // Define os dados do usuário no estado
+				setUser(data.user); // Define os dados do usuário no estado
 			} else {
 				// Se o PHP indicou falha na autenticação (mesmo com status 200)
 				setUser(null); // Limpa os dados do usuário
@@ -105,10 +105,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		}
 	};
 
-	// useEffect para chamar fetchUserData() quando o componente AuthProvider é montado
-	// O array de dependências vazio `[]` garante que ele rode apenas uma vez.
 	useEffect(() => {
-		fetchUserData();
+		const checkUser = async () => {
+			setIsLoading(true); // Garante que começa carregando
+			try {
+				const res = await fetch(`${acesso_auth}/me`);
+				if (res.ok) {
+					const userData = await res.json();
+					// O JSON que você postou antes tinha os dados na raiz,
+					// ou dentro de .user? Ajuste conforme o console.log
+					setUser(userData.user || userData);
+				} else {
+					setUser(null);
+				}
+			} catch (error) {
+				console.error('Erro na verificação:', error);
+				setUser(null);
+			} finally {
+				setIsLoading(false); // ESSA LINHA É A CHAVE: Libera a renderização
+			}
+		};
+
+		checkUser();
 	}, []);
 
 	// Função `login` para ser usada após um login bem-sucedido (ex: na sua página de login)
@@ -118,25 +136,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	};
 
 	// Função `logout` para ser usada quando o usuário decide sair
-	const logout = () => {
-		setUser(null); // Limpa os dados do usuário do estado do React
-		setError(null); // Limpa qualquer erro
+	const logout = async () => {
+		setIsLoading(true); // Indica que o sistema está processando a saída
+		try {
+			// Chama a nossa nova API de logout
+			await fetch(`${acesso_auth}/logout`, { method: 'POST' });
 
-		// Opcional: Faça uma requisição para o backend PHP para limpar o cookie 'auth_token' lá também
-		// É importante invalidar a sessão no servidor.
-		fetch(`${acesso_fetch}`, {
-			// Crie este endpoint no seu PHP
-			method: 'POST', // Ou 'GET', dependendo de como seu endpoint de logout funciona
-			body: JSON.stringify({ logout: true }),
-			credentials: 'include', // Necessário para enviar o cookie de logout
-		})
-			.then((res) => {
-				//console.log(res);
-				if (!res.ok) console.error('Falha ao deslogar no backend.');
-			})
-			.catch((err) => console.error('Erro durante o logout no backend:', err));
-		setIsLoading(false); // Define loading como false após a verificação inicial
-		router.push('/login'); // Redireciona para a página de login após o logout
+			// Limpa os dados no Front-end
+			setUser(null);
+			setError(null);
+
+			// Redireciona para o login
+			router.push('/login');
+		} catch (err) {
+			console.error('Erro ao deslogar:', err);
+			setError('Erro ao encerrar a sessão.');
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	// O valor que será provido para todos os componentes filhos
