@@ -24,6 +24,10 @@ export interface ValuesInterface {
 		e: React.FormEvent,
 		callbackSucesso: () => void
 	) => Promise<void>;
+	fetchDeletarValidade: (
+		id: string | number,
+		callbackSucesso: () => void
+	) => void;
 	formatarDataParaMySQL: (data: Date) => string;
 	ValidadeVerificada: (props: {
 		verificado: number;
@@ -200,7 +204,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 		try {
 			// Aponta para a nova rota da API no Next.js
-			const response = await fetch('/api/validades/adicionar', {
+			const response = await fetch(`${acesso_validades}/adicionar`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -215,7 +219,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					// Mantemos sua função de formatar data para o MySQL
 					data_inserido: formatarDataParaMySQL(new Date()),
 				}),
-				credentials: 'include',
+				//credentials: 'include',
 			});
 
 			// Se o servidor retornar 401 (Não autorizado), o Middleware ou a API avisam
@@ -251,80 +255,48 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		callbackSucesso: () => void
 	) => {
 		e.preventDefault();
-
 		setLoading(true);
 
-		//console.log('Tentando adicionar validade');
-
 		const formData = new FormData(e.target as HTMLFormElement);
-		const id_validade = formData.get('id_validade') as string;
-		const produto = formData.get('produto') as string;
-		const validade = formData.get('validade') as string;
-		const quantidade = formData.get('quantidade_produto') as string;
-		const marca = formData.get('marca') as string;
-		const tipoQuantidade = formData.get('tipoquantidade') as string;
 
-		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
-
-		const verificado = formData.get('verificado') ? 1 : 0;
-		const finalizado = formData.get('finalizado') ? 1 : 0;
-		const rebaixa = formData.get('rebaixa') ? 1 : 0;
+		// Simplificando a captura dos dados
+		const dadosParaEnviar = {
+			id_validade: formData.get('id_validade'),
+			produto: formData.get('produto'),
+			marca: formData.get('marca'),
+			validade: formData.get('validade'),
+			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get(
+				'tipoquantidade'
+			)}`,
+			responsavel: user?.usuario,
+			id_responsavel: user?.uid,
+			verificado: formData.get('verificado') ? 1 : 0,
+			finalizado: formData.get('finalizado') ? 1 : 0,
+			rebaixa: formData.get('rebaixa') ? 1 : 0,
+		};
 
 		try {
-			const response = await fetch(`${acesso_validades}?editarValidade=true`, {
+			const response = await fetch(`${acesso_validades}/editar`, {
+				// URL curta e direta
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					id_validade,
-					produto,
-					marca,
-					validade,
-					quantidadeDesc,
-					responsavel: user?.usuario,
-					id_responsavel: user?.uid,
-					//data_inserido: formatarDataParaMySQL(new Date()),
-					verificado: verificado,
-					data_verificado: verificado
-						? formatarDataParaMySQL(new Date())
-						: null,
-					finalizado: finalizado,
-					data_finalizado: finalizado
-						? formatarDataParaMySQL(new Date())
-						: null,
-					rebaixa: rebaixa,
-					data_rebaixa: rebaixa ? formatarDataParaMySQL(new Date()) : null,
-				}),
-				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(dadosParaEnviar),
 			});
 
 			const data = await response.json();
 
-			//console.log('Adicionada validade', data);
-
-			if (data?.auth === false) {
-				setLoading(false); // Desativa o loading antes de sair
-				logout();
-				return;
-			}
-
-			if (data && data.status === 'success') {
+			if (data.status === 'success') {
 				addToast(data.message, data.status);
-				fetchValidades(); // Recarrega as validades após adicionar
-
-				//console.log('OK foi!', data);
+				callbackSucesso();
+				fetchValidades();
 			} else {
-				addToast(data.message, data.status);
+				addToast(data.message, 'error');
+				setLoading(false);
 			}
 		} catch (error) {
-			console.error('Fetch error:', error);
-			addToast('Erro ao adicionar validade. Tente novamente.', 'error');
+			addToast('Erro ao conectar com o servidor', 'error');
+			setLoading(false);
 		}
-
-		callbackSucesso();
-		//setIsModalEditOpen(false);
-		setLoading(false);
 	};
 
 	const ValidadeVerificada = (props: {
@@ -440,10 +412,43 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		);
 	};
 
+	const fetchDeletarValidade = async (
+		id: string | number,
+		callbackSucesso: () => void
+	) => {
+		// 1. Confirmação para evitar exclusão por erro
+		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
+
+		setLoading(true);
+
+		try {
+			const response = await fetch(`${acesso_validades}/deletar`, {
+				method: 'DELETE', // Usamos o método DELETE para ser bem profissional
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id_validade: id }),
+			});
+
+			const data = await response.json();
+
+			if (data.status === 'success') {
+				addToast(data.message, data.status);
+				callbackSucesso(); // Fecha o modal
+				fetchValidades(); // Atualiza a lista no fundo
+			} else {
+				addToast(data.message, 'error');
+				setLoading(false);
+			}
+		} catch (error) {
+			addToast('Erro ao deletar', 'error');
+			setLoading(false);
+		}
+	};
+
 	const contextValues: ValuesInterface = {
 		fetchValidades,
 		fetchAddValidade,
 		fetchEditarValidade,
+		fetchDeletarValidade,
 		formatarDataParaMySQL,
 		calcularDiasRestantes,
 		ValidadeVerificada,

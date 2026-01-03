@@ -37,6 +37,7 @@ function CarregarPagina({}: Props) {
 		fetchValidades,
 		fetchAddValidade,
 		fetchEditarValidade,
+		fetchDeletarValidade,
 		produtosValidades,
 		marcasProdutos,
 		dataFimIntervalo,
@@ -296,7 +297,18 @@ function CarregarPagina({}: Props) {
 						<option value='kg'>Quilos</option>
 						<option value='un'>Unidades</option>
 					</select>
-					<button type='submit'>Adicionar</button>
+					{/* <button type='submit'>Adicionar</button> */}
+					<button
+						type='submit'
+						disabled={loading} // Desativa o botão enquanto loading for true
+						style={{
+							backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+							color: 'white',
+							cursor: loading ? 'not-allowed' : 'pointer',
+							transition: '0.3s', // Para a mudança de cor ser suave
+						}}>
+						{loading ? 'Adicionando...' : 'Adicionar'}
+					</button>
 					<button type='button' onClick={closeModalAdicionar}>
 						Cancelar
 					</button>
@@ -335,9 +347,7 @@ function CarregarPagina({}: Props) {
 						id='validade'
 						name='validade'
 						required
-						value={
-							FormEditData?.validade ? FormEditData.validade.split(' ')[0] : ''
-						}
+						value={FormEditData.validade.split('T')[0]}
 						onChange={handleChange}
 					/>
 					<label htmlFor='quantidade'>
@@ -398,7 +408,33 @@ function CarregarPagina({}: Props) {
 						/>
 						<label htmlFor='statusRebaixa'>Rebaixa</label>
 					</div>
-					<button type='submit'>Salvar</button>
+
+					<button
+						type='button'
+						disabled={loading}
+						style={{
+							backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
+							color: 'white',
+							cursor: loading ? 'not-allowed' : 'pointer',
+							transition: '0.3s', // Para a mudança de cor ser suave
+						}}
+						onClick={() =>
+							fetchDeletarValidade(FormEditData.idvalidades, closeModalEditar)
+						}>
+						Remover
+					</button>
+
+					<button
+						type='submit'
+						disabled={loading} // Desativa o botão enquanto loading for true
+						style={{
+							backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+							color: 'white',
+							cursor: loading ? 'not-allowed' : 'pointer',
+							transition: '0.3s', // Para a mudança de cor ser suave
+						}}>
+						{loading ? 'Salvando...' : 'Salvar'}
+					</button>
 					<button type='button' onClick={closeModalEditar}>
 						Cancelar
 					</button>
