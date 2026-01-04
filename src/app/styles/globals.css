@@ -667,16 +667,63 @@ input[type="submit"] {
     width: 100%;
   }
 
+  /* Remove o visual padrão do navegador */
+  .statusValidade input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #555; /* Borda quadrada e escura */
+    background-color: #fff;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  /* Efeito quando o checkbox é marcado */
+  .statusValidade input[type="checkbox"]:checked {
+    background-color: #ccc; /* Fica preenchido de preto/escuro */
+  }
+
+  /* Desenha o "check" (o V) usando CSS puro */
+  .statusValidade input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid 000;
+    border-width: 0 1px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  /* Estilo do label para alinhar com o checkbox */
+  .statusValidade label {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+  }
+
   button {
     padding: 10px;
     border: none;
     background-color: #007bff;
     color: white;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    min-width: 100px;
+    transition:
+      background-color,
+      filter 0.3s ease;
 
     &:hover {
-      background-color: #0056b3;
+      /* background-color: rgba(0, 0, 0, 0.6) !important; */
+      filter: brightness(0.85);
+      /* background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)); */
     }
   }
 
@@ -684,6 +731,24 @@ input[type="submit"] {
     padding: 10px;
     border: 1px solid #ccc;
     width: 100%;
+  }
+
+  .functionsButons {
+    display: flex;
+    gap: 10px;
+
+    .buttonDelete {
+      flex-grow: 1;
+    }
+
+    .buttonSubmCanc {
+      display: flex;
+      width: 100%;
+      justify-content: end;
+      button:first-child {
+        margin: 0 5px;
+      }
+    }
   }
 
   .statusValidade {

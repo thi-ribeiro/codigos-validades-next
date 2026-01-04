@@ -298,20 +298,25 @@ function CarregarPagina({}: Props) {
 						<option value='un'>Unidades</option>
 					</select>
 					{/* <button type='submit'>Adicionar</button> */}
-					<button
-						type='submit'
-						disabled={loading} // Desativa o botão enquanto loading for true
-						style={{
-							backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
-							color: 'white',
-							cursor: loading ? 'not-allowed' : 'pointer',
-							transition: '0.3s', // Para a mudança de cor ser suave
-						}}>
-						{loading ? 'Adicionando...' : 'Adicionar'}
-					</button>
-					<button type='button' onClick={closeModalAdicionar}>
-						Cancelar
-					</button>
+
+					<div className='functionsButons'>
+						<div className='buttonSubmCanc'>
+							<button
+								type='submit'
+								disabled={loading} // Desativa o botão enquanto loading for true
+								style={{
+									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									color: 'white',
+									cursor: loading ? 'not-allowed' : 'pointer',
+									transition: '0.3s', // Para a mudança de cor ser suave
+								}}>
+								{loading ? 'Adicionando...' : 'Adicionar'}
+							</button>
+							<button type='button' onClick={closeModalAdicionar}>
+								Cancelar
+							</button>
+						</div>
+					</div>
 				</form>
 			</Modal>
 
@@ -409,35 +414,43 @@ function CarregarPagina({}: Props) {
 						<label htmlFor='statusRebaixa'>Rebaixa</label>
 					</div>
 
-					<button
-						type='button'
-						disabled={loading}
-						style={{
-							backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
-							color: 'white',
-							cursor: loading ? 'not-allowed' : 'pointer',
-							transition: '0.3s', // Para a mudança de cor ser suave
-						}}
-						onClick={() =>
-							fetchDeletarValidade(FormEditData.idvalidades, closeModalEditar)
-						}>
-						Remover
-					</button>
-
-					<button
-						type='submit'
-						disabled={loading} // Desativa o botão enquanto loading for true
-						style={{
-							backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
-							color: 'white',
-							cursor: loading ? 'not-allowed' : 'pointer',
-							transition: '0.3s', // Para a mudança de cor ser suave
-						}}>
-						{loading ? 'Salvando...' : 'Salvar'}
-					</button>
-					<button type='button' onClick={closeModalEditar}>
-						Cancelar
-					</button>
+					<div className='functionsButons'>
+						<div className='buttonDelete'>
+							<button
+								type='button'
+								disabled={loading}
+								style={{
+									backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
+									color: 'white',
+									cursor: loading ? 'not-allowed' : 'pointer',
+									transition: '0.3s', // Para a mudança de cor ser suave
+								}}
+								onClick={() =>
+									fetchDeletarValidade(
+										FormEditData.idvalidades,
+										closeModalEditar
+									)
+								}>
+								Remover
+							</button>
+						</div>
+						<div className='buttonSubmCanc'>
+							<button
+								type='submit'
+								disabled={loading} // Desativa o botão enquanto loading for true
+								style={{
+									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									color: 'white',
+									cursor: loading ? 'not-allowed' : 'pointer',
+									transition: '0.3s', // Para a mudança de cor ser suave
+								}}>
+								Atualizar
+							</button>
+							<button type='button' onClick={closeModalEditar}>
+								Cancelar
+							</button>
+						</div>
+					</div>
 				</form>
 			</Modal>
 
