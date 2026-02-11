@@ -28,11 +28,11 @@ interface ValuesInterface {
 	limitaTexto: (texto: string, quantidade?: number) => React.JSX.Element;
 	cadastroCodigo: (
 		e: React.FormEvent<HTMLFormElement>,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => Promise<void>;
 	editarCodigo: (
 		e: React.FormEvent<HTMLFormElement>,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => Promise<void>;
 	leftZeros: (num: string | number) => JSX.Element;
 	qntCodigosMarca: Record<string, number>;
@@ -75,7 +75,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 	const checkCampos = (
 		nomeProduto: string,
 		marcaProduto: string,
-		codigoProduto: string
+		codigoProduto: string,
 	): boolean => {
 		if (
 			!nomeProduto ||
@@ -136,7 +136,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 	};
 	const cadastroCodigo = async (
 		e: React.FormEvent<HTMLFormElement>,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => {
 		//setLoading(true);
 
@@ -163,7 +163,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		//const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
 
 		try {
-			const response = await fetch(`${acesso_fetch}`, {
+			const response = await fetch(`${acesso_fetch}/add`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -182,7 +182,8 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 
 			if (responseData?.auth === false) {
 				//setLoading(false); // Desativa o loading antes de sair
-				logout();
+				console.log('Thiago auth Falhou!');
+				//logout();
 				return;
 			}
 
@@ -218,7 +219,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 					},
 					cache: 'no-cache',
 					credentials: 'include', //ADICIONADO PARA TENTAR FIX 27/12
-				}
+				},
 			);
 			if (!response.ok) {
 				throw new Error('Network response was not ok');
@@ -245,7 +246,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 
 	const editarCodigo = async (
 		e: React.FormEvent<HTMLFormElement>,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
 
