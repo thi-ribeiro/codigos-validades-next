@@ -182,16 +182,16 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 
 			if (responseData?.auth === false) {
 				//setLoading(false); // Desativa o loading antes de sair
-				console.log('Thiago auth Falhou!');
-				//logout();
+				//console.log('Thiago auth Falhou!');
+				logout();
 				return;
 			}
 
-			if (responseData.status === 'info') {
-				addToast(responseData.message, responseData.status);
+			if (!responseData.info) {
+				addToast(responseData.message, 'error');
 				//setLoading(false);
 			} else {
-				addToast(responseData.message, responseData.status);
+				addToast(responseData.message, 'success');
 				fetchProds();
 				//setLoading(false);
 				callbackSucesso();

@@ -27,9 +27,9 @@ export async function POST(request: Request) {
             `;
                 await pool.execute(query, [nomeProduto, codigoProduto, marcaProduto, responsavelCadastro]);
 
-                return NextResponse.json({ message: "Produto adicionado com sucesso!" });
+                return NextResponse.json({ message: "Produto adicionado com sucesso!", info: true });
             } else {
-                return NextResponse.json({ message: "Produto/Código já cadastrado!" });
+                return NextResponse.json({ message: "Produto/Código já cadastrado!", info: false });
             }
         }
         return NextResponse.json({ message: "Operação não identificada" }, { status: 400 });
