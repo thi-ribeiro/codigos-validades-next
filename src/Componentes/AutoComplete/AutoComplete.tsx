@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { NextResponse } from 'next/server';
 import React, { useEffect, useRef, useState } from 'react';
 
 export interface AutoCompleteProps {
@@ -25,7 +26,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 	//const [resultado, setResultado] = useState<Record<string, any>>({});
 	const [resultado, setResultado] = useState<any[]>([]);
 	const [produtoSelecionado, setProdutoSelecionado] = useState<string>(
-		valorPadrao || ''
+		valorPadrao || '',
 	);
 
 	const autocompleteRef = useRef<HTMLDivElement>(null); // Ref para a div de resultados
@@ -67,7 +68,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 		searchByMarca: boolean,
 		searchByNome: boolean,
 		e?: React.FormEvent,
-		produtoDetail: string = ''
+		produtoDetail: string = '',
 	) => {
 		// 1. Prevenção de comportamento padrão do form
 		if (e && typeof e.preventDefault === 'function') {
@@ -86,15 +87,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			// 3. Chamada para a nossa nova API interna
 			// Note que passamos 'term' em vez de 'autoCompleteSearch' para bater com a rota
 			const response = await fetch(
-				`/api/autocomplete?term=${encodeURIComponent(
-					produtoDetail
-				)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
+				`${process.env.NEXT_PUBLIC_API_URL}/autocomplete?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
 			);
 
 			if (!response.ok) {
@@ -109,9 +102,10 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			} else {
 				setResultado([]); // Se o banco retornar vazio, escondemos a div de sugestões
 			}
-		} catch (error) {
-			console.error('Fetch error:', error);
-			setResultado([]); // Limpa em caso de erro para não travar a UI aberta
+		} catch (error: any) {
+			return NextResponse.json({ erro: error.message }, { status: 500 });
+			//console.error('Fetch error:', error);
+			//setResultado([]); // Limpa em caso de erro para não travar a UI aberta
 		} finally {
 			setLoading(false); // O finally garante que o loading pare independente do resultado
 		}

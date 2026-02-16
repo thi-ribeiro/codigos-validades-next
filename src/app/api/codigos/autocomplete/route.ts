@@ -8,6 +8,8 @@ export async function GET(request: Request) {
         const searchByNome = searchParams.get('searchByNome') === 'true';
         const searchByMarca = searchParams.get('searchByMarca') === 'true';
 
+        console.log(termo)
+
         if (!termo) return NextResponse.json({ dados: [] });
         const termoLike = `%${termo}%`;
 
@@ -24,7 +26,9 @@ export async function GET(request: Request) {
             params.push(termoLike);
         } else {
             // Retorna a combinação formatada Nome - Marca
-            query = "SELECT CONCAT(nome_produto, ' - ', marca_produto) as valor FROM codigos_produtos WHERE nome_produto LIKE ? OR marca_produto LIKE ? GROUP BY nome_produto, marca_produto LIMIT 10";
+            // query = "SELECT CONCAT(nome_produto, ' - ', marca_produto) as valor FROM codigos_produtos WHERE nome_produto LIKE ? OR marca_produto LIKE ? GROUP BY nome_produto, marca_produto LIMIT 10";
+            // params.push(termoLike, termoLike);
+            query = "SELECT CONCAT(nome_produto, ' - ', IFNULL(marca_produto, 'Sem Marca')) as valor FROM codigos_produtos WHERE nome_produto LIKE ? OR marca_produto LIKE ? GROUP BY nome_produto, marca_produto LIMIT 10";
             params.push(termoLike, termoLike);
         }
 
