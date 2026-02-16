@@ -87,7 +87,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			// 3. Chamada para a nossa nova API interna
 			// Note que passamos 'term' em vez de 'autoCompleteSearch' para bater com a rota
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_API_URL}/autocomplete?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
+				`/api/codigos/autocomplete?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
 			);
 
 			if (!response.ok) {
