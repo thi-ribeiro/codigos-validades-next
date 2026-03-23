@@ -121,61 +121,84 @@ function CarregarPagina({}: Props) {
 	// import { Html5QrcodeScanner } from 'html5-qrcode';
 
 	// ... dentro do componente ...
-
 	useEffect(() => {
 		let html5QrCode: Html5Qrcode | any = null;
 
-		// SÓ ENTRA se o modal estiver aberto E NÃO houver código lido (para o RESCAN funcionar)
-		if (isOpenModalAddCodeBar && !codigoLido) {
-			const startCamera = async () => {
-				// Verifica se a div 'reader' existe no DOM antes de começar
-				const element = document.getElementById('reader');
-				if (!element) return;
-				try {
-					html5QrCode = new Html5Qrcode('reader');
+		if (isOpenModalAddCodeBar) {
+			// 1. Instanciamos o leitor direto no ID 'reader'
 
-					await html5QrCode.start(
-						{ facingMode: 'environment' },
+			html5QrCode = new Html5Qrcode('reader');
+
+			const startCamera = async () => {
+				try {
+					// 2. O 'start' já pede permissão e abre o vídeo de uma vez
+
+					await html5QrCode!.start(
+						{ facingMode: 'environment' }, // Força a traseira
+
 						{
-							fps: 20,
-							qrbox: { width: 280, height: 150 },
+							fps: 20, // Mais rápido
+
+							qrbox: { width: 280, height: 150 }, // Formato para código de barras
+
 							aspectRatio: 1.777778,
+
 							formatsToSupport: [
 								Html5QrcodeSupportedFormats.EAN_13,
+
 								Html5QrcodeSupportedFormats.EAN_8,
+
 								Html5QrcodeSupportedFormats.CODE_128,
 							],
 						},
+
 						(decodedText: string) => {
+							// --- SUCESSO: LEITURA FEITA ---
+
 							console.log('Bip!', decodedText);
+
 							setCodigoLido(decodedText);
 
-							// Ao ler, paramos a câmera imediatamente
-							if (html5QrCode?.isScanning()) {
-								html5QrCode.stop().catch((e: any) => console.error(e));
-							}
+							// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
+
+							html5QrCode?.stop().then(() => {
+								addToast('Câmera desligada, edite o produto.', 'info');
+							});
 						},
-						() => {
-							/* Erros de foco ficam silenciosos aqui */
+
+						(errorMessage: string) => {
+							// Silencioso: erros de foco enquanto procura o código
+							//addToast(errorMessage, 'error');
 						},
 					);
 				} catch (err: any) {
-					// Se der erro ao abrir (ex: permissão negada), avisa o usuário
-					addToast('Erro ao abrir câmera: ' + err, 'error');
+					//console.error('Erro ao abrir a câmera direto:', err);
+
+					addToast(err, 'error');
 				}
 			};
 
-			// Aumentei para 500ms para dar tempo do Modal e da Div 'reader' aparecerem
-			const timer = setTimeout(startCamera, 500);
+			// Pequeno delay pro Modal terminar de animar e a Div existir
 
-			return () => {
-				clearTimeout(timer);
-				if (html5QrCode && html5QrCode?.isScanning?.()) {
-					html5QrCode.stop().catch((err: any) => console.error(err));
-				}
-			};
+			const timer = setTimeout(startCamera, 300);
+
+			return () => clearTimeout(timer);
 		}
-	}, [isOpenModalAddCodeBar, codigoLido]); // Vigia os dois para reabrir no RESCAN
+
+		return () => {
+			// Limpeza ao fechar o componente ou modal
+
+			if (html5QrCode && html5QrCode.isScanning()) {
+				// Adicionado os parênteses ()
+
+				html5QrCode
+
+					.stop()
+
+					.catch((err: string) => console.error('Erro ao parar scanner:', err));
+			}
+		};
+	}, [isOpenModalAddCodeBar, codigoLido]);
 
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
