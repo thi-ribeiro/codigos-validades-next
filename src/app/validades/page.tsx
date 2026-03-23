@@ -17,6 +17,7 @@ import AddButton from '@/Componentes/AddButton/AddButton';
 
 // import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+
 import useModal from '@/Componentes/Modal/useModal';
 import { useToast } from '@/Contexto/Toast';
 
@@ -121,68 +122,109 @@ function CarregarPagina({}: Props) {
 	// import { Html5QrcodeScanner } from 'html5-qrcode';
 
 	// ... dentro do componente ...
-	useEffect(() => {
-		let html5QrCode: Html5Qrcode | any = null;
+	// useEffect(() => {
+	// 	let html5QrCode: Html5Qrcode | any = null;
 
-		if (isOpenModalAddCodeBar) {
-			// 1. Instanciamos o leitor direto no ID 'reader'
-			html5QrCode = new Html5Qrcode('reader');
-			const startCamera = async () => {
-				try {
-					// 2. O 'start' já pede permissão e abre o vídeo de uma vez
-					await html5QrCode!.start(
-						{ facingMode: 'environment' }, // Força a traseira
-						{
-							fps: 20, // Mais rápido
-							qrbox: { width: 280, height: 150 }, // Formato para código de barras
-							aspectRatio: 1.777778,
-							formatsToSupport: [
-								Html5QrcodeSupportedFormats.EAN_13,
-								Html5QrcodeSupportedFormats.EAN_8,
-								Html5QrcodeSupportedFormats.CODE_128,
-							],
-						},
+	// 	if (isOpenModalAddCodeBar) {
+	// 		// 1. Instanciamos o leitor direto no ID 'reader'
+	// 		html5QrCode = new Html5Qrcode('reader');
+	// 		const startCamera = async () => {
+	// 			try {
+	// 				// 2. O 'start' já pede permissão e abre o vídeo de uma vez
+	// 				await html5QrCode!.start(
+	// 					{ facingMode: 'environment' }, // Força a traseira
+	// 					{
+	// 						fps: 20, // Mais rápido
+	// 						qrbox: { width: 280, height: 150 }, // Formato para código de barras
+	// 						aspectRatio: 1.777778,
+	// 						formatsToSupport: [
+	// 							Html5QrcodeSupportedFormats.EAN_13,
+	// 							Html5QrcodeSupportedFormats.EAN_8,
+	// 							Html5QrcodeSupportedFormats.CODE_128,
+	// 						],
+	// 					},
 
-						(decodedText: string) => {
-							// --- SUCESSO: LEITURA FEITA ---
-							console.log('Bip!', decodedText);
-							setCodigoLido(decodedText);
-							// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
+	// 					(decodedText: string) => {
+	// 						// --- SUCESSO: LEITURA FEITA ---
+	// 						console.log('Bip!', decodedText);
+	// 						setCodigoLido(decodedText);
+	// 						// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
 
-							html5QrCode?.stop().then(() => {
-								addToast('Câmera desligada, edite o produto.', 'info');
-							});
-						},
+	// 						html5QrCode?.stop().then(() => {
+	// 							addToast('Câmera desligada, edite o produto.', 'info');
+	// 						});
+	// 					},
 
-						(errorMessage: string) => {
-							// Silencioso: erros de foco enquanto procura o código
-							//addToast(errorMessage, 'error');
-						},
-					);
-				} catch (err: any) {
-					//console.error('Erro ao abrir a câmera direto:', err);
-					addToast(err, 'error');
-				}
+	// 					(errorMessage: string) => {
+	// 						// Silencioso: erros de foco enquanto procura o código
+	// 						//addToast(errorMessage, 'error');
+	// 					},
+	// 				);
+	// 			} catch (err: any) {
+	// 				//console.error('Erro ao abrir a câmera direto:', err);
+	// 				addToast(err, 'error');
+	// 			}
+	// 		};
+
+	// 		// Pequeno delay pro Modal terminar de animar e a Div existir
+
+	// 		const timer = setTimeout(startCamera, 300);
+	// 		return () => clearTimeout(timer);
+	// 	}
+
+	// 	return () => {
+	// 		// Limpeza ao fechar o componente ou modal
+
+	// 		if (html5QrCode && html5QrCode?.isScanning?.()) {
+	// 			// Adicionado os parênteses ()
+
+	// 			html5QrCode
+	// 				.stop()
+	// 				.catch((err: string) => console.error('Erro ao parar scanner:', err));
+	// 		}
+	// 	};
+	// }, [isOpenModalAddCodeBar, codigoLido]);
+
+	// Função para iniciar o scanner (Pode ficar dentro do componente)
+	const startScanner = async () => {
+		const readerElement = document.getElementById('reader');
+		if (!readerElement) return null;
+
+		try {
+			// CONFIGURAÇÃO DE FORMATOS AQUI (No construtor)
+			const html5QrCode = new Html5Qrcode('reader', {
+				verbose: false,
+				formatsToSupport: [
+					Html5QrcodeSupportedFormats.EAN_13,
+					Html5QrcodeSupportedFormats.EAN_8,
+					Html5QrcodeSupportedFormats.CODE_128,
+				],
+			});
+
+			const config = {
+				fps: 20,
+				qrbox: { width: 280, height: 150 },
+				aspectRatio: 1.777778,
+				// formatsToSupport NÃO VAI AQUI (Remova daqui)
 			};
 
-			// Pequeno delay pro Modal terminar de animar e a Div existir
+			await html5QrCode.start(
+				{ facingMode: 'environment' },
+				config,
+				(decodedText) => {
+					setCodigoLido(decodedText);
+					navigator.vibrate(200);
+					html5QrCode.stop().catch(console.error);
+				},
+				() => {}, // Erro silencioso
+			);
 
-			const timer = setTimeout(startCamera, 300);
-			return () => clearTimeout(timer);
+			return html5QrCode;
+		} catch (err) {
+			console.error('Erro:', err);
+			return null;
 		}
-
-		return () => {
-			// Limpeza ao fechar o componente ou modal
-
-			if (html5QrCode && html5QrCode?.isScanning?.()) {
-				// Adicionado os parênteses ()
-
-				html5QrCode
-					.stop()
-					.catch((err: string) => console.error('Erro ao parar scanner:', err));
-			}
-		};
-	}, [isOpenModalAddCodeBar, codigoLido]);
+	};
 
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -543,6 +585,12 @@ function CarregarPagina({}: Props) {
 						height: '100%',
 						//minHeight: '300px',
 					}}>
+					<button
+						type='button'
+						onClick={startScanner}
+						title='Limpar e Bipar novamente'>
+						Scan
+					</button>
 					Carregando...
 				</div>
 				{codigoLido && codigoLido !== '' && (
@@ -616,7 +664,7 @@ function CarregarPagina({}: Props) {
 								</button>
 								<button
 									type='button'
-									onClick={() => setCodigoLido('')}
+									onClick={startScanner}
 									title='Limpar e Bipar novamente'>
 									RESCAN
 								</button>
