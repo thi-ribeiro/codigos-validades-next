@@ -15,8 +15,8 @@ import ValidadesProvider, { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
 
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-
+// import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import useModal from '@/Componentes/Modal/useModal';
 
 type Props = {};
@@ -79,6 +79,7 @@ function CarregarPagina({}: Props) {
 	const mesAnoAtual = format(dataAtual, 'MMMM/yyyy', { locale: ptBR });
 
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
+	const [codigoLido, setCodigoLido] = useState<string>('');
 
 	const [FormEditData, setFormEditData] = useState<ValidadeProduto>({
 		idvalidades: 0,
@@ -117,65 +118,53 @@ function CarregarPagina({}: Props) {
 	// 1. Garanta que a importação está assim no topo do arquivo:
 	// import { Html5QrcodeScanner } from 'html5-qrcode';
 
+	// ... dentro do componente ...
+
 	useEffect(() => {
-		let scanner: any = null;
+		let html5QrCode: Html5Qrcode | any = null;
 
 		if (isOpenModalAddCodeBar) {
-			const timer = setTimeout(() => {
-				// 1. Criamos a instância
-				scanner = new Html5QrcodeScanner(
-					'reader',
-					{
-						fps: 15,
-						qrbox: { width: 280, height: 150 },
-						aspectRatio: 1.777778,
-						// FORÇA A CÂMERA TRASEIRA:
-						videoConstraints: {
-							facingMode: 'environment',
+			// 1. Instanciamos o leitor direto no ID 'reader'
+			html5QrCode = new Html5Qrcode('reader');
+
+			const startCamera = async () => {
+				try {
+					// 2. O 'start' já pede permissão e abre o vídeo de uma vez
+					await html5QrCode!.start(
+						{ facingMode: 'environment' }, // Força a traseira
+						{
+							fps: 20, // Mais rápido
+							qrbox: { width: 280, height: 150 }, // Formato para código de barras
+							aspectRatio: 1.777778,
 						},
-						formatsToSupport: [
-							Html5QrcodeSupportedFormats.EAN_13,
-							Html5QrcodeSupportedFormats.QR_CODE,
-							Html5QrcodeSupportedFormats.CODE_128, // Muito usado em etiquetas internas
-						],
-					},
-					false,
-				);
+						(decodedText: string) => {
+							// --- SUCESSO: LEITURA FEITA ---
+							console.log('Bip!', decodedText);
+							setCodigoLido(decodedText);
 
-				scanner.render(
-					(decodedText: string) => {
-						// 2. O QUE APARECE QUANDO ESCANEIA:
-						console.log('Código Lido:', decodedText);
+							// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
+							html5QrCode?.stop().then(() => {
+								console.log('Câmera desligada, pode editar o produto.');
+							});
+						},
+						(errorMessage: string) => {
+							// Silencioso: erros de foco enquanto procura o código
+						},
+					);
+				} catch (err) {
+					console.error('Erro ao abrir a câmera direto:', err);
+				}
+			};
 
-						// Exemplo: Alerta para você ver o número na hora (depois a gente tira)
-						alert('Produto Lido: ' + decodedText);
-
-						// 3. FECHA A CÂMERA E O MODAL:
-						scanner
-							.clear()
-							.then(() => {
-								// Aqui você chama sua função de fechar o modal
-								closeModalAddCodeBar();
-
-								// E aqui você pode jogar o número para um input ou estado
-								// setCodigoLido(decodedText);
-							})
-							.catch((err: string) =>
-								console.error('Erro ao limpar scanner', err),
-							);
-					},
-					(error: string) => {
-						// Erros de leitura silenciosos
-					},
-				);
-			}, 300);
-
+			// Pequeno delay pro Modal terminar de animar e a Div existir
+			const timer = setTimeout(startCamera, 300);
 			return () => clearTimeout(timer);
 		}
 
 		return () => {
-			if (scanner) {
-				scanner.clear().catch((err: string) => console.error(err));
+			// Limpeza ao fechar o componente ou modal
+			if (html5QrCode && html5QrCode.isScanning) {
+				html5QrCode.stop().catch((err: string) => console.error(err));
 			}
 		};
 	}, [isOpenModalAddCodeBar]);
@@ -534,6 +523,13 @@ function CarregarPagina({}: Props) {
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
 				Teste
 				<div id='reader' style={{ width: '100%' }}></div>
+				<input
+					type='text'
+					value={codigoLido}
+					onChange={(e) => setCodigoLido(e.target.value)} // Permite correção manual se precisar
+					placeholder='Código de Barras'
+					className='suas-classes-tailwind-aqui'
+				/>
 			</Modal>
 
 			<AddButton
