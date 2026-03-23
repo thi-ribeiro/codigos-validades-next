@@ -537,14 +537,10 @@ function CarregarPagina({}: Props) {
 					id='reader'
 					style={{
 						width: '100%',
-						minHeight: '300px',
-					}}></div>
-				<div
-					style={{
-						position: 'absolute',
-						top: '50%',
+						height: '100%',
+						//minHeight: '300px',
 					}}>
-					Tentando leitura do código...
+					Carregando...
 				</div>
 				{codigoLido && (
 					<form
