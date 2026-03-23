@@ -18,6 +18,7 @@ import AddButton from '@/Componentes/AddButton/AddButton';
 // import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Html5Qrcode } from 'html5-qrcode';
 import useModal from '@/Componentes/Modal/useModal';
+import { useToast } from '@/Contexto/Toast';
 
 type Props = {};
 
@@ -34,6 +35,7 @@ export default function page() {
 const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
 function CarregarPagina({}: Props) {
 	const { limitaTexto } = useFuncoes();
+	const { addToast } = useToast();
 
 	const {
 		fetchValidades,
@@ -144,15 +146,17 @@ function CarregarPagina({}: Props) {
 
 							// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
 							html5QrCode?.stop().then(() => {
-								console.log('Câmera desligada, pode editar o produto.');
+								addToast('Câmera desligada, edite o produto.', 'info');
 							});
 						},
 						(errorMessage: string) => {
 							// Silencioso: erros de foco enquanto procura o código
+							addToast(errorMessage, 'error');
 						},
 					);
-				} catch (err) {
-					console.error('Erro ao abrir a câmera direto:', err);
+				} catch (err: any) {
+					//console.error('Erro ao abrir a câmera direto:', err);
+					addToast(err, 'error');
 				}
 			};
 
@@ -164,7 +168,9 @@ function CarregarPagina({}: Props) {
 		return () => {
 			// Limpeza ao fechar o componente ou modal
 			if (html5QrCode && html5QrCode.isScanning) {
-				html5QrCode.stop().catch((err: string) => console.error(err));
+				html5QrCode
+					.stop()
+					.catch((err: string) => console.error(addToast(err, 'error')));
 			}
 		};
 	}, [isOpenModalAddCodeBar]);
@@ -521,15 +527,85 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
-				Teste
-				<div id='reader' style={{ width: '100%' }}></div>
-				<input
-					type='text'
-					value={codigoLido}
-					onChange={(e) => setCodigoLido(e.target.value)} // Permite correção manual se precisar
-					placeholder='Código de Barras'
-					className='suas-classes-tailwind-aqui'
-				/>
+				<div id='reader' style={{ width: '100%', display: 'none' }}></div>
+				{codigoLido ? (
+					<div>Carregando leitor...</div>
+				) : (
+					<form
+						className='formularioAdicionarValidade'
+						onSubmit={(e) => fetchAddValidade(e, closeModalAddCodeBar)}>
+						<h2>Adicionar Validade Via Código de Barras</h2>
+
+						<label htmlFor='codigoProduto'>Código de Barras:</label>
+						<input
+							id='codigoProduto'
+							type='text'
+							value={codigoLido}
+							onChange={(e) => setCodigoLido(e.target.value)} // Permite correção manual se precisar
+							placeholder='Código de Barras'
+							className='suas-classes-tailwind-aqui'
+						/>
+
+						<label htmlFor='produto'>Produto:</label>
+
+						<AutoComplete
+							nome={true}
+							placeholder='Digite o nome do produto'
+							nameInput='produto'
+							required={false}
+						/>
+						<label htmlFor='marca'>Marca:</label>
+						{user?.empresa ? (
+							<input type='text' name='marca' value={user?.empresa} readOnly />
+						) : (
+							<AutoComplete
+								marca={true}
+								placeholder='Digite a marca do produto'
+								nameInput='marca'
+								required={false}
+							/>
+						)}
+
+						<label htmlFor='validade'>Validade:</label>
+						<input type='date' id='validade' name='validade' required />
+						<label htmlFor='quantidade'>Quantidade:</label>
+						<input type='number' id='quantidade' name='quantidade' />
+						<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
+						<select
+							id='tipoquantidade'
+							name='tipoquantidade'
+							defaultValue='un'
+							required>
+							<option value='cx'>Caixas</option>
+							<option value='g'>Gramas</option>
+							<option value='l'>Litros</option>
+							<option value='ml'>Mililitros</option>
+							<option value='pc'>Pacotes</option>
+							<option value='kg'>Quilos</option>
+							<option value='un'>Unidades</option>
+						</select>
+						{/* <button type='submit'>Adicionar</button> */}
+
+						<div className='functionsButons'>
+							<div className='buttonSubmCanc'>
+								<button
+									type='submit'
+									disabled={loading} // Desativa o botão enquanto loading for true
+									style={{
+										backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+										color: 'white',
+										cursor: loading ? 'not-allowed' : 'pointer',
+										transition: '0.3s', // Para a mudança de cor ser suave
+									}}>
+									{loading ? 'Adicionando...' : 'Adicionar'}
+								</button>
+								<button type='button' onClick={closeModalAddCodeBar}>
+									Cancelar
+								</button>
+							</div>
+						</div>
+					</form>
+				)}
 			</Modal>
 
 			<AddButton
