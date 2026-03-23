@@ -1,6 +1,6 @@
 import { useAuth } from '@/Contexto/AuthContext';
 import React from 'react';
-import { IoMdPersonAdd } from 'react-icons/io';
+import { IoMdPersonAdd, IoMdQrScanner } from 'react-icons/io';
 import { IoAdd } from 'react-icons/io5';
 import useModal from '../Modal/useModal';
 import Modal from '../Modal/Modal';
@@ -8,14 +8,17 @@ import { useToast } from '@/Contexto/Toast';
 
 type Props = {
 	openFuncion: () => void;
+	openModalAddBarCode: () => void;
 	//openFuncionAddUser?: () => void;
 	addUser?: boolean;
 	addValidade?: boolean;
+	addBarCode?: boolean;
 	addCodigo?: boolean;
 };
 
 export default function AddButton({
 	openFuncion,
+	openModalAddBarCode,
 	addUser = false,
 	addCodigo = false,
 	addValidade = false,
@@ -76,6 +79,7 @@ export default function AddButton({
 					<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
 						<IoMdPersonAdd size={15} />
 					</div>
+
 					<Modal isOpen={isOpenModalAddUser} onClose={closeModalAddUser}>
 						<div className='cadastroProdutos headerGenerico'>
 							<h1>Cadastrar Usuário</h1>
@@ -102,13 +106,21 @@ export default function AddButton({
 			)}
 
 			{user?.role === 1 && (
-				<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
-					<IoAdd size={30} />
-				</div>
+				<React.Fragment>
+					<div
+						className='buttonAddBarCodeScan buttonAdd'
+						onClick={openModalAddBarCode}>
+						<IoMdQrScanner size={15} />
+					</div>
+					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
+						<IoAdd size={30} />
+					</div>
+				</React.Fragment>
 			)}
 
 			{user?.role === 2 && addValidade && (
 				<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
+					teste
 					<IoAdd size={30} />
 				</div>
 			)}

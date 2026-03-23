@@ -15,6 +15,8 @@ import ValidadesProvider, { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
 
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+
 import useModal from '@/Componentes/Modal/useModal';
 
 type Props = {};
@@ -62,6 +64,15 @@ function CarregarPagina({}: Props) {
 		closeModal: closeModalEditar,
 	} = useModal();
 
+	const {
+		isOpen: isOpenModalAddCodeBar,
+		openModal: openModalAddCodeBar,
+		closeModal: closeModalAddCodeBar,
+	} = useModal();
+
+	const [isScanning, setIsScanning] = useState(false);
+	const [resultadoScan, setResultadoScan] = useState('');
+
 	//const router = useRouter();
 
 	const dataAtual = new Date();
@@ -103,6 +114,61 @@ function CarregarPagina({}: Props) {
 		}
 	}, [isLoading]);
 
+	// 1. Garanta que a importação está assim no topo do arquivo:
+	// import { Html5QrcodeScanner } from 'html5-qrcode';
+
+	useEffect(() => {
+		// Tipamos como 'any' ou o tipo da classe para o TS não encher o saco
+		let scannerInstance: any = null;
+
+		if (isOpenModalAddCodeBar) {
+			const timer = setTimeout(() => {
+				try {
+					// O 1º é o ID da DIV, o 2º é o Objeto, o 3º é o Verbose (o que faltava!)
+					scannerInstance = new Html5QrcodeScanner(
+						'reader',
+						{
+							fps: 20, // Aumentei um pouco para ser mais rápido
+							qrbox: { width: 280, height: 150 }, // Formato "intermediário" que pega os dois bem
+							aspectRatio: 1.777778,
+							// DICA EXTRA: Força a busca por códigos de barras e QR Codes comuns
+							formatsToSupport: [
+								Html5QrcodeSupportedFormats.EAN_13,
+								Html5QrcodeSupportedFormats.QR_CODE,
+								Html5QrcodeSupportedFormats.CODE_128, // Muito usado em etiquetas internas
+							],
+						},
+						false,
+					);
+					scannerInstance.render(
+						(decodedText: string) => {
+							console.log('Bip lido:', decodedText);
+							// Aqui você chama sua lógica de busca (ex: buscarProduto(decodedText))
+
+							// Se quiser que ele pare de ler após o primeiro sucesso:
+							// scannerInstance.clear();
+						},
+						(error: string) => {
+							// Erros de leitura (ignorar, o scanner tenta várias vezes por segundo)
+						},
+					);
+				} catch (err) {
+					console.error('Erro ao iniciar scanner:', err);
+				}
+			}, 300); // Aumentei um pouco o tempo pro Modal abrir 100%
+
+			return () => clearTimeout(timer);
+		}
+
+		// LIMPEZA: Sempre desligue a câmera ao fechar o modal
+		return () => {
+			if (scannerInstance) {
+				scannerInstance
+					.clear()
+					.catch((err: any) => console.error('Erro ao fechar:', err));
+			}
+		};
+	}, [isOpenModalAddCodeBar]);
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
 		//console.log(filtroMarca);
@@ -116,7 +182,7 @@ function CarregarPagina({}: Props) {
 	const definirItemNoArray = (idSelecionado: number, marca: string) => {
 		if (idSelecionado) {
 			const itemCompletoSelecionado = produtosValidades[marca]?.find(
-				(item) => item.idvalidades === idSelecionado
+				(item) => item.idvalidades === idSelecionado,
 			);
 
 			setFormEditData(itemCompletoSelecionado ?? ({} as ValidadeProduto));
@@ -125,7 +191,7 @@ function CarregarPagina({}: Props) {
 	};
 
 	const handleChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => {
 		//console.log(e.target.value);
 
@@ -218,7 +284,7 @@ function CarregarPagina({}: Props) {
 														<div className='coluna-dados'>
 															{calcularDiasRestantes(
 																validade.validade,
-																validade.finalizado
+																validade.finalizado,
 															)}
 														</div>
 														<div
@@ -226,7 +292,7 @@ function CarregarPagina({}: Props) {
 															onClick={() => {
 																definirItemNoArray(
 																	validade.idvalidades,
-																	validade.marca_produto
+																	validade.marca_produto,
 																);
 																openModalEditar();
 															}}>
@@ -428,7 +494,7 @@ function CarregarPagina({}: Props) {
 								onClick={() =>
 									fetchDeletarValidade(
 										FormEditData.idvalidades,
-										closeModalEditar
+										closeModalEditar,
 									)
 								}>
 								Remover
@@ -454,7 +520,17 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<AddButton openFuncion={openModalAdicionar} addUser addValidade={true} />
+			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
+				Teste
+				<div id='reader' style={{ width: '100%' }}></div>
+			</Modal>
+
+			<AddButton
+				openModalAddBarCode={openModalAddCodeBar}
+				openFuncion={openModalAdicionar}
+				addUser
+				addValidade={true}
+			/>
 		</div>
 	);
 }

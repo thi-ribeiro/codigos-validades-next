@@ -14,7 +14,7 @@ export async function POST(request: Request) {
             validade,
             data_inserido,
             quantidadeDesc,
-            id_responsavel
+            //id_responsavel
         } = input_data;
 
         // Validação básica (igual ao seu IF no PHP)
@@ -28,8 +28,8 @@ export async function POST(request: Request) {
         // Query de inserção
         const query = `
             INSERT INTO validades 
-            (produto, marca_produto, responsavel, validade, data_inserido, quantidade_produto, id_responsavel) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            (produto, marca_produto, responsavel, validade, data_inserido, quantidade_produto) 
+            VALUES (?, ?, ?, ?, ?, ?)`;
 
         // No mysql2 com pool, passamos apenas o array de valores
         const [result] = await pool.execute(query, [
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
             validade,
             data_inserido,
             quantidadeDesc,
-            id_responsavel
+            //id_responsavel
         ]);
 
         return NextResponse.json(
