@@ -539,7 +539,7 @@ function CarregarPagina({}: Props) {
 					}}>
 					Carregando...
 				</div>
-				{!codigoLido && codigoLido === '' && (
+				{codigoLido && codigoLido !== '' && (
 					<form
 						className='formularioAdicionarValidade'
 						onSubmit={(e) => fetchAddValidade(e, closeModalAddCodeBar)}>
