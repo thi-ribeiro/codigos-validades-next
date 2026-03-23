@@ -126,39 +126,27 @@ function CarregarPagina({}: Props) {
 
 		if (isOpenModalAddCodeBar) {
 			// 1. Instanciamos o leitor direto no ID 'reader'
-
 			html5QrCode = new Html5Qrcode('reader');
-
 			const startCamera = async () => {
 				try {
 					// 2. O 'start' já pede permissão e abre o vídeo de uma vez
-
 					await html5QrCode!.start(
 						{ facingMode: 'environment' }, // Força a traseira
-
 						{
 							fps: 20, // Mais rápido
-
 							qrbox: { width: 280, height: 150 }, // Formato para código de barras
-
 							aspectRatio: 1.777778,
-
 							formatsToSupport: [
 								Html5QrcodeSupportedFormats.EAN_13,
-
 								Html5QrcodeSupportedFormats.EAN_8,
-
 								Html5QrcodeSupportedFormats.CODE_128,
 							],
 						},
 
 						(decodedText: string) => {
 							// --- SUCESSO: LEITURA FEITA ---
-
 							console.log('Bip!', decodedText);
-
 							setCodigoLido(decodedText);
-
 							// 3. DESLIGA SÓ A CÂMERA (Mantém o Modal aberto)
 
 							html5QrCode?.stop().then(() => {
@@ -173,7 +161,6 @@ function CarregarPagina({}: Props) {
 					);
 				} catch (err: any) {
 					//console.error('Erro ao abrir a câmera direto:', err);
-
 					addToast(err, 'error');
 				}
 			};
@@ -181,20 +168,17 @@ function CarregarPagina({}: Props) {
 			// Pequeno delay pro Modal terminar de animar e a Div existir
 
 			const timer = setTimeout(startCamera, 300);
-
 			return () => clearTimeout(timer);
 		}
 
 		return () => {
 			// Limpeza ao fechar o componente ou modal
 
-			if (html5QrCode && html5QrCode.isScanning()) {
+			if (html5QrCode && html5QrCode?.isScanning?.()) {
 				// Adicionado os parênteses ()
 
 				html5QrCode
-
 					.stop()
-
 					.catch((err: string) => console.error('Erro ao parar scanner:', err));
 			}
 		};
