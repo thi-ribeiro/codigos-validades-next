@@ -179,7 +179,7 @@ function CarregarPagina({}: Props) {
 					.catch((err: string) => console.error('Erro ao parar scanner:', err));
 			}
 		};
-	}, [isOpenModalAddCodeBar]);
+	}, [isOpenModalAddCodeBar, codigoLido]);
 
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
