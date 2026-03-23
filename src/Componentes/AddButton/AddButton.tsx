@@ -5,6 +5,7 @@ import { IoAdd } from 'react-icons/io5';
 import useModal from '../Modal/useModal';
 import Modal from '../Modal/Modal';
 import { useToast } from '@/Contexto/Toast';
+import { add } from 'lodash';
 
 type Props = {
 	openFuncion: () => void;
@@ -20,6 +21,7 @@ export default function AddButton({
 	openFuncion,
 	openModalAddBarCode,
 	addUser = false,
+	addBarCode = false,
 	addCodigo = false,
 	addValidade = false,
 }: Props) {
@@ -107,11 +109,13 @@ export default function AddButton({
 
 			{user?.role === 1 && (
 				<React.Fragment>
-					<div
-						className='buttonAddBarCodeScan buttonAdd'
-						onClick={openModalAddBarCode}>
-						<IoMdQrScanner size={15} />
-					</div>
+					{addBarCode && (
+						<div
+							className='buttonAddBarCodeScan buttonAdd'
+							onClick={openModalAddBarCode}>
+							<IoMdQrScanner size={15} />
+						</div>
+					)}
 					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
 						<IoAdd size={30} />
 					</div>

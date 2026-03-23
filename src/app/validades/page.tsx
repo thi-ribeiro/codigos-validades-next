@@ -118,57 +118,68 @@ function CarregarPagina({}: Props) {
 	// import { Html5QrcodeScanner } from 'html5-qrcode';
 
 	useEffect(() => {
-		// Tipamos como 'any' ou o tipo da classe para o TS não encher o saco
-		let scannerInstance: any = null;
+		let scanner: any = null;
 
 		if (isOpenModalAddCodeBar) {
 			const timer = setTimeout(() => {
-				try {
-					// O 1º é o ID da DIV, o 2º é o Objeto, o 3º é o Verbose (o que faltava!)
-					scannerInstance = new Html5QrcodeScanner(
-						'reader',
-						{
-							fps: 20, // Aumentei um pouco para ser mais rápido
-							qrbox: { width: 280, height: 150 }, // Formato "intermediário" que pega os dois bem
-							aspectRatio: 1.777778,
-							// DICA EXTRA: Força a busca por códigos de barras e QR Codes comuns
-							formatsToSupport: [
-								Html5QrcodeSupportedFormats.EAN_13,
-								Html5QrcodeSupportedFormats.QR_CODE,
-								Html5QrcodeSupportedFormats.CODE_128, // Muito usado em etiquetas internas
-							],
+				// 1. Criamos a instância
+				scanner = new Html5QrcodeScanner(
+					'reader',
+					{
+						fps: 15,
+						qrbox: { width: 280, height: 150 },
+						aspectRatio: 1.777778,
+						// FORÇA A CÂMERA TRASEIRA:
+						videoConstraints: {
+							facingMode: 'environment',
 						},
-						false,
-					);
-					scannerInstance.render(
-						(decodedText: string) => {
-							console.log('Bip lido:', decodedText);
-							// Aqui você chama sua lógica de busca (ex: buscarProduto(decodedText))
+						formatsToSupport: [
+							Html5QrcodeSupportedFormats.EAN_13,
+							Html5QrcodeSupportedFormats.QR_CODE,
+							Html5QrcodeSupportedFormats.CODE_128, // Muito usado em etiquetas internas
+						],
+					},
+					false,
+				);
 
-							// Se quiser que ele pare de ler após o primeiro sucesso:
-							// scannerInstance.clear();
-						},
-						(error: string) => {
-							// Erros de leitura (ignorar, o scanner tenta várias vezes por segundo)
-						},
-					);
-				} catch (err) {
-					console.error('Erro ao iniciar scanner:', err);
-				}
-			}, 300); // Aumentei um pouco o tempo pro Modal abrir 100%
+				scanner.render(
+					(decodedText: string) => {
+						// 2. O QUE APARECE QUANDO ESCANEIA:
+						console.log('Código Lido:', decodedText);
+
+						// Exemplo: Alerta para você ver o número na hora (depois a gente tira)
+						alert('Produto Lido: ' + decodedText);
+
+						// 3. FECHA A CÂMERA E O MODAL:
+						scanner
+							.clear()
+							.then(() => {
+								// Aqui você chama sua função de fechar o modal
+								closeModalAddCodeBar();
+
+								// E aqui você pode jogar o número para um input ou estado
+								// setCodigoLido(decodedText);
+							})
+							.catch((err: string) =>
+								console.error('Erro ao limpar scanner', err),
+							);
+					},
+					(error: string) => {
+						// Erros de leitura silenciosos
+					},
+				);
+			}, 300);
 
 			return () => clearTimeout(timer);
 		}
 
-		// LIMPEZA: Sempre desligue a câmera ao fechar o modal
 		return () => {
-			if (scannerInstance) {
-				scannerInstance
-					.clear()
-					.catch((err: any) => console.error('Erro ao fechar:', err));
+			if (scanner) {
+				scanner.clear().catch((err: string) => console.error(err));
 			}
 		};
 	}, [isOpenModalAddCodeBar]);
+
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
 		//console.log(filtroMarca);
@@ -529,6 +540,7 @@ function CarregarPagina({}: Props) {
 				openModalAddBarCode={openModalAddCodeBar}
 				openFuncion={openModalAdicionar}
 				addUser
+				addBarCode={true}
 				addValidade={true}
 			/>
 		</div>
