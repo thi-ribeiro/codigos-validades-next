@@ -87,6 +87,7 @@ function CarregarPagina({}: Props) {
 	const [FormEditData, setFormEditData] = useState<ValidadeProduto>({
 		idvalidades: 0,
 		produto: '',
+		codigoProduto: 0,
 		validade: '',
 		responsavel: '',
 		data_inserido: '',

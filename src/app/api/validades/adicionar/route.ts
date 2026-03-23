@@ -15,7 +15,6 @@ export async function POST(request: Request) {
             data_inserido,
             quantidadeDesc,
             codigoProduto
-            //id_responsavel
         } = input_data;
 
         // Validação básica (igual ao seu IF no PHP)
@@ -40,8 +39,7 @@ export async function POST(request: Request) {
             validade,
             data_inserido,
             quantidadeDesc,
-            codigoProduto
-            //id_responsavel
+            codigoProduto || 0
         ]);
 
         return NextResponse.json(

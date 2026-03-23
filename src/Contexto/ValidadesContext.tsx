@@ -18,15 +18,15 @@ export interface ValuesInterface {
 	fetchValidades: (produtoMarca?: string) => Promise<void>;
 	fetchAddValidade: (
 		e: React.FormEvent,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => Promise<void>;
 	fetchEditarValidade: (
 		e: React.FormEvent,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => Promise<void>;
 	fetchDeletarValidade: (
 		id: string | number,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => void;
 	formatarDataParaMySQL: (data: Date) => string;
 	ValidadeVerificada: (props: {
@@ -44,7 +44,7 @@ export interface ValuesInterface {
 	}) => React.JSX.Element;
 	calcularDiasRestantes: (
 		dataDeValidade: string,
-		finalizado: number
+		finalizado: number,
 	) => React.JSX.Element;
 	produtosValidades: Record<string, ValidadeProduto[]>;
 	marcasProdutos: MarcaProdutoInterface[];
@@ -72,6 +72,7 @@ export interface ValidadeProduto {
 	validadeDiaMes: string; // Formato 'dd/mm/yyyy'
 	marca_produto: string; // Adicionando a marca do produto
 	quantidade_produto: string;
+	codigoProduto: number;
 	rebaixa: number;
 	data_rebaixa: string;
 	tipoquantidade: string;
@@ -102,7 +103,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
 
 	const [marcasProdutos, setmarcasProdutos] = useState<MarcaProdutoInterface[]>(
-		[]
+		[],
 	);
 
 	const [loading, setLoading] = useState(false);
@@ -128,7 +129,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					},
 					// Importante manter para o Middleware ler o seu cookie auth_token
 					credentials: 'include',
-				}
+				},
 			);
 
 			const data = await response.json();
@@ -147,7 +148,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				// Mantendo sua lógica de agrupamento com lodash (_)
 				const agrupamentoValidadePorMarcaProduto = _.groupBy(
 					data.dados,
-					'marca_produto'
+					'marca_produto',
 				);
 
 				setProdutosValidades(agrupamentoValidadePorMarcaProduto);
@@ -157,7 +158,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					setdataFimIntervalo(
 						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
 							locale: ptBR,
-						})
+						}),
 					);
 				}
 			} else {
@@ -188,7 +189,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const fetchAddValidade = async (
 		e: React.FormEvent,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
 		setLoading(true);
@@ -199,6 +200,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const quantidade = formData.get('quantidade') as string;
 		const marca = formData.get('marca') as string;
 		const tipoQuantidade = formData.get('tipoquantidade') as string;
+		const codigoProduto = formData.get('codigoProduto') as string;
 
 		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
 
@@ -216,6 +218,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					quantidadeDesc,
 					responsavel: user?.usuario,
 					id_responsavel: user?.uid,
+					codigoProduto: codigoProduto,
 					// Mantemos sua função de formatar data para o MySQL
 					data_inserido: formatarDataParaMySQL(new Date()),
 				}),
@@ -244,7 +247,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			console.error('Fetch error:', error);
 			addToast(
 				'Erro ao conectar com o servidor. Verifique sua conexão.',
-				'error'
+				'error',
 			);
 		} finally {
 			setLoading(false);
@@ -252,7 +255,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	};
 	const fetchEditarValidade = async (
 		e: React.FormEvent,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
 		setLoading(true);
@@ -266,7 +269,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			marca: formData.get('marca'),
 			validade: formData.get('validade'),
 			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get(
-				'tipoquantidade'
+				'tipoquantidade',
 			)}`,
 			responsavel: user?.usuario,
 			id_responsavel: user?.uid,
@@ -379,7 +382,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const calcularDiasRestantes = (
 		dataDeValidade: string,
-		finalizado: number
+		finalizado: number,
 	): React.JSX.Element => {
 		const dataExpiracao = new Date(dataDeValidade);
 		//const dataAtual = new Date();
@@ -414,7 +417,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const fetchDeletarValidade = async (
 		id: string | number,
-		callbackSucesso: () => void
+		callbackSucesso: () => void,
 	) => {
 		// 1. Confirmação para evitar exclusão por erro
 		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
