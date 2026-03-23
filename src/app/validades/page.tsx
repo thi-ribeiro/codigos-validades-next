@@ -128,11 +128,10 @@ function CarregarPagina({}: Props) {
 		// SÓ ENTRA se o modal estiver aberto E NÃO houver código lido (para o RESCAN funcionar)
 		if (isOpenModalAddCodeBar && !codigoLido) {
 			const startCamera = async () => {
+				// Verifica se a div 'reader' existe no DOM antes de começar
+				const element = document.getElementById('reader');
+				if (!element) return;
 				try {
-					// Verifica se a div 'reader' existe no DOM antes de começar
-					const element = document.getElementById('reader');
-					if (!element) return;
-
 					html5QrCode = new Html5Qrcode('reader');
 
 					await html5QrCode.start(
@@ -171,7 +170,7 @@ function CarregarPagina({}: Props) {
 
 			return () => {
 				clearTimeout(timer);
-				if (html5QrCode && html5QrCode.isScanning()) {
+				if (html5QrCode && html5QrCode?.isScanning?.()) {
 					html5QrCode.stop().catch((err: any) => console.error(err));
 				}
 			};
