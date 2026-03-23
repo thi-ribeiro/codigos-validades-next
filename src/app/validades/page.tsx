@@ -527,7 +527,7 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
-				<div id='reader' style={{ width: '100%', display: 'none' }}></div>
+				<div id='reader' style={{ width: '100%' }}></div>
 				{codigoLido ? (
 					<div>Carregando leitor...</div>
 				) : (
