@@ -16,7 +16,7 @@ import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
 
 // import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import useModal from '@/Componentes/Modal/useModal';
 import { useToast } from '@/Contexto/Toast';
 
@@ -138,6 +138,11 @@ function CarregarPagina({}: Props) {
 							fps: 20, // Mais rápido
 							qrbox: { width: 280, height: 150 }, // Formato para código de barras
 							aspectRatio: 1.777778,
+							formatsToSupport: [
+								Html5QrcodeSupportedFormats.EAN_13,
+								Html5QrcodeSupportedFormats.EAN_8,
+								Html5QrcodeSupportedFormats.CODE_128,
+							],
 						},
 						(decodedText: string) => {
 							// --- SUCESSO: LEITURA FEITA ---
