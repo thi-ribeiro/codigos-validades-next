@@ -156,7 +156,7 @@ function CarregarPagina({}: Props) {
 						},
 						(errorMessage: string) => {
 							// Silencioso: erros de foco enquanto procura o código
-							addToast(errorMessage, 'error');
+							//addToast(errorMessage, 'error');
 						},
 					);
 				} catch (err: any) {
@@ -172,10 +172,11 @@ function CarregarPagina({}: Props) {
 
 		return () => {
 			// Limpeza ao fechar o componente ou modal
-			if (html5QrCode && html5QrCode.isScanning) {
+			if (html5QrCode && html5QrCode.isScanning()) {
+				// Adicionado os parênteses ()
 				html5QrCode
 					.stop()
-					.catch((err: string) => console.error(addToast(err, 'error')));
+					.catch((err: string) => console.error('Erro ao parar scanner:', err));
 			}
 		};
 	}, [isOpenModalAddCodeBar]);
@@ -532,10 +533,20 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
-				<div id='reader' style={{ width: '100%' }}></div>
-				{codigoLido ? (
-					<div>Carregando leitor...</div>
-				) : (
+				<div
+					id='reader'
+					style={{
+						width: '100%',
+						minHeight: '300px',
+					}}></div>
+				<div
+					style={{
+						position: 'absolute',
+						top: '50%',
+					}}>
+					Tentando leitura do código...
+				</div>
+				{codigoLido && (
 					<form
 						className='formularioAdicionarValidade'
 						onSubmit={(e) => fetchAddValidade(e, closeModalAddCodeBar)}>
