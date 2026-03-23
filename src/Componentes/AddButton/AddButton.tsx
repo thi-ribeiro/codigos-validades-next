@@ -8,7 +8,7 @@ import { useToast } from '@/Contexto/Toast';
 
 type Props = {
 	openFuncion: () => void;
-	openModalAddBarCode: () => void;
+	openModalAddBarCode?: () => void;
 	//openFuncionAddUser?: () => void;
 	addUser?: boolean;
 	addValidade?: boolean;
