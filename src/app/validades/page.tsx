@@ -611,6 +611,13 @@ function CarregarPagina({}: Props) {
 									}}>
 									{loading ? 'Adicionando...' : 'Adicionar'}
 								</button>
+								<button
+									type='button'
+									onClick={() => setCodigoLido('')}
+									className='bg-red-100 text-red-600 px-4 rounded-lg font-bold border border-red-200 active:bg-red-200'
+									title='Limpar e Bipar novamente'>
+									RESCAN
+								</button>
 								<button type='button' onClick={closeModalAddCodeBar}>
 									Cancelar
 								</button>
