@@ -188,6 +188,7 @@ function CarregarPagina({}: Props) {
 	// Função para iniciar o scanner (Pode ficar dentro do componente)
 	const startScanner = async () => {
 		const readerElement = document.getElementById('reader');
+		setCodigoLido('');
 		if (!readerElement) return null;
 
 		try {
