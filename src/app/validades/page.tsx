@@ -163,23 +163,35 @@ function CarregarPagina({}: Props) {
 	};
 
 	useEffect(() => {
-		// Quando o componente desmonta ou o modal fecha,
-		// essa função de retorno é executada.
+		// Função de limpeza que o React executa ANTES de o modal sumir da tela
 		return () => {
-			if (scannerRef.current) {
-				// Se o scanner estiver rodando, paramos ele "na força"
-				if (scannerRef.current.isScanning) {
-					scannerRef.current
-						.stop()
-						.then(() => {
-							console.log('Câmera encerrada pelo fechamento do Modal');
-							scannerRef.current = null;
-						})
-						.catch((err) => console.warn('Erro ao parar no fechamento:', err));
+			const matarHardware = async () => {
+				if (scannerRef.current) {
+					try {
+						// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
+						const isRunning =
+							typeof scannerRef.current.isScanning === 'function'
+								? scannerRef.current.isScanning
+								: scannerRef.current.isScanning;
+
+						if (isRunning) {
+							await scannerRef.current.stop();
+							console.log('Hardware liberado com sucesso.');
+						}
+					} catch (err) {
+						console.warn('Tentativa de parar falhou, mas limpando ref.');
+					} finally {
+						scannerRef.current = null;
+						// Força a limpeza de trilhas de vídeo se necessário
+						const videoTracks = document.querySelector('video')
+							?.srcObject as MediaStream;
+						videoTracks?.getTracks().forEach((track) => track.stop());
+					}
 				}
-			}
+			};
+			matarHardware();
 		};
-	}, [isOpenModalAddCodeBar]); // Fica de olho no Modal
+	}, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
 
 	const pararCameraManual = async () => {
 		if (scannerRef.current && scannerRef.current?.isScanning) {
