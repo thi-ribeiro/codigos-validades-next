@@ -253,6 +253,54 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
+	// const fetchEditarValidade = async (
+	// 	e: React.FormEvent,
+	// 	callbackSucesso: () => void,
+	// ) => {
+	// 	e.preventDefault();
+	// 	setLoading(true);
+
+	// 	const formData = new FormData(e.target as HTMLFormElement);
+
+	// 	// Simplificando a captura dos dados
+	// 	const dadosParaEnviar = {
+	// 		id_validade: formData.get('id_validade'),
+	// 		produto: formData.get('produto'),
+	// 		marca: formData.get('marca'),
+	// 		validade: formData.get('validade'),
+	// 		quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get(
+	// 			'tipoquantidade',
+	// 		)}`,
+	// 		responsavel: user?.usuario,
+	// 		id_responsavel: user?.uid,
+	// 		verificado: formData.get('verificado') ? 1 : 0,
+	// 		finalizado: formData.get('finalizado') ? 1 : 0,
+	// 		rebaixa: formData.get('rebaixa') ? 1 : 0,
+	// 	};
+
+	// 	try {
+	// 		const response = await fetch(`${acesso_validades}/editar`, {
+	// 			// URL curta e direta
+	// 			method: 'POST',
+	// 			headers: { 'Content-Type': 'application/json' },
+	// 			body: JSON.stringify(dadosParaEnviar),
+	// 		});
+
+	// 		const data = await response.json();
+
+	// 		if (data.status === 'success') {
+	// 			addToast(data.message, data.status);
+	// 			callbackSucesso();
+	// 			fetchValidades();
+	// 		} else {
+	// 			addToast(data.message, 'error');
+	// 			setLoading(false);
+	// 		}
+	// 	} catch (error) {
+	// 		addToast('Erro ao conectar com o servidor', 'error');
+	// 		setLoading(false);
+	// 	}
+	// };
 	const fetchEditarValidade = async (
 		e: React.FormEvent,
 		callbackSucesso: () => void,
@@ -260,27 +308,43 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		e.preventDefault();
 		setLoading(true);
 
-		const formData = new FormData(e.target as HTMLFormElement);
+		const form = e.target as HTMLFormElement;
+		const formData = new FormData(form);
 
-		// Simplificando a captura dos dados
+		// Captura os checkboxes verificando se eles estão REALMENTE no formData
+		const verificado = form.querySelector<HTMLInputElement>(
+			'input[name="verificado"]',
+		)?.checked
+			? 1
+			: 0;
+		const finalizado = form.querySelector<HTMLInputElement>(
+			'input[name="finalizado"]',
+		)?.checked
+			? 1
+			: 0;
+		const rebaixa = form.querySelector<HTMLInputElement>(
+			'input[name="rebaixa"]',
+		)?.checked
+			? 1
+			: 0;
+
 		const dadosParaEnviar = {
-			id_validade: formData.get('id_validade'),
-			produto: formData.get('produto'),
-			marca: formData.get('marca'),
-			validade: formData.get('validade'),
-			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get(
-				'tipoquantidade',
-			)}`,
-			responsavel: user?.usuario,
-			id_responsavel: user?.uid,
-			verificado: formData.get('verificado') ? 1 : 0,
-			finalizado: formData.get('finalizado') ? 1 : 0,
-			rebaixa: formData.get('rebaixa') ? 1 : 0,
+			// Forçamos o ID a ser número para não quebrar o WHERE no MySQL da Vercel
+			id_validade: Number(formData.get('id_validade')),
+			produto: formData.get('produto') as string,
+			marca: formData.get('marca') as string,
+			validade: formData.get('validade') as string,
+			// Garanta que o name do input de quantidade seja 'quantidade_produto'
+			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get('tipoquantidade')}`,
+			responsavel: user?.usuario || 'Sistema',
+			id_responsavel: user?.uid ? Number(user.uid) : null,
+			verificado,
+			finalizado,
+			rebaixa,
 		};
 
 		try {
 			const response = await fetch(`${acesso_validades}/editar`, {
-				// URL curta e direta
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(dadosParaEnviar),
@@ -288,20 +352,21 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			const data = await response.json();
 
-			if (data.status === 'success') {
-				addToast(data.message, data.status);
+			if (response.ok && data.status === 'success') {
+				addToast(data.message, 'success');
 				callbackSucesso();
-				fetchValidades();
+				// Importante: fetchValidades() aqui atualiza sua lista principal
+				await fetchValidades();
 			} else {
-				addToast(data.message, 'error');
-				setLoading(false);
+				// Se cair aqui, o 'data.message' vai te dizer o erro real do MySQL (ex: coluna faltando)
+				addToast(data.message || 'Erro ao atualizar', 'error');
 			}
 		} catch (error) {
-			addToast('Erro ao conectar com o servidor', 'error');
+			addToast('Erro de conexão com o servidor', 'error');
+		} finally {
 			setLoading(false);
 		}
 	};
-
 	const ValidadeVerificada = (props: {
 		verificado: number;
 		dataInserida: string;

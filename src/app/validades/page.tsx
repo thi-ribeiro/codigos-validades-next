@@ -219,6 +219,12 @@ function CarregarPagina({}: Props) {
 		});
 	};
 
+	const fecharTudoESair = async () => {
+		await pararCameraManual(); // Garante hardware desligado
+		setCodigoLido(''); // Limpa o estado para o próximo uso
+		closeModalAddCodeBar(); // Fecha a interface
+	};
+
 	return (
 		<div className='validadesPage'>
 			{isLoading ? (
@@ -524,26 +530,45 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<Modal isOpen={isOpenModalAddCodeBar} onClose={closeModalAddCodeBar}>
-				<div
-					id='reader'
-					style={{
-						width: '100%',
-						height: '100%',
-						//minHeight: '300px',
-					}}>
-					<button
-						type='button'
-						onClick={startScanner}
-						title='Limpar e Bipar novamente'>
-						Scan
-					</button>
-					Carregando...
-				</div>
-				{codigoLido && codigoLido !== '' && (
+			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharTudoESair}>
+				{!codigoLido ? (
+					<div className='formularioAdicionarValidade'>
+						<div
+							id='reader'
+							style={{
+								width: '100%',
+								height: '100%',
+								//minHeight: '300px',
+							}}>
+							<div className='functionsButons'>
+								<div className='buttonSubmCanc'>
+									<button
+										type='submit'
+										disabled={loading} // Desativa o botão enquanto loading for true
+										onClick={startScanner}
+										style={{
+											backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+											color: 'white',
+											cursor: loading ? 'not-allowed' : 'pointer',
+											transition: '0.3s', // Para a mudança de cor ser suave
+										}}>
+										Scanear Código
+									</button>
+									<button
+										type='button'
+										onClick={async () => {
+											fecharTudoESair();
+										}}>
+										Cancelar
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				) : (
 					<form
 						className='formularioAdicionarValidade'
-						onSubmit={(e) => fetchAddValidade(e, closeModalAddCodeBar)}>
+						onSubmit={(e) => fetchAddValidade(e, fecharTudoESair)}>
 						<h2>Adicionar Validade Via Código de Barras</h2>
 
 						<label htmlFor='codigoProduto'>Código de Barras:</label>
@@ -622,7 +647,7 @@ function CarregarPagina({}: Props) {
 										// 1. Desliga o hardware primeiro (Garante que a luz apague)
 										await pararCameraManual();
 										// 2. Agora que está tudo limpo, fecha a tela
-										closeModalAddCodeBar();
+										fecharTudoESair();
 									}}>
 									Cancelar
 								</button>
