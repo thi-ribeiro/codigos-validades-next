@@ -73,8 +73,8 @@ function CarregarPagina({}: Props) {
 		closeModal: closeModalAddCodeBar,
 	} = useModal();
 
-	const [isScanning, setIsScanning] = useState(false);
-	const [resultadoScan, setResultadoScan] = useState('');
+	// const [isScanning, setIsScanning] = useState(false);
+	// const [resultadoScan, setResultadoScan] = useState('');
 
 	//const router = useRouter();
 
@@ -119,6 +119,8 @@ function CarregarPagina({}: Props) {
 		}
 	}, [isLoading]);
 
+	const scannerRef = useRef<Html5Qrcode | null>(null);
+
 	const startScanner = async () => {
 		const readerElement = document.getElementById('reader');
 		setCodigoLido('');
@@ -160,7 +162,25 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
-	const scannerRef = useRef<Html5Qrcode | null>(null);
+	useEffect(() => {
+		// Quando o componente desmonta ou o modal fecha,
+		// essa função de retorno é executada.
+		return () => {
+			if (scannerRef.current) {
+				// Se o scanner estiver rodando, paramos ele "na força"
+				if (scannerRef.current.isScanning) {
+					scannerRef.current
+						.stop()
+						.then(() => {
+							console.log('Câmera encerrada pelo fechamento do Modal');
+							scannerRef.current = null;
+						})
+						.catch((err) => console.warn('Erro ao parar no fechamento:', err));
+				}
+			}
+		};
+	}, [isOpenModalAddCodeBar]); // Fica de olho no Modal
+
 	const pararCameraManual = async () => {
 		if (scannerRef.current && scannerRef.current?.isScanning) {
 			try {
