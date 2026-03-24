@@ -193,18 +193,23 @@ function CarregarPagina({}: Props) {
 		};
 	}, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
 
-	const pararCameraManual = async () => {
-		if (scannerRef.current && scannerRef.current?.isScanning) {
+	const fecharComSeguranca = async () => {
+		// 1. O Await entra aqui: Espera o hardware dizer "parei"
+		if (scannerRef.current && scannerRef.current.isScanning) {
 			try {
 				await scannerRef.current.stop();
-				console.log('Câmera desligada!');
-				scannerRef.current = null; // Limpa a referência
+				console.log('Hardware parado com sucesso antes de fechar.');
 			} catch (err) {
-				console.error('Erro ao parar câmera:', err);
+				console.warn('Erro ao parar, mas vamos fechar assim mesmo.');
+			} finally {
+				scannerRef.current = null;
 			}
 		}
-	};
 
+		// 2. Agora que a câmera desligou, a gente fecha o Modal de fato
+		closeModalAddCodeBar();
+		setCodigoLido('');
+	};
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
 		//console.log(filtroMarca);
@@ -249,12 +254,6 @@ function CarregarPagina({}: Props) {
 			}
 			//return prevData; // Retorna o estado anterior se nenhuma condição for atendida
 		});
-	};
-
-	const fecharTudoESair = async () => {
-		await pararCameraManual(); // Garante hardware desligado
-		setCodigoLido(''); // Limpa o estado para o próximo uso
-		closeModalAddCodeBar(); // Fecha a interface
 	};
 
 	return (
@@ -562,7 +561,7 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharTudoESair}>
+			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharComSeguranca}>
 				{!codigoLido ? (
 					<div className='formularioAdicionarValidade'>
 						<div
@@ -589,7 +588,7 @@ function CarregarPagina({}: Props) {
 									<button
 										type='button'
 										onClick={async () => {
-											fecharTudoESair();
+											fecharComSeguranca();
 										}}>
 										Cancelar
 									</button>
@@ -600,7 +599,7 @@ function CarregarPagina({}: Props) {
 				) : (
 					<form
 						className='formularioAdicionarValidade'
-						onSubmit={(e) => fetchAddValidade(e, fecharTudoESair)}>
+						onSubmit={(e) => fetchAddValidade(e, fecharComSeguranca)}>
 						<h2>Adicionar Validade Via Código de Barras</h2>
 
 						<label htmlFor='codigoProduto'>Código de Barras:</label>
@@ -675,12 +674,7 @@ function CarregarPagina({}: Props) {
 								<button
 									type='button'
 									className='suas-classes-de-cancelar'
-									onClick={async () => {
-										// 1. Desliga o hardware primeiro (Garante que a luz apague)
-										await pararCameraManual();
-										// 2. Agora que está tudo limpo, fecha a tela
-										fecharTudoESair();
-									}}>
+									onClick={fecharComSeguranca}>
 									Cancelar
 								</button>
 							</div>
