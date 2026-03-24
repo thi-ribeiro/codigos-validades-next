@@ -163,35 +163,38 @@ function CarregarPagina({}: Props) {
 	};
 
 	useEffect(() => {
-		// Função de limpeza que o React executa ANTES de o modal sumir da tela
-		return () => {
-			const matarHardware = async () => {
-				if (scannerRef.current) {
+		// Se o modal ACABOU de fechar (era true e virou false)
+		if (!isOpenModalAddCodeBar) {
+			const limparHardwareNaForca = async () => {
+				// 1. Tenta o jeito educado (pela biblioteca)
+				if (scannerRef.current && scannerRef.current.isScanning) {
 					try {
-						// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
-						const isRunning =
-							typeof scannerRef.current.isScanning === 'function'
-								? scannerRef.current.isScanning
-								: scannerRef.current.isScanning;
-
-						if (isRunning) {
-							await scannerRef.current.stop();
-							console.log('Hardware liberado com sucesso.');
-						}
-					} catch (err) {
-						console.warn('Tentativa de parar falhou, mas limpando ref.');
-					} finally {
-						scannerRef.current = null;
-						// Força a limpeza de trilhas de vídeo se necessário
-						const videoTracks = document.querySelector('video')
-							?.srcObject as MediaStream;
-						videoTracks?.getTracks().forEach((track) => track.stop());
+						await scannerRef.current.stop();
+					} catch (e) {
+						console.warn('Limpando rastros manuais...');
 					}
 				}
+
+				// 2. O JEITO BRUTO (Garante que a luz apague no clique fora)
+				// Procuramos qualquer trilha de vídeo ativa no navegador e matamos ela
+				try {
+					const stream = await navigator.mediaDevices.getUserMedia({
+						video: true,
+					});
+					stream.getTracks().forEach((track) => {
+						track.stop(); // Desliga o hardware na marra
+						track.enabled = false;
+					});
+				} catch (e) {
+					// Se der erro aqui é porque já estava parado
+				}
+
+				scannerRef.current = null;
 			};
-			matarHardware();
-		};
-	}, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
+
+			limparHardwareNaForca();
+		}
+	}, [isOpenModalAddCodeBar]);
 
 	const fecharComSeguranca = async () => {
 		// 1. O Await entra aqui: Espera o hardware dizer "parei"
