@@ -596,13 +596,13 @@ input[type="submit"] {
 /* Conteúdo do modal */
 .modal-content {
   background-color: white;
-  padding: 20px;
+  padding: 5px;
   /* border-radius: 8px; */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   position: relative; /* Essencial para o botão de fechar */
   max-width: 500px;
-  width: 90%;
+  width: 95%;
 }
 
 /* Botão de fechar */
@@ -658,7 +658,7 @@ input[type="submit"] {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 20px;
+  padding: 10px;
   border-radius: 8px;
 
   input:not([type="checkbox"]) {
@@ -735,7 +735,8 @@ input[type="submit"] {
 
   .functionsButons {
     display: flex;
-    gap: 10px;
+
+    /* gap: 10px; */
 
     .buttonDelete {
       flex-grow: 1;
@@ -745,11 +746,8 @@ input[type="submit"] {
       display: flex;
       width: 100%;
       gap: 10px;
-      /* align-content: space-between; */
-      justify-content: end;
-      button:first-child {
-        /* margin: 0 5px; */
-      }
+      justify-content: center;
+      flex-wrap: wrap;
     }
   }
 

@@ -73,6 +73,12 @@ function CarregarPagina({}: Props) {
 		closeModal: closeModalAddCodeBar,
 	} = useModal();
 
+	const {
+		isOpen: isOpenModalScanner,
+		openModal: openModalScanner,
+		closeModal: closeModalScanner,
+	} = useModal();
+
 	// const [isScanning, setIsScanning] = useState(false);
 	// const [resultadoScan, setResultadoScan] = useState('');
 
@@ -127,6 +133,8 @@ function CarregarPagina({}: Props) {
 	const scannerRef = useRef<Html5Qrcode | null>(null);
 
 	const startScanner = async () => {
+		await openModalScanner();
+
 		const readerElement = document.getElementById('reader');
 		setCodigoLido('');
 		if (!readerElement) return null;
@@ -156,6 +164,7 @@ function CarregarPagina({}: Props) {
 					setCodigoLido(decodedText);
 					navigator.vibrate(200);
 					html5QrCode.stop().catch(console.error);
+					closeModalScanner();
 				},
 				() => {}, // Erro silencioso
 			);
@@ -568,117 +577,118 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharComSeguranca}>
-				<React.Fragment>
-					<div className='formularioAdicionarValidade'>
-						<div
-							id='reader'
-							style={{
-								width: '100%',
-								height: '100%',
-								//minHeight: '300px',
-							}}></div>
-						<form
-							className='formularioAdicionarValidade'
-							onSubmit={(e) => fetchAddValidade(e, fecharComSeguranca)}>
-							<h2>Adicionar Validade Via Código de Barras</h2>
+				<form
+					className='formularioAdicionarValidade'
+					onSubmit={(e) => fetchAddValidade(e, fecharComSeguranca)}>
+					<h2>Adicionar Validade Via Código de Barras</h2>
 
-							<label htmlFor='codigoProduto'>Código de Barras:</label>
-							<input
-								id='codigoProduto'
-								name='codigoProduto'
-								type='text'
-								value={FormEditData?.codigoProduto || ''}
-								onChange={handleChange}
-								placeholder='Código de Barras'
-							/>
+					<label htmlFor='codigoProduto'>Código de Barras:</label>
+					<input
+						id='codigoProduto'
+						name='codigoProduto'
+						type='text'
+						value={FormEditData?.codigoProduto || codigoLido}
+						onChange={handleChange}
+						placeholder='Código de Barras'
+					/>
 
-							<label htmlFor='codigoInterno'>Código interno:</label>
-							<input
-								id='codigoInterno'
-								name='codigoInterno'
-								type='text'
-								value={FormEditData?.codigoInterno || ''}
-								onChange={handleChange}
-								placeholder='Código interno'
-							/>
+					<label htmlFor='codigoInterno'>Código interno:</label>
+					<input
+						id='codigoInterno'
+						name='codigoInterno'
+						type='text'
+						value={FormEditData?.codigoInterno || ''}
+						onChange={handleChange}
+						placeholder='Código interno'
+					/>
 
-							<label htmlFor='produto'>Produto:</label>
+					<label htmlFor='produto'>Produto:</label>
 
-							<AutoComplete
-								nome={true}
-								placeholder='Digite o nome do produto'
-								nameInput='produto'
-								required={true}
-							/>
+					<AutoComplete
+						nome={true}
+						placeholder='Digite o nome do produto'
+						nameInput='produto'
+						required={true}
+					/>
 
-							<label htmlFor='marca'>Marca:</label>
-							{user?.empresa ? (
-								<input
-									type='text'
-									name='marca'
-									value={user?.empresa}
-									readOnly
-								/>
-							) : (
-								<AutoComplete
-									marca={true}
-									placeholder='Digite a marca do produto'
-									nameInput='marca'
-									required={false}
-								/>
-							)}
+					<label htmlFor='marca'>Marca:</label>
+					{user?.empresa ? (
+						<input type='text' name='marca' value={user?.empresa} readOnly />
+					) : (
+						<AutoComplete
+							marca={true}
+							placeholder='Digite a marca do produto'
+							nameInput='marca'
+							required={false}
+						/>
+					)}
 
-							<label htmlFor='validade'>Validade:</label>
-							<input type='date' id='validade' name='validade' required />
-							<label htmlFor='quantidade'>Quantidade:</label>
-							<input type='number' id='quantidade' name='quantidade' required />
-							<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
-							<select
-								id='tipoquantidade'
-								name='tipoquantidade'
-								defaultValue='un'
-								required>
-								<option value='cx'>Caixas</option>
-								<option value='g'>Gramas</option>
-								<option value='l'>Litros</option>
-								<option value='ml'>Mililitros</option>
-								<option value='pc'>Pacotes</option>
-								<option value='kg'>Quilos</option>
-								<option value='un'>Unidades</option>
-							</select>
-							{/* <button type='submit'>Adicionar</button> */}
+					<label htmlFor='validade'>Validade:</label>
+					<input type='date' id='validade' name='validade' required />
+					<label htmlFor='quantidade'>Quantidade:</label>
+					<input type='number' id='quantidade' name='quantidade' required />
+					<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
+					<select
+						id='tipoquantidade'
+						name='tipoquantidade'
+						defaultValue='un'
+						required>
+						<option value='cx'>Caixas</option>
+						<option value='g'>Gramas</option>
+						<option value='l'>Litros</option>
+						<option value='ml'>Mililitros</option>
+						<option value='pc'>Pacotes</option>
+						<option value='kg'>Quilos</option>
+						<option value='un'>Unidades</option>
+					</select>
 
-							<div className='functionsButons'>
-								<div className='buttonSubmCanc'>
-									<button
-										type='submit'
-										disabled={loading} // Desativa o botão enquanto loading for true
-										style={{
-											backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
-											color: 'white',
-											cursor: loading ? 'not-allowed' : 'pointer',
-											transition: '0.3s', // Para a mudança de cor ser suave
-										}}>
-										{loading ? 'Processando...' : 'Adicionar'}
-									</button>
-									<button
-										type='button'
-										onClick={startScanner}
-										disabled={loading}
-										title='Limpar e Bipar novamente'>
-										Scanear
-									</button>
-									<button
-										type='button'
-										className='suas-classes-de-cancelar'
-										onClick={fecharComSeguranca}>
-										Cancelar
-									</button>
-								</div>
-							</div>
-						</form>
+					<div className='functionsButons'>
+						<div className='buttonSubmCanc'>
+							<button
+								type='submit'
+								disabled={loading} // Desativa o botão enquanto loading for true
+								style={{
+									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									color: 'white',
+									cursor: loading ? 'not-allowed' : 'pointer',
+									transition: '0.3s', // Para a mudança de cor ser suave
+								}}>
+								{loading ? 'Processando...' : 'Adicionar'}
+							</button>
+							<button
+								type='button'
+								onClick={startScanner}
+								disabled={loading}
+								title='Limpar e Bipar novamente'>
+								Scanear
+							</button>
+							<button
+								type='button'
+								className='suas-classes-de-cancelar'
+								onClick={fecharComSeguranca}>
+								Cancelar
+							</button>
+						</div>
 					</div>
-				</React.Fragment>
+				</form>
+			</Modal>
+
+			<Modal isOpen={isOpenModalScanner} onClose={closeModalScanner}>
+				<div className='modal-container'>
+					<div className='modal-backdrop' onClick={closeModalScanner}></div>
+					<div className='modal-content'>
+						<h2>Escanear Código de Barras</h2>
+						<div className='scanner-container'>
+							<div
+								id='reader'
+								style={{
+									width: '100%',
+									height: '100%',
+									//minHeight: '300px',
+								}}></div>
+						</div>
+					</div>
+				</div>
 			</Modal>
 
 			<AddButton
