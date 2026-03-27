@@ -84,10 +84,10 @@ function CarregarPagina({}: Props) {
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
 	const [codigoLido, setCodigoLido] = useState<string>('');
 
-	const [FormEditData, setFormEditData] = useState<ValidadeProduto>({
+	const INITIAL_STATE: ValidadeProduto = {
 		idvalidades: 0,
 		produto: '',
-		codigoProduto: 0,
+		codigoProduto: '',
 		validade: '',
 		responsavel: '',
 		data_inserido: '',
@@ -101,7 +101,12 @@ function CarregarPagina({}: Props) {
 		rebaixa: 0,
 		data_rebaixa: '',
 		tipoquantidade: '',
-	});
+		codigoInterno: '',
+	};
+
+	// No componente:
+	const [FormEditData, setFormEditData] =
+		useState<ValidadeProduto>(INITIAL_STATE);
 
 	useEffect(() => {
 		if (!isLoading) {
@@ -163,38 +168,35 @@ function CarregarPagina({}: Props) {
 	};
 
 	useEffect(() => {
-		// Se o modal ACABOU de fechar (era true e virou false)
-		if (!isOpenModalAddCodeBar) {
-			const limparHardwareNaForca = async () => {
-				// 1. Tenta o jeito educado (pela biblioteca)
-				if (scannerRef.current && scannerRef.current.isScanning) {
+		// Função de limpeza que o React executa ANTES de o modal sumir da tela
+		return () => {
+			const matarHardware = async () => {
+				if (scannerRef.current) {
 					try {
-						await scannerRef.current.stop();
-					} catch (e) {
-						console.warn('Limpando rastros manuais...');
+						// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
+						const isRunning =
+							typeof scannerRef.current.isScanning === 'function'
+								? scannerRef.current.isScanning
+								: scannerRef.current.isScanning;
+
+						if (isRunning) {
+							await scannerRef.current.stop();
+							console.log('Hardware liberado com sucesso.');
+						}
+					} catch (err) {
+						console.warn('Tentativa de parar falhou, mas limpando ref.');
+					} finally {
+						scannerRef.current = null;
+						// Força a limpeza de trilhas de vídeo se necessário
+						const videoTracks = document.querySelector('video')
+							?.srcObject as MediaStream;
+						videoTracks?.getTracks().forEach((track) => track.stop());
 					}
 				}
-
-				// 2. O JEITO BRUTO (Garante que a luz apague no clique fora)
-				// Procuramos qualquer trilha de vídeo ativa no navegador e matamos ela
-				try {
-					const stream = await navigator.mediaDevices.getUserMedia({
-						video: true,
-					});
-					stream.getTracks().forEach((track) => {
-						track.stop(); // Desliga o hardware na marra
-						track.enabled = false;
-					});
-				} catch (e) {
-					// Se der erro aqui é porque já estava parado
-				}
-
-				scannerRef.current = null;
 			};
-
-			limparHardwareNaForca();
-		}
-	}, [isOpenModalAddCodeBar]);
+			matarHardware();
+		};
+	}, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
 
 	const fecharComSeguranca = async () => {
 		// 1. O Await entra aqui: Espera o hardware dizer "parei"
@@ -211,6 +213,7 @@ function CarregarPagina({}: Props) {
 
 		// 2. Agora que a câmera desligou, a gente fecha o Modal de fato
 		closeModalAddCodeBar();
+		setFormEditData(INITIAL_STATE);
 		setCodigoLido('');
 	};
 	const selecionaMarca = (e: React.FormEvent) => {
@@ -541,7 +544,7 @@ function CarregarPagina({}: Props) {
 										closeModalEditar,
 									)
 								}>
-								Remover
+								{loading ? 'Processando...' : 'Remover'}
 							</button>
 						</div>
 						<div className='buttonSubmCanc'>
@@ -554,7 +557,7 @@ function CarregarPagina({}: Props) {
 									cursor: loading ? 'not-allowed' : 'pointer',
 									transition: '0.3s', // Para a mudança de cor ser suave
 								}}>
-								Atualizar
+								{loading ? 'Processando...' : 'Atualizar'}
 							</button>
 							<button type='button' onClick={closeModalEditar}>
 								Cancelar
@@ -565,7 +568,7 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharComSeguranca}>
-				{!codigoLido ? (
+				{codigoLido ? (
 					<div className='formularioAdicionarValidade'>
 						<div
 							id='reader'
@@ -586,7 +589,7 @@ function CarregarPagina({}: Props) {
 											cursor: loading ? 'not-allowed' : 'pointer',
 											transition: '0.3s', // Para a mudança de cor ser suave
 										}}>
-										Scanear Código
+										{loading ? 'Processando...' : 'Scanear Código'}
 									</button>
 									<button
 										type='button'
@@ -608,11 +611,21 @@ function CarregarPagina({}: Props) {
 						<label htmlFor='codigoProduto'>Código de Barras:</label>
 						<input
 							id='codigoProduto'
+							name='codigoProduto'
 							type='text'
-							value={codigoLido}
-							onChange={(e) => setCodigoLido(e.target.value)} // Permite correção manual se precisar
+							value={FormEditData?.codigoProduto || ''}
+							onChange={handleChange}
 							placeholder='Código de Barras'
-							className='suas-classes-tailwind-aqui'
+						/>
+
+						<label htmlFor='codigoInterno'>Código interno:</label>
+						<input
+							id='codigoInterno'
+							name='codigoInterno'
+							type='text'
+							value={FormEditData?.codigoInterno || ''}
+							onChange={handleChange}
+							placeholder='Código interno'
 						/>
 
 						<label htmlFor='produto'>Produto:</label>
@@ -621,8 +634,9 @@ function CarregarPagina({}: Props) {
 							nome={true}
 							placeholder='Digite o nome do produto'
 							nameInput='produto'
-							required={false}
+							required={true}
 						/>
+
 						<label htmlFor='marca'>Marca:</label>
 						{user?.empresa ? (
 							<input type='text' name='marca' value={user?.empresa} readOnly />
@@ -638,7 +652,7 @@ function CarregarPagina({}: Props) {
 						<label htmlFor='validade'>Validade:</label>
 						<input type='date' id='validade' name='validade' required />
 						<label htmlFor='quantidade'>Quantidade:</label>
-						<input type='number' id='quantidade' name='quantidade' />
+						<input type='number' id='quantidade' name='quantidade' required />
 						<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
 						<select
 							id='tipoquantidade'
@@ -666,13 +680,14 @@ function CarregarPagina({}: Props) {
 										cursor: loading ? 'not-allowed' : 'pointer',
 										transition: '0.3s', // Para a mudança de cor ser suave
 									}}>
-									{loading ? 'Adicionando...' : 'Adicionar'}
+									{loading ? 'Processando...' : 'Adicionar'}
 								</button>
 								<button
 									type='button'
 									onClick={startScanner}
+									disabled={loading}
 									title='Limpar e Bipar novamente'>
-									RESCAN
+									Scanear
 								</button>
 								<button
 									type='button'

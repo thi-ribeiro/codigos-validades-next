@@ -72,7 +72,8 @@ export interface ValidadeProduto {
 	validadeDiaMes: string; // Formato 'dd/mm/yyyy'
 	marca_produto: string; // Adicionando a marca do produto
 	quantidade_produto: string;
-	codigoProduto: number;
+	codigoProduto: string;
+	codigoInterno: string;
 	rebaixa: number;
 	data_rebaixa: string;
 	tipoquantidade: string;
@@ -153,6 +154,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				setProdutosValidades(agrupamentoValidadePorMarcaProduto);
 
+				console.log(agrupamentoValidadePorMarcaProduto);
+
 				// Formatação do intervalo (Ex: "Janeiro/2026")
 				if (data.dataFimIntervalo) {
 					setdataFimIntervalo(
@@ -201,6 +204,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const marca = formData.get('marca') as string;
 		const tipoQuantidade = formData.get('tipoquantidade') as string;
 		const codigoProduto = formData.get('codigoProduto') as string;
+		const codigoInterno = formData.get('codigoInterno') as string;
 
 		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
 
@@ -219,6 +223,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					responsavel: user?.usuario,
 					id_responsavel: user?.uid,
 					codigoProduto: codigoProduto,
+					codigoInterno: codigoInterno,
 					// Mantemos sua função de formatar data para o MySQL
 					data_inserido: formatarDataParaMySQL(new Date()),
 				}),
@@ -253,54 +258,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
-	// const fetchEditarValidade = async (
-	// 	e: React.FormEvent,
-	// 	callbackSucesso: () => void,
-	// ) => {
-	// 	e.preventDefault();
-	// 	setLoading(true);
 
-	// 	const formData = new FormData(e.target as HTMLFormElement);
-
-	// 	// Simplificando a captura dos dados
-	// 	const dadosParaEnviar = {
-	// 		id_validade: formData.get('id_validade'),
-	// 		produto: formData.get('produto'),
-	// 		marca: formData.get('marca'),
-	// 		validade: formData.get('validade'),
-	// 		quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get(
-	// 			'tipoquantidade',
-	// 		)}`,
-	// 		responsavel: user?.usuario,
-	// 		id_responsavel: user?.uid,
-	// 		verificado: formData.get('verificado') ? 1 : 0,
-	// 		finalizado: formData.get('finalizado') ? 1 : 0,
-	// 		rebaixa: formData.get('rebaixa') ? 1 : 0,
-	// 	};
-
-	// 	try {
-	// 		const response = await fetch(`${acesso_validades}/editar`, {
-	// 			// URL curta e direta
-	// 			method: 'POST',
-	// 			headers: { 'Content-Type': 'application/json' },
-	// 			body: JSON.stringify(dadosParaEnviar),
-	// 		});
-
-	// 		const data = await response.json();
-
-	// 		if (data.status === 'success') {
-	// 			addToast(data.message, data.status);
-	// 			callbackSucesso();
-	// 			fetchValidades();
-	// 		} else {
-	// 			addToast(data.message, 'error');
-	// 			setLoading(false);
-	// 		}
-	// 	} catch (error) {
-	// 		addToast('Erro ao conectar com o servidor', 'error');
-	// 		setLoading(false);
-	// 	}
-	// };
 	const fetchEditarValidade = async (
 		e: React.FormEvent,
 		callbackSucesso: () => void,
@@ -367,6 +325,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
+
 	const ValidadeVerificada = (props: {
 		verificado: number;
 		dataInserida: string;
@@ -487,7 +446,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		// 1. Confirmação para evitar exclusão por erro
 		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
 
-		setLoading(true);
+		//setLoading(true);
 
 		try {
 			const response = await fetch(`${acesso_validades}/deletar`, {
@@ -501,7 +460,17 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (data.status === 'success') {
 				addToast(data.message, data.status);
 				callbackSucesso(); // Fecha o modal
-				fetchValidades(); // Atualiza a lista no fundo
+
+				const listaFiltrada = Object.values(produtosValidades)
+					.flat()
+					.filter((item) => item.idvalidades !== id);
+
+				const novaListaProdutos = Object.groupBy(
+					listaFiltrada,
+					(item) => item.marca_produto,
+				) as Record<string, ValidadeProduto[]>;
+
+				setProdutosValidades(novaListaProdutos);
 			} else {
 				addToast(data.message, 'error');
 				setLoading(false);
