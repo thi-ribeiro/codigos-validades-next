@@ -760,6 +760,17 @@ button {
   justify-content: space-between;
   align-items: flex-start;
 
+  .card-produto-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 5px;
+
+    .card-produto-codigo {
+      font-size: 0.65rem;
+    }
+  }
+
   .card-info-badges {
     display: flex;
     flex-direction: row;

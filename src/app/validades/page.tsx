@@ -296,10 +296,15 @@ function CarregarPagina({}: Props) {
 										}}>
 										{/* Linha 1: Produto e Info Principal */}
 										<div className='card-topo'>
-											<span className='card-produto-nome'>
-												{validade.produto}{' '}
-												{/* Removi o limitaTexto para aproveitar a linha toda no mobile */}
-											</span>
+											<div className='card-produto-info'>
+												<span className='card-produto-nome'>
+													{validade.produto}
+												</span>
+												<span className='card-produto-codigo'>
+													{validade.codigoInterno ||
+														'Código interno não cadastrado.'}
+												</span>
+											</div>
 											<div className='card-info-badges'>
 												<span className='badge-validade'>
 													{validade.validadeDiaMes.substring(0, 5)}
