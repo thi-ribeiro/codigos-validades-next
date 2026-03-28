@@ -306,11 +306,11 @@ function CarregarPagina({}: Props) {
 												</span>
 											</div>
 											<div className='card-info-badges'>
-												<span className='badge-validade'>
-													{validade.validadeDiaMes.substring(0, 5)}
-												</span>
 												<span className='badge-quantidade'>
 													{validade.quantidade_produto}
+												</span>
+												<span className='badge-validade'>
+													{validade.validadeDiaMes.substring(0, 5)}
 												</span>
 											</div>
 										</div>
