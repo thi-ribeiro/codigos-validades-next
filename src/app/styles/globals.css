@@ -1,6 +1,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #007bff;
+  --bg-app: #f4f7f9;
+  --white: #ffffff;
+  --text-main: #1d1d1f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,10 +19,7 @@ body {
   margin: 0;
   padding: 0;
   max-width: 100vw;
-  /* overflow-x: hidden; */
-}
 
-body {
   color: #000;
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
@@ -57,13 +58,24 @@ button {
   }
 } */
 
-input[type="submit"] {
-  padding: 5px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+input[type="submit"],
+button,
+select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
 
+input[type="submit"],
+button {
+  color: #ddd;
+  background-color: #007bff;
   &:hover {
     background-color: #0056b3;
   }
@@ -81,53 +93,6 @@ input[type="submit"] {
   padding: 10px;
 }
 
-.buscarHeaderUser {
-  position: sticky;
-  top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 5px 10px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-
-  .buscarHeaderUserIcon {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #000;
-  }
-
-  .userLoginTokenDiv {
-    display: flex;
-    align-items: center;
-
-    .userLoginUsername {
-      font-weight: bold;
-      font-size: large;
-      text-transform: capitalize;
-      color: #000;
-      margin-right: 10px;
-    }
-
-    .userLoginFunctions {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-
-      svg:last-child {
-        margin: 0 5px 0 15px;
-      }
-    }
-  }
-  /* UserLoginToken styles can be added here if needed */
-}
-
 .totalRegistros {
   display: flex;
   align-items: end;
@@ -138,30 +103,6 @@ input[type="submit"] {
 
   .qntCodigosSpan {
     color: #007bff;
-  }
-}
-
-.buscarHeader {
-  position: sticky;
-  top: 36px;
-  padding: 5px 0px 0px;
-  background-color: #fff;
-
-  h1 {
-    margin: 5px 10px;
-  }
-
-  .formBuscarProdutos {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px 10px 5px 10px;
-
-    input {
-      padding: 5px;
-      border: 1px solid #ccc;
-      width: 100%;
-    }
   }
 }
 
@@ -180,21 +121,6 @@ input[type="submit"] {
     flex-direction: column;
     gap: 10px;
     padding: 10px;
-  }
-
-  button,
-  input[type="submit"] {
-    flex-grow: 1;
-    padding: 10px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: #0056b3;
-    }
   }
 
   input[type="text"],
@@ -360,71 +286,6 @@ input[type="submit"] {
   border: 1px solid #ccc;
 }
 
-.produtosBusca {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  margin: 10px;
-  padding: 5px 5px 60px;
-  /* height: 100vh; */
-
-  .marcaDiv {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #dee2e6;
-
-    h2 {
-      /* margin-top: 5px;*/
-      /* margin-bottom: 5px; */
-      color: #000;
-    }
-
-    .qntCodigosSpan {
-      color: #007bff;
-      font-weight: bold;
-      font-size: x-small;
-    }
-  }
-
-  .produtosItemsMarca {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 5px;
-
-    .produtosItems {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding-top: 5px;
-
-      /* background-color: red; */
-
-      div {
-        display: flex;
-        flex-grow: 1;
-        /* width: 100px; */
-        /* justify-content: center;
-        text-align: center; */
-      }
-
-      div:nth-child(1) {
-        width: 100%;
-        color: rgba(0, 0, 0, 0.666);
-        font-weight: bold;
-        padding-left: 5px;
-        flex-grow: 1;
-      }
-
-      div:nth-child(2) {
-        justify-content: center;
-      }
-    }
-  }
-}
-
 .autocompleteContainer {
   position: relative;
   width: 100%;
@@ -458,10 +319,10 @@ input[type="submit"] {
   padding: 5px;
   padding-bottom: 80px;
 
-  h2 {
+  /* h2 {
     padding: 10px 0px;
     color: #000;
-  }
+  } */
 
   .tabela-validades {
     width: auto;
@@ -597,7 +458,7 @@ input[type="submit"] {
 .modal-content {
   background-color: white;
   padding: 5px;
-  /* border-radius: 8px; */
+  border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   position: relative; /* Essencial para o botão de fechar */
@@ -607,13 +468,15 @@ input[type="submit"] {
 
 /* Botão de fechar */
 .modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  /* position: absolute; */
+  display: flex;
+  justify-content: right;
+  width: 100%;
   font-size: 24px;
   border: none;
   background: transparent;
   cursor: pointer;
+  padding: 0 5px;
 }
 
 .buttonAddContainer {
@@ -662,8 +525,8 @@ input[type="submit"] {
   border-radius: 8px;
 
   input:not([type="checkbox"]) {
-    padding: 10px;
-    border: 1px solid #ccc;
+    /* padding: 10px; */
+    /* border: 1px solid #ccc; */
     width: 100%;
   }
 
@@ -758,10 +621,6 @@ input[type="submit"] {
     justify-content: center;
     padding: 10px 0px;
     gap: 5px;
-
-    input[type="checkbox"],
-    label {
-    }
   }
 }
 
@@ -835,4 +694,300 @@ input[type="submit"] {
   align-items: center;
   font-weight: bold;
   gap: 10px;
+}
+
+/* --- CONTAINER GERAL --- */
+.tabela-principal {
+  padding: 15px;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --- TÍTULO DA MARCA (O "HEADER" DO GRUPO) --- */
+.grupo-por-marca {
+  margin-bottom: 30px;
+}
+
+.divisor-marca {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #888; /* Cinza médio para um ar minimalista */
+  margin-bottom: 12px;
+  padding-left: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.divisor-marca::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e0e0e0;
+  margin-left: 5px;
+}
+
+/* --- O CARD REFORMULADO --- */
+.card-validade {
+  background: #ffffff;
+  border-radius: 16px; /* Bordas bem arredondadas, estilo iOS */
+  padding: 18px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  /* Sombra suave de "elevação" */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Efeito de clique mais "premium" */
+.card-validade:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fcfcfc;
+}
+
+/* --- LINHA 1: PRODUTO --- */
+.card-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-produto-nome {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  line-height: 1.2;
+  max-width: 70%;
+}
+
+/* Badge de Validade com destaque */
+.badge-validade {
+  background: #1d1d1f; /* Preto total para contraste */
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* --- LINHA 2: INFO SECUNDÁRIA --- */
+.card-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 5px;
+}
+
+.card-restante {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-restante::before {
+  content: "STATUS";
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #bbb;
+}
+
+.card-restante span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+/* --- BADGE DE QUANTIDADE --- */
+.badge-quantidade {
+  font-size: 0.85rem;
+  color: #666;
+  background: #f0f0f2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* --- ÍCONES DE STATUS --- */
+.card-status-icones {
+  background: #f9f9fb;
+  padding: 8px 12px;
+  border-radius: 12px;
+  display: flex;
+  gap: 15px;
+  border: 1px solid #f0f0f0;
+}
+
+/* --- HEADER GLASSMORPHISM --- */
+.header-glass-container {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 10px 15px;
+  /* O SEGREDO DO EFEITO GLASS: */
+  background: rgba(255, 255, 255, 0.7); /* Fundo branco semi-transparente */
+  backdrop-filter: blur(10px); /* Desfoque do que está atrás */
+  -webkit-backdrop-filter: blur(10px); /* Suporte para Safari */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Bordinha de "brilho" */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.buscarHeaderUser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Wrapper para os ícones terem área de toque melhor no mobile */
+.nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* width: 40px;
+  height: 40px; */
+  border-radius: 12px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  color: #1d1d1f;
+}
+
+.nav-icon-wrapper:active {
+  background: rgba(0, 0, 0, 0.05); /* Feedback cinza suave ao tocar */
+  transform: scale(0.9);
+}
+
+.userLoginFunctions {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaçamento entre os ícones da direita */
+}
+
+/* --- HEADER GLASS --- */
+.header-glass-container {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 10px 15px;
+}
+
+.buscarHeaderUser {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-icon-wrapper {
+  /* padding: 8px; */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.nav-icon-wrapper:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* --- FORMULÁRIOS DE BUSCA --- */
+.buscarHeader {
+  padding: 15px;
+  background: var(--white);
+  margin-bottom: 10px;
+}
+
+.formBuscarProdutos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- CARDS DE CONSULTA E VALIDADE (PADRONIZADOS) --- */
+.produtosBusca,
+.tabela-principal {
+  padding: 10px 15px 80px;
+}
+
+.produtosItemsMarca,
+.grupo-por-marca {
+  margin-bottom: 25px;
+}
+
+.marcaDiv,
+.divisor-marca {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 5px;
+}
+
+.marcaDiv h2,
+.divisor-marca {
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+/* O "Card" de Produto na Consulta */
+.produtosItems {
+  background: var(--white);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.info-produto-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.nome-prod-label {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.codigo-prod-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-family: monospace;
+}
+
+.acoes-produto-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  color: #555;
+}
+
+/* Botão de Add Flutuante */
+.buttonAddContainer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1001;
 }

@@ -79,7 +79,7 @@ function Pagina({}: Props) {
 		id: number,
 		produto: string,
 		marca: string,
-		codigo: number
+		codigo: number,
 	) => {
 		setprodutoSelected({
 			id: id,
@@ -123,52 +123,52 @@ function Pagina({}: Props) {
 
 			<div className='produtosBusca'>
 				{produto &&
-					Object.keys(produto).map((marca, id) => {
-						return (
-							<div key={id} className='produtosItemsMarca'>
-								<div className='marcaDiv'>
-									<h2>{marca ? marca : 'Verificar marca'}</h2>
-									<span className='qntCodigosSpan'>
-										{qntCodigosMarca[marca]}
-										&nbsp;Código(s)
-									</span>
-								</div>
-								{produto[marca].map((produto, index) => {
-									return (
-										<div key={index} className='produtosItems'>
-											<div>{produto.nome_produto}</div>
-											{user?.role === 1 && (
-												<React.Fragment>
-													<IoIosSwap
-														size={16}
-														onClick={() =>
-															editarModal(
-																produto.idcodigo,
-																produto.nome_produto,
-																produto.marca_produto,
-																produto.codigo_produto
-															)
-														}
-													/>
-													<IoRemoveCircleOutline
-														size={16}
-														onClick={() =>
-															deletarModal(
-																produto.idcodigo,
-																produto.nome_produto,
-																produto.marca_produto
-															)
-														}
-													/>
-												</React.Fragment>
-											)}
-											<div>{leftZeros(produto.codigo_produto)}</div>
-										</div>
-									);
-								})}
+					Object.keys(produto).map((marca, id) => (
+						<div key={id} className='produtosItemsMarca'>
+							<div className='marcaDiv'>
+								<h2>{marca || 'Verificar marca'}</h2>
+								<span className='qntCodigosSpan'>
+									{qntCodigosMarca[marca]} Código(s)
+								</span>
 							</div>
-						);
-					})}
+							{produto[marca].map((p, index) => (
+								<div key={index} className='produtosItems'>
+									<div className='info-produto-col'>
+										<span className='nome-prod-label'>{p.nome_produto}</span>
+										<span className='codigo-prod-label'>
+											{leftZeros(p.codigo_produto)}
+										</span>
+									</div>
+
+									{user?.role === 1 && (
+										<div className='acoes-produto-row'>
+											<IoIosSwap
+												size={20}
+												onClick={() =>
+													editarModal(
+														p.idcodigo,
+														p.nome_produto,
+														p.marca_produto,
+														p.codigo_produto,
+													)
+												}
+											/>
+											<IoRemoveCircleOutline
+												size={20}
+												onClick={() =>
+													deletarModal(
+														p.idcodigo,
+														p.nome_produto,
+														p.marca_produto,
+													)
+												}
+											/>
+										</div>
+									)}
+								</div>
+							))}
+						</div>
+					))}
 			</div>
 
 			<AddButton openFuncion={openModalAdd} addCodigo={true} />

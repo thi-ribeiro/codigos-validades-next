@@ -8,7 +8,8 @@ export async function POST(request: Request) {
         // Extraímos os dados que vêm do frontend
         const {
             id_validade, produto, marca, validade, quantidadeDesc,
-            responsavel, id_responsavel, verificado, finalizado, rebaixa
+            responsavel, id_responsavel, verificado, finalizado, rebaixa, codigoProduto,
+            codigoInterno
         } = body;
 
         const agora = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -16,6 +17,8 @@ export async function POST(request: Request) {
         const data_verificado = verificado ? agora : null;
         const data_finalizado = finalizado ? agora : null;
         const data_rebaixa = rebaixa ? agora : null;
+
+        console.log(body);
 
         // Query atualizada com os nomes REAIS da sua foto
         const query = `
@@ -31,7 +34,9 @@ export async function POST(request: Request) {
                 quantidade_produto = ?, 
                 id_responsavel = ?, 
                 rebaixa = ?, 
-                data_rebaixa = ?
+                data_rebaixa = ?,
+                codigoProduto = ?,
+			    codigoInterno = ?
             WHERE idvalidades = ?
         `;
 
@@ -48,7 +53,9 @@ export async function POST(request: Request) {
             id_responsavel,    // id_responsavel
             rebaixa,           // rebaixa
             data_rebaixa,      // data_rebaixa
-            id_validade        // WHERE idvalidades
+            codigoProduto,
+            codigoInterno,
+            id_validade
         ];
 
         await pool.execute(query, values); // [cite: 2025-12-31]

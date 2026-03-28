@@ -279,104 +279,66 @@ function CarregarPagina({}: Props) {
 				</div>
 			) : (
 				<React.Fragment>
-					{user?.role === 1 && (
-						<div className='filtrarPorMarca'>
-							<h2>Filtrar por Marca</h2>
-							<form onSubmit={(e) => selecionaMarca(e)}>
-								<select
-									className='selectFiltroMarca'
-									onChange={(e) => setFiltroMarca(e.target.value)}
-									value={filtroMarca}>
-									<option value=''>Todas as Marcas</option>
-									{marcasProdutos.map((marca) => (
-										<option
-											key={marca.marca_produto}
-											value={marca.marca_produto}>
-											{marca.marca_produto}
-										</option>
-									))}
-								</select>
-								<input type='submit' value='Filtrar' />
-							</form>
-						</div>
-					)}
-					{loading ? (
-						<div className='loaderContainer'>
-							<div className='loader'></div>
-						</div>
-					) : Object.keys(produtosValidades).length ? (
-						<React.Fragment>
-							<h2>
-								Validades de {mesAnoAtual} até o final de {dataFimIntervalo}
-							</h2>
-							<div className='tabela-principal'>
-								{Object.keys(produtosValidades).map((marca) => (
-									<div key={marca} className='grupo-por-marca'>
-										<h2 className='divisor-marca'>{marca}</h2>
-										<div className='tabela-validades'>
-											<div className='linha-header'>
-												<div className='coluna-header'>Produto</div>
-												<div className='coluna-header'>Validade</div>
-												<div className='coluna-header'>Quant.</div>
-												<div className='coluna-header'>Restam</div>
-												<div className='coluna-header'>Status</div>
+					{Object.keys(produtosValidades).map((marca) => (
+						<div key={marca} className='grupo-por-marca'>
+							<h2 className='divisor-marca'>{marca}</h2>
+							<div className='lista-cards'>
+								{produtosValidades[marca]?.map((validade) => (
+									<div
+										className='card-validade'
+										key={validade.idvalidades}
+										onClick={() => {
+											definirItemNoArray(
+												validade.idvalidades,
+												validade.marca_produto,
+											);
+											openModalEditar();
+										}}>
+										{/* Linha 1: Produto e Info Principal */}
+										<div className='card-topo'>
+											<span className='card-produto-nome'>
+												{validade.produto}{' '}
+												{/* Removi o limitaTexto para aproveitar a linha toda no mobile */}
+											</span>
+											<div className='card-info-badges'>
+												<span className='badge-validade'>
+													{validade.validadeDiaMes.substring(0, 5)}
+												</span>
+												<span className='badge-quantidade'>
+													{validade.quantidade_produto}
+												</span>
 											</div>
-											<div>
-												{produtosValidades[marca]?.map((validade) => (
-													<div
-														className='linha-dados'
-														key={validade.idvalidades}>
-														<div
-															className='coluna-dados'
-															title={validade.produto}>
-															{limitaTexto(validade.produto, 10)}
-														</div>
-														<div className='coluna-dados'>
-															{validade.validadeDiaMes.substring(0, 5)}
-														</div>
-														<div className='coluna-dados'>
-															{validade.quantidade_produto}
-														</div>
-														<div className='coluna-dados'>
-															{calcularDiasRestantes(
-																validade.validade,
-																validade.finalizado,
-															)}
-														</div>
-														<div
-															className='coluna-dados'
-															onClick={() => {
-																definirItemNoArray(
-																	validade.idvalidades,
-																	validade.marca_produto,
-																);
-																openModalEditar();
-															}}>
-															<ValidadeVerificada
-																verificado={validade.verificado}
-																dataInserida={validade.data_inserido}
-															/>
-															<ValidadeFinalizada
-																verificado={validade.verificado}
-																finalizado={validade.finalizado}
-																dataFinalizado={`${validade.data_finalizado} - ${validade.responsavel}`}
-															/>
-															<ProdutoEmRebaixa
-																Rebaixa={validade.rebaixa}
-																dataRebaixa={validade.data_rebaixa}
-															/>
-														</div>
-													</div>
-												))}
+										</div>
+
+										{/* Linha 2: Status e Ícones */}
+										<div className='card-base'>
+											<div className='card-restante'>
+												{calcularDiasRestantes(
+													validade.validade,
+													validade.finalizado,
+												)}
+											</div>
+											<div className='card-status-icones'>
+												<ValidadeVerificada
+													verificado={validade.verificado}
+													dataInserida={validade.data_inserido}
+												/>
+												<ValidadeFinalizada
+													verificado={validade.verificado}
+													finalizado={validade.finalizado}
+													dataFinalizado={`${validade.data_finalizado} - ${validade.responsavel}`}
+												/>
+												<ProdutoEmRebaixa
+													Rebaixa={validade.rebaixa}
+													dataRebaixa={validade.data_rebaixa}
+												/>
 											</div>
 										</div>
 									</div>
 								))}
 							</div>
-						</React.Fragment>
-					) : (
-						<h2>Nenhuma validade para {mesAnoAtual}.</h2>
-					)}
+						</div>
+					))}
 				</React.Fragment>
 			)}
 
@@ -385,6 +347,27 @@ function CarregarPagina({}: Props) {
 					className='formularioAdicionarValidade'
 					onSubmit={(e) => fetchAddValidade(e, closeModalAdicionar)}>
 					<h2>Adicionar Validade</h2>
+
+					<label htmlFor='codigoProduto'>Código de Barras:</label>
+					<input
+						id='codigoProduto'
+						name='codigoProduto'
+						type='text'
+						value={FormEditData?.codigoProduto || codigoLido}
+						onChange={handleChange}
+						placeholder='Código de Barras'
+					/>
+
+					<label htmlFor='codigoInterno'>Código interno:</label>
+					<input
+						id='codigoInterno'
+						name='codigoInterno'
+						type='text'
+						value={FormEditData?.codigoInterno || ''}
+						onChange={handleChange}
+						placeholder='Código interno'
+					/>
+
 					<label htmlFor='produto'>Produto:</label>
 
 					<AutoComplete
@@ -447,6 +430,26 @@ function CarregarPagina({}: Props) {
 					className='formularioEditarValidade'
 					onSubmit={(e) => fetchEditarValidade(e, closeModalEditar)}>
 					<h2>Editar Validade e Status</h2>
+
+					<label htmlFor='codigoProduto'>Código de Barras:</label>
+					<input
+						id='codigoProduto'
+						name='codigoProduto'
+						type='text'
+						value={FormEditData?.codigoProduto || codigoLido}
+						onChange={handleChange}
+						placeholder='Código de Barras'
+					/>
+
+					<label htmlFor='codigoInterno'>Código interno:</label>
+					<input
+						id='codigoInterno'
+						name='codigoInterno'
+						type='text'
+						value={FormEditData?.codigoInterno || ''}
+						onChange={handleChange}
+						placeholder='Código interno'
+					/>
 
 					<input
 						type='hidden'
@@ -537,7 +540,7 @@ function CarregarPagina({}: Props) {
 					</div>
 
 					<div className='functionsButons'>
-						<div className='buttonDelete'>
+						<div className='buttonSubmCanc'>
 							<button
 								type='button'
 								disabled={loading}
@@ -555,8 +558,7 @@ function CarregarPagina({}: Props) {
 								}>
 								{loading ? 'Processando...' : 'Remover'}
 							</button>
-						</div>
-						<div className='buttonSubmCanc'>
+
 							<button
 								type='submit'
 								disabled={loading} // Desativa o botão enquanto loading for true

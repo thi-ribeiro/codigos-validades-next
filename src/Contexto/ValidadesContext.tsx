@@ -154,7 +154,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				setProdutosValidades(agrupamentoValidadePorMarcaProduto);
 
-				console.log(agrupamentoValidadePorMarcaProduto);
+				//console.log(agrupamentoValidadePorMarcaProduto);
 
 				// Formatação do intervalo (Ex: "Janeiro/2026")
 				if (data.dataFimIntervalo) {
@@ -296,6 +296,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get('tipoquantidade')}`,
 			responsavel: user?.usuario || 'Sistema',
 			id_responsavel: user?.uid ? Number(user.uid) : null,
+			codigoProduto: formData.get('codigoProduto') || 0,
+			codigoInterno: formData.get('codigoInterno') || 0,
 			verificado,
 			finalizado,
 			rebaixa,
