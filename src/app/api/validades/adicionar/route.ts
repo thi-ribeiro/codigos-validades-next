@@ -40,8 +40,8 @@ export async function POST(request: Request) {
             validade,
             data_inserido,
             quantidadeDesc,
-            codigoProduto || 0,
-            codigoInterno || 0
+            codigoProduto,
+            codigoInterno
         ]);
 
         return NextResponse.json(
