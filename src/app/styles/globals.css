@@ -759,6 +759,12 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+
+  .card-info-badges {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+  }
 }
 
 .card-produto-nome {
