@@ -39,7 +39,7 @@ export default function page({}: Props) {
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				console.log(data.user);
+				//console.log(data.user);
 				login(data.user);
 				//alert(data.message);
 				addToast(data.message, data.status);

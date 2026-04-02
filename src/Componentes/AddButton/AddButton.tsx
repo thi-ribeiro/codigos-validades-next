@@ -124,7 +124,6 @@ export default function AddButton({
 
 			{user?.role === 2 && addValidade && (
 				<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
-					teste
 					<IoAdd size={30} />
 				</div>
 			)}

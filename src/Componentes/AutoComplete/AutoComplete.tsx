@@ -9,6 +9,7 @@ export interface AutoCompleteProps {
 	nameInput?: string;
 	required?: boolean;
 	valorPadrao?: string;
+	readOnly?: boolean;
 }
 
 const AutoComplete = (props: AutoCompleteProps) => {
@@ -20,6 +21,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 		nameInput = '', // Valor padrão para nameInput
 		required = false, // Valor padrão para required
 		valorPadrao = '',
+		readOnly = false,
 	} = props;
 
 	const [loading, setLoading] = useState<boolean>(false);
@@ -140,6 +142,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 						name={nameInput}
 						autoComplete='off'
 						required={required} // Adiciona o atributo required se necessário
+						readOnly={readOnly}
 					/>
 
 					{Array.isArray(resultado) && resultado.length >= 1 && (

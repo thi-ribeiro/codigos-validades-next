@@ -2,9 +2,11 @@
   --background: #ffffff;
   --foreground: #171717;
   --primary: #007bff;
+  --azul-esc: #0056b3;
   --bg-app: #f4f7f9;
   --white: #ffffff;
   --text-main: #1d1d1f;
+  --cinza: #666;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -441,7 +443,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1002;
 }
 
 /* Fundo escurecido */
@@ -528,6 +530,11 @@ button {
     /* padding: 10px; */
     /* border: 1px solid #ccc; */
     width: 100%;
+  }
+
+  .add_scan_codigo_barras {
+    display: flex;
+    gap: 10px;
   }
 
   /* Remove o visual padrão do navegador */
@@ -801,7 +808,7 @@ button {
 .card-base {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   padding-top: 5px;
 }
 
@@ -966,7 +973,7 @@ button {
 /* O "Card" de Produto na Consulta */
 .produtosItems {
   background: var(--white);
-  padding: 15px;
+  padding: 5px;
   border-radius: 12px;
   margin-bottom: 8px;
   display: flex;
@@ -990,7 +997,7 @@ button {
 
 .codigo-prod-label {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--azul-esc);
   font-family: monospace;
 }
 

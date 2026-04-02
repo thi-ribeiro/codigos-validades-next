@@ -15,3 +15,17 @@ export const pool = mysql.createPool({
     connectionLimit: 10, // Limite de conexões simultâneas
     queueLimit: 0
 });
+
+// export const pool = mysql.createPool({
+//     host: 'localhost',
+//     user: 'thiagorf',
+//     password: 'teadoro123',
+//     database: 'controle_validades',
+//     port: 3306,
+//     ssl: {
+//         rejectUnauthorized: false
+//     },
+//     waitForConnections: true,
+//     connectionLimit: 10, // Limite de conexões simultâneas
+//     queueLimit: 0
+// });

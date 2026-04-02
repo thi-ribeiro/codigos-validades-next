@@ -9,7 +9,7 @@ import AutoComplete from '@/Componentes/AutoComplete/AutoComplete';
 import { useAuth } from '@/Contexto/AuthContext';
 //import { useRouter } from 'next/navigation';
 
-import 'balloon-css';
+// balloon-css import moved to global type/stylesheet, evita erro de declaração de módulo
 import { ptBR } from 'date-fns/locale';
 import ValidadesProvider, { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
@@ -33,7 +33,12 @@ export default function page() {
 	);
 }
 
-const acesso_fetch = process.env.NEXT_PUBLIC_API_URL;
+export interface scanCode {
+	scanCodeDb: (codigo: number | string) => void;
+}
+
+const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
+
 function CarregarPagina({}: Props) {
 	const { limitaTexto } = useFuncoes();
 	const { addToast } = useToast();
@@ -79,15 +84,11 @@ function CarregarPagina({}: Props) {
 		closeModal: closeModalScanner,
 	} = useModal();
 
-	// const [isScanning, setIsScanning] = useState(false);
-	// const [resultadoScan, setResultadoScan] = useState('');
-
-	//const router = useRouter();
-
 	const dataAtual = new Date();
 	const mesAnoAtual = format(dataAtual, 'MMMM/yyyy', { locale: ptBR });
 
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
+	const [teste, setteste] = useState<string | number>('');
 	const [codigoLido, setCodigoLido] = useState<string>('');
 
 	const INITIAL_STATE: ValidadeProduto = {
@@ -130,82 +131,99 @@ function CarregarPagina({}: Props) {
 		}
 	}, [isLoading]);
 
+	useEffect(() => {
+		// Se NENHUM dos modais estiver aberto, significa que um deles acabou de fechar
+		if (!isOpenAdicionar && !isOpenEditar && !isOpenModalAddCodeBar) {
+			setFormEditData(INITIAL_STATE);
+		}
+	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
+
+	useEffect(() => {
+		if (codigoLido && codigoLido !== FormEditData?.codigoProduto) {
+			// Simula um evento para o handleChange ou atualiza direto
+			setFormEditData((prev) => ({ ...prev, codigoProduto: codigoLido }));
+			scanCodeDb(codigoLido);
+		}
+	}, [codigoLido]);
+
 	const scannerRef = useRef<Html5Qrcode | null>(null);
 
 	const startScanner = async () => {
 		await openModalScanner();
 
-		const readerElement = document.getElementById('reader');
-		setCodigoLido('');
-		if (!readerElement) return null;
+		// 1. Pequeno delay para garantir que o Modal abriu e o ID 'reader' existe
+		setTimeout(async () => {
+			const readerElement = document.getElementById('reader');
+			if (!readerElement) return;
 
-		try {
-			// CONFIGURAÇÃO DE FORMATOS AQUI (No construtor)
-			const html5QrCode = new Html5Qrcode('reader', {
-				verbose: false,
-				formatsToSupport: [
-					Html5QrcodeSupportedFormats.EAN_13,
-					Html5QrcodeSupportedFormats.EAN_8,
-					Html5QrcodeSupportedFormats.CODE_128,
-				],
-			});
+			try {
+				// 2. Criar a instância
+				const html5QrCode = new Html5Qrcode('reader', {
+					verbose: false,
+					formatsToSupport: [
+						Html5QrcodeSupportedFormats.EAN_13,
+						Html5QrcodeSupportedFormats.EAN_8,
+						Html5QrcodeSupportedFormats.CODE_128,
+					],
+				});
 
-			const config = {
-				fps: 20,
-				qrbox: { width: 280, height: 150 },
-				aspectRatio: 1.777778,
-				// formatsToSupport NÃO VAI AQUI (Remova daqui)
-			};
+				// 3. SALVAR NA REF (Isso aqui é o que faltava!)
+				scannerRef.current = html5QrCode;
 
-			await html5QrCode.start(
-				{ facingMode: 'environment' },
-				config,
-				(decodedText) => {
-					setCodigoLido(decodedText);
-					navigator.vibrate(200);
-					html5QrCode.stop().catch(console.error);
-					closeModalScanner();
-				},
-				() => {}, // Erro silencioso
-			);
+				const config = {
+					fps: 20,
+					qrbox: { width: 280, height: 150 },
+					aspectRatio: 1.0,
+				};
 
-			return html5QrCode;
-		} catch (err) {
-			console.error('Erro:', err);
-			return null;
-		}
+				await html5QrCode.start(
+					{ facingMode: 'environment' },
+					config,
+					(decodedText) => {
+						setCodigoLido(decodedText);
+						navigator.vibrate(200);
+
+						// 4. USAR A REF PARA PARAR
+						fecharModalScanner();
+					},
+					() => {},
+				);
+			} catch (err) {
+				console.error('Erro ao iniciar:', err);
+			}
+		}, 300); // 300ms é o tempo do modal animar
 	};
 
-	useEffect(() => {
-		// Função de limpeza que o React executa ANTES de o modal sumir da tela
-		return () => {
-			const matarHardware = async () => {
-				if (scannerRef.current) {
-					try {
-						// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
-						const isRunning =
-							typeof scannerRef.current.isScanning === 'function'
-								? scannerRef.current.isScanning
-								: scannerRef.current.isScanning;
+	// useEffect(() => {
+	// 	// Função de limpeza que o React executa ANTES de o modal sumir da tela
+	// 	return () => {
+	// 		const matarHardware = async () => {
+	// 			if (scannerRef.current) {
+	// 				try {
+	// 					// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
+	// 					const isRunning =
+	// 						typeof scannerRef.current.isScanning === 'function'
+	// 							? scannerRef.current.isScanning
+	// 							: scannerRef.current.isScanning;
 
-						if (isRunning) {
-							await scannerRef.current.stop();
-							console.log('Hardware liberado com sucesso.');
-						}
-					} catch (err) {
-						console.warn('Tentativa de parar falhou, mas limpando ref.');
-					} finally {
-						scannerRef.current = null;
-						// Força a limpeza de trilhas de vídeo se necessário
-						const videoTracks = document.querySelector('video')
-							?.srcObject as MediaStream;
-						videoTracks?.getTracks().forEach((track) => track.stop());
-					}
-				}
-			};
-			matarHardware();
-		};
-	}, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
+	// 					if (isRunning) {
+	// 						await scannerRef.current.stop();
+	// 						console.log('Hardware liberado com sucesso.');
+	// 					}
+	// 				} catch (err) {
+	// 					console.warn('Tentativa de parar falhou, mas limpando ref.');
+	// 				} finally {
+	// 					scannerRef.current = null;
+	// 					// Força a limpeza de trilhas de vídeo se necessário
+	// 					const videoTracks = document.querySelector('video')
+	// 						?.srcObject as MediaStream;
+	// 					videoTracks?.getTracks().forEach((track) => track.stop());
+	// 				}
+	// 			}
+	// 		};
+	// 		matarHardware();
+	// 	};
+	// }, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
 
 	const fecharComSeguranca = async () => {
 		// 1. O Await entra aqui: Espera o hardware dizer "parei"
@@ -225,6 +243,24 @@ function CarregarPagina({}: Props) {
 		setFormEditData(INITIAL_STATE);
 		setCodigoLido('');
 	};
+
+	const fecharModalScanner = async () => {
+		if (scannerRef.current) {
+			try {
+				// Se estiver rodando, para.
+				if (scannerRef.current.isScanning) {
+					await scannerRef.current.stop();
+				}
+			} catch (err) {
+				console.warn('Erro ao parar, limpando ref...');
+			} finally {
+				// Limpa a referência para a próxima vez
+				scannerRef.current = null;
+			}
+		}
+		closeModalScanner();
+	};
+
 	const selecionaMarca = (e: React.FormEvent) => {
 		e.preventDefault();
 		//console.log(filtroMarca);
@@ -271,6 +307,51 @@ function CarregarPagina({}: Props) {
 		});
 	};
 
+	const scanCodeDb = async (codigo: string) => {
+		// Evita buscar se o código for muito curto (opcional)
+		if (codigo.length < 10) return;
+
+		try {
+			const response = await fetch(
+				`${acesso_validades}/procurar/?codigo=${codigo}`,
+			);
+			const data = await response.json();
+
+			if (data.status === 'success' && data.produto) {
+				// Supondo que seu estado do formulário se chame FormEditData
+				// Nós "mesclamos" os dados novos com o que já existe
+				setFormEditData((prev) => ({
+					...prev,
+					produto: data.produto.descricao_produto, // Preenche o nome
+					marca: data.produto.marca_produto, // Preenche a marca
+					codigoInterno: data.produto.plu_produto, // Preenche o PLU
+					codigoProduto: data.produto.ean_produto, // Garante que o EAN esteja certo
+					idRelacionado: data.produto.id, // Guarda o ID para o UPDATE posterior
+				}));
+
+				console.log('Produto autocompletado com sucesso!');
+			} else {
+				// Caso não ache, você pode optar por limpar os campos ou deixar o usuário digitar
+				console.log('Produto não encontrado no banco.');
+			}
+		} catch (error) {
+			console.error('Erro ao consultar banco de dados:', error);
+		}
+	};
+
+	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const valor = e.target.value;
+
+		// 1. Atualiza o estado normalmente (mantém o que o usuário digita)
+		handleChange(e);
+
+		// 2. Lógica de busca automática:
+		// Dispara se tiver 13 dígitos (EAN) ou se você definir um mínimo para códigos internos (ex: 4 dígitos)
+		if (valor.length === 13 || (valor.length >= 3 && valor.length <= 6)) {
+			scanCodeDb(valor);
+		}
+	};
+
 	return (
 		<div className='validadesPage'>
 			{isLoading ? (
@@ -301,6 +382,7 @@ function CarregarPagina({}: Props) {
 													{validade.produto}
 												</span>
 												<span className='card-produto-codigo'>
+													PLU:{' '}
 													{validade.codigoInterno ||
 														'Código interno não cadastrado.'}
 												</span>
@@ -354,14 +436,24 @@ function CarregarPagina({}: Props) {
 					<h2>Adicionar Validade</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
-					<input
-						id='codigoProduto'
-						name='codigoProduto'
-						type='text'
-						value={FormEditData?.codigoProduto || codigoLido}
-						onChange={handleChange}
-						placeholder='Código de Barras'
-					/>
+					<div className='add_scan_codigo_barras'>
+						<input
+							id='codigoProduto'
+							name='codigoProduto'
+							type='text'
+							value={FormEditData?.codigoProduto || codigoLido}
+							onChange={handleChange}
+							placeholder='Código de Barras'
+						/>
+
+						<button
+							type='button'
+							onClick={startScanner}
+							disabled={loading}
+							title='Scan'>
+							Scanear
+						</button>
+					</div>
 
 					<label htmlFor='codigoInterno'>Código interno:</label>
 					<input
@@ -437,14 +529,24 @@ function CarregarPagina({}: Props) {
 					<h2>Editar Validade e Status</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
-					<input
-						id='codigoProduto'
-						name='codigoProduto'
-						type='text'
-						value={FormEditData?.codigoProduto || codigoLido}
-						onChange={handleChange}
-						placeholder='Código de Barras'
-					/>
+					<div className='add_scan_codigo_barras'>
+						<input
+							id='codigoProduto'
+							name='codigoProduto'
+							type='text'
+							value={FormEditData?.codigoProduto || codigoLido}
+							onChange={handleChange}
+							placeholder='Código de Barras'
+						/>
+
+						<button
+							type='button'
+							onClick={startScanner}
+							disabled={loading}
+							title='Scan'>
+							Scanear
+						</button>
+					</div>
 
 					<label htmlFor='codigoInterno'>Código interno:</label>
 					<input
@@ -468,12 +570,14 @@ function CarregarPagina({}: Props) {
 						valorPadrao={FormEditData?.produto}
 						nameInput='produto'
 						required={true}
+						readOnly={FormEditData?.codigoInterno ? true : false}
 					/>
 					<label htmlFor='marca'>Marca:</label>
 					<input
 						type='text'
 						name='marca'
 						defaultValue={FormEditData?.marca_produto}
+						readOnly={FormEditData?.codigoInterno ? true : false}
 					/>
 
 					<label htmlFor='validade'>Validade:</label>
@@ -575,6 +679,7 @@ function CarregarPagina({}: Props) {
 								}}>
 								{loading ? 'Processando...' : 'Atualizar'}
 							</button>
+
 							<button type='button' onClick={closeModalEditar}>
 								Cancelar
 							</button>
@@ -590,15 +695,38 @@ function CarregarPagina({}: Props) {
 					<h2>Adicionar Validade Via Código de Barras</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
-					<input
-						id='codigoProduto'
-						name='codigoProduto'
-						type='text'
-						value={FormEditData?.codigoProduto || codigoLido}
-						onChange={handleChange}
-						placeholder='Código de Barras'
-					/>
+					<div className='add_scan_codigo_barras'>
+						{/* <input
+							id='codigoProduto'
+							name='codigoProduto'
+							type='text'
+							// Use apenas o estado do formulário para evitar confusão de valores
+							value={FormEditData?.codigoProduto || ''}
+							onChange={handleAutoScan}
+							maxLength={13}
+							placeholder='Código de Barras'
+						/> */}
 
+						<input
+							id='codigoProduto'
+							name='codigoProduto'
+							type='text'
+							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
+							value={FormEditData?.codigoProduto || ''} // ÚNICA FONTE DE VERDADE
+							onChange={handleAutoScan}
+							maxLength={13}
+							placeholder='Código de Barras'
+							autoComplete='off' // Evita que o preenchimento automático do celular trave o campo
+						/>
+
+						<button
+							type='button'
+							onClick={startScanner}
+							disabled={loading}
+							title='Limpar e Bipar novamente'>
+							Scanear
+						</button>
+					</div>
 					<label htmlFor='codigoInterno'>Código interno:</label>
 					<input
 						id='codigoInterno'
@@ -611,11 +739,21 @@ function CarregarPagina({}: Props) {
 
 					<label htmlFor='produto'>Produto:</label>
 
-					<AutoComplete
+					{/* <AutoComplete
 						nome={true}
 						placeholder='Digite o nome do produto'
 						nameInput='produto'
+						valorPadrao={FormEditData?.produto || ''}
 						required={true}
+					/> */}
+
+					<input
+						id='produto'
+						name='produto'
+						type='text'
+						value={FormEditData?.produto || ''}
+						onChange={handleChange}
+						placeholder='Digite o nome do produto'
 					/>
 
 					<label htmlFor='marca'>Marca:</label>
@@ -626,6 +764,7 @@ function CarregarPagina({}: Props) {
 							marca={true}
 							placeholder='Digite a marca do produto'
 							nameInput='marca'
+							valorPadrao={FormEditData?.marca_produto || ''}
 							required={false}
 						/>
 					)}
@@ -662,13 +801,7 @@ function CarregarPagina({}: Props) {
 								}}>
 								{loading ? 'Processando...' : 'Adicionar'}
 							</button>
-							<button
-								type='button'
-								onClick={startScanner}
-								disabled={loading}
-								title='Limpar e Bipar novamente'>
-								Scanear
-							</button>
+
 							<button
 								type='button'
 								className='suas-classes-de-cancelar'
@@ -680,22 +813,17 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<Modal isOpen={isOpenModalScanner} onClose={closeModalScanner}>
-				<div className='modal-container'>
-					<div className='modal-backdrop' onClick={closeModalScanner}></div>
-					<div className='modal-content'>
-						<h2>Escanear Código de Barras</h2>
-						<div className='scanner-container'>
-							<div
-								id='reader'
-								style={{
-									width: '100%',
-									height: '100%',
-									//minHeight: '300px',
-								}}></div>
-						</div>
-					</div>
-				</div>
+			<Modal isOpen={isOpenModalScanner} onClose={fecharModalScanner}>
+				<h2>Escanear Código de Barras</h2>
+
+				<div
+					className='scanner-container'
+					id='reader'
+					style={{
+						width: '100%',
+						height: '100%',
+						//minHeight: '300px',
+					}}></div>
 			</Modal>
 
 			<AddButton
