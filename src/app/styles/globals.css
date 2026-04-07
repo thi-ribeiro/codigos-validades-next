@@ -786,6 +786,7 @@ button {
 }
 
 .card-produto-nome {
+  text-transform: capitalize;
   font-size: 1.1rem;
   font-weight: 700;
   color: #1d1d1f;

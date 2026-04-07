@@ -414,10 +414,12 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		//const dataAtual = new Date();
 
 		if (finalizado) {
-			return <div>Finalizado</div>;
+			return (
+				<div style={{ color: 'green', fontWeight: 'bold' }}>Finalizado</div>
+			);
 		} else {
 			if (isAfter(dataAtual, dataExpiracao)) {
-				return <div>Vencido</div>;
+				return <div style={{ color: 'red', fontWeight: 'bold' }}>Vencido</div>;
 			}
 		}
 
@@ -428,15 +430,15 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		});
 
 		if (diasRestantes === 0) {
-			return <div>Hoje</div>;
+			return <div style={{ color: 'orange', fontWeight: 'bold' }}>Hoje</div>;
 		}
 
 		return (
 			<div
 				aria-label={dataFormatada}
-				data-balloon-pos='up'
+				data-balloon-pos='right'
 				className='toogleDescription'>
-				{diasRestantes} dias
+				{diasRestantes} dia(s)
 			</div>
 		);
 	};
