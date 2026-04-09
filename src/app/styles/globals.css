@@ -30,6 +30,11 @@ body {
   font-size: small;
 }
 
+h1 {
+  text-transform: capitalize;
+  margin: 10px 5px;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

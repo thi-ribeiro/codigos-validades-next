@@ -50,6 +50,7 @@ function CarregarPagina({}: Props) {
 		fetchEditarValidade,
 		fetchDeletarValidade,
 		produtosValidades,
+		produtosValidadesFinalizados,
 		marcasProdutos,
 		dataFimIntervalo,
 		calcularDiasRestantes,
@@ -353,14 +354,33 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
+	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
+
 	return (
 		<div className='validadesPage'>
-			{isLoading ? (
+			{loading ? (
 				<div className='loaderContainer'>
 					<div className='loader'></div>
 				</div>
 			) : (
 				<React.Fragment>
+					{/* {Object.keys(produtosValidadesFinalizados).map((marca) => (
+						<div key={marca} className='grupo-por-marca'>
+							<h2 className='divisor-marca'>{marca}</h2>
+							<div className='lista-cards'>
+								{produtosValidadesFinalizados[marca]?.map((validade) => (
+									<div className='card-validade' key={validade.idvalidades}>
+										{validade.produto}
+									</div>
+								))}
+							</div>
+						</div>
+					))} */}
+
+					<h1>
+						De {mesAtual} até {dataFimIntervalo}
+					</h1>
+
 					{Object.keys(produtosValidades).map((marca) => (
 						<div key={marca} className='grupo-por-marca'>
 							<h2 className='divisor-marca'>{marca}</h2>

@@ -47,16 +47,10 @@ export interface ValuesInterface {
 		finalizado: number,
 	) => React.JSX.Element;
 	produtosValidades: Record<string, ValidadeProduto[]>;
-	marcasProdutos: MarcaProdutoInterface[];
+	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
+	produtosValidadesFinalizados: Record<string, ValidadeProduto[]>;
 	loading: boolean;
 	dataFimIntervalo: string | 'Indefinido';
-	// isModalOpen: boolean;
-	// isModalEditOpen: boolean;
-	// setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	// setIsModalEditOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	// buscar: string;
-	// setBuscar: React.Dispatch<React.SetStateAction<string>>;
-	// limitaTexto: (texto: string, quantidade?: number) => React.JSX.Element;
 }
 
 export interface ValidadeProduto {
@@ -103,11 +97,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
 
-	const [marcasProdutos, setmarcasProdutos] = useState<MarcaProdutoInterface[]>(
-		[],
-	);
+	const [marcasProdutos, setmarcasProdutos] = useState<
+		Record<string, MarcaProdutoInterface[]>
+	>({});
 
-	const [loading, setLoading] = useState(false);
+	const [produtosValidadesFinalizados, setProdutosValidadesFinalizados] =
+		useState<Record<string, ValidadeProduto[]>>({});
+
+	const [loading, setLoading] = useState(true);
 	// const [isModalOpen, setIsModalOpen] = useState(false);
 	// const [isModalEditOpen, setIsModalEditOpen] = useState(false);
 
@@ -145,16 +142,31 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			// data.dados contém os produtos e data.marcas as marcas para o filtro
 			if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
 				setmarcasProdutos(data.marcas);
+				setdataFimIntervalo(data.dataFimIntervalo);
 
-				// Mantendo sua lógica de agrupamento com lodash (_)
-				const agrupamentoValidadePorMarcaProduto = _.groupBy(
-					data.dados,
+				const agruparPorStatus = _.chain(data.dados)
+					.groupBy((item) =>
+						item.finalizado === 1 ? 'finalizados' : 'pendentes',
+					)
+					.value();
+
+				const agrupar = _.chain(data.dados).groupBy('marca_produto').value();
+
+				const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
+					agruparPorStatus.pendentes,
 					'marca_produto',
 				);
 
-				setProdutosValidades(agrupamentoValidadePorMarcaProduto);
+				const agrupamenteoValidadeFinalizado = _.groupBy(
+					agruparPorStatus.finalizados,
+					'marca_produto',
+				);
 
-				//console.log(agrupamentoValidadePorMarcaProduto);
+				//console.log(agrupamenteoValidadeFinalizado);
+
+				setProdutosValidades(agrupar);
+				console.log(agrupar);
+				//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
 
 				// Formatação do intervalo (Ex: "Janeiro/2026")
 				if (data.dataFimIntervalo) {
@@ -201,7 +213,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const produto = formData.get('produto') as string;
 		const validade = formData.get('validade') as string;
 		const quantidade = formData.get('quantidade') as string;
-		const marca = formData.get('marca') as string;
+		const marca = (formData.get('marca') as string).trimEnd();
 		const tipoQuantidade = formData.get('tipoquantidade') as string;
 		const codigoProduto = formData.get('codigoProduto') as string;
 		const codigoInterno = formData.get('codigoInterno') as string;
@@ -290,7 +302,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			// Forçamos o ID a ser número para não quebrar o WHERE no MySQL da Vercel
 			id_validade: Number(formData.get('id_validade')),
 			produto: formData.get('produto') as string,
-			marca: formData.get('marca') as string,
+			marca: (formData.get('marca') as string).trimEnd(),
 			validade: formData.get('validade') as string,
 			// Garanta que o name do input de quantidade seja 'quantidade_produto'
 			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get('tipoquantidade')}`,
@@ -497,6 +509,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		ProdutoEmRebaixa,
 		produtosValidades,
 		marcasProdutos,
+		produtosValidadesFinalizados,
 		dataFimIntervalo,
 		loading,
 		// isModalOpen,
