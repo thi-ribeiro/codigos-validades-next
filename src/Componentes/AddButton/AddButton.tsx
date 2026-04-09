@@ -76,57 +76,91 @@ export default function AddButton({
 
 	return (
 		<div className='buttonAddContainer'>
-			{addUser && user?.role === 1 && (
-				<React.Fragment>
-					<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
-						<IoMdPersonAdd size={15} />
-					</div>
-
-					<Modal isOpen={isOpenModalAddUser} onClose={closeModalAddUser}>
-						<div className='cadastroProdutos headerGenerico'>
-							<h1>Cadastrar Usuário</h1>
-							<form
-								className='formProdutos'
-								onSubmit={(e) => fetchAddusuario(e)}
-								method='POST'>
-								<input name='usuarioNome' type='text' placeholder='Usuário' />
-								<input
-									name='usuarioSenha'
-									type='password'
-									placeholder='Senha'
-								/>
-								<input
-									name='usuarioEmpresa'
-									type='text'
-									placeholder='Marca / Empresa'
-								/>
-								<input type='submit' value='Cadastrar' />
-							</form>
-						</div>
-					</Modal>
-				</React.Fragment>
-			)}
-
-			{user?.role === 1 && (
-				<React.Fragment>
-					{addBarCode && (
-						<div
-							className='buttonAddBarCodeScan buttonAdd'
-							onClick={openModalAddBarCode}>
-							<IoMdQrScanner size={15} />
-						</div>
-					)}
-					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
-						<IoAdd size={30} />
-					</div>
-				</React.Fragment>
-			)}
-
-			{user?.role === 2 && addValidade && (
-				<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
-					<IoAdd size={30} />
-				</div>
-			)}
+			<SelectAddButtonOptions
+				role={user?.role}
+				addBarCode={addBarCode}
+				addUser={addUser}
+				addValidade={addValidade}
+				openFuncion={openFuncion}
+				openModalAddBarCode={openModalAddBarCode}
+				isOpenModalAddUser={isOpenModalAddUser}
+				openModalAddUser={openModalAddUser}
+				closeModalAddUser={closeModalAddUser}
+				fetchAddusuario={fetchAddusuario}
+			/>
 		</div>
 	);
 }
+
+// Transformamos em um componente funcional (sem async!)
+const SelectAddButtonOptions = ({
+	role,
+	addBarCode,
+	addUser,
+	addValidade,
+	openFuncion,
+	openModalAddBarCode,
+	isOpenModalAddUser,
+	openModalAddUser,
+	closeModalAddUser,
+	fetchAddusuario,
+}: any) => {
+	// Recomendo criar uma interface para esses tipos depois
+
+	// Caso para Role 1 (Admin/Gerente)
+	if (role === 1) {
+		return (
+			<>
+				{addUser && (
+					<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
+						<IoMdPersonAdd size={15} />
+					</div>
+				)}
+
+				{addBarCode ? (
+					<div
+						className='buttonAddBarCodeScan buttonAdd'
+						onClick={openModalAddBarCode}>
+						<IoMdQrScanner size={15} />
+					</div>
+				) : (
+					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
+						<IoAdd size={30} />
+					</div>
+				)}
+
+				<Modal isOpen={isOpenModalAddUser} onClose={closeModalAddUser}>
+					<div className='cadastroProdutos headerGenerico'>
+						<h1>Cadastrar Usuário</h1>
+						<form
+							className='formProdutos'
+							onSubmit={fetchAddusuario}
+							method='POST'>
+							<input name='usuarioNome' type='text' placeholder='Usuário' />
+							<input name='usuarioSenha' type='password' placeholder='Senha' />
+							<input
+								name='usuarioEmpresa'
+								type='text'
+								placeholder='Marca / Empresa'
+							/>
+							<input type='submit' value='Cadastrar' />
+						</form>
+					</div>
+				</Modal>
+			</>
+		);
+	}
+
+	// Caso para Role 2 (Operacional/Validade)
+	if (role === 2 && addValidade) {
+		return (
+			<div
+				className='buttonAddBarCodeScan buttonAdd'
+				onClick={openModalAddBarCode}>
+				<IoMdQrScanner size={15} />
+			</div>
+		);
+	}
+
+	return null; // Caso não caia em nenhuma regra
+};

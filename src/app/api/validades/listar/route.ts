@@ -114,7 +114,7 @@ export async function GET(request: Request) {
         const dataFimIntervaloFormatada = dataFim.toISOString();
 
         const userRole = 1;
-        const userId = 123;
+        // const userId = 123;
 
         let query = "";
         let params: any[] = [];

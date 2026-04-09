@@ -20,6 +20,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 import useModal from '@/Componentes/Modal/useModal';
 import { useToast } from '@/Contexto/Toast';
+import { form } from 'framer-motion/client';
 
 type Props = {};
 
@@ -88,7 +89,7 @@ function CarregarPagina({}: Props) {
 	const mesAnoAtual = format(dataAtual, 'MMMM/yyyy', { locale: ptBR });
 
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
-	const [teste, setteste] = useState<string | number>('');
+	// const [teste, setteste] = useState<string | number>('');
 	const [codigoLido, setCodigoLido] = useState<string>('');
 
 	const INITIAL_STATE: ValidadeProduto = {
@@ -650,35 +651,40 @@ function CarregarPagina({}: Props) {
 
 					<div className='functionsButons'>
 						<div className='buttonSubmCanc'>
-							<button
-								type='button'
-								disabled={loading}
-								style={{
-									backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
-									color: 'white',
-									cursor: loading ? 'not-allowed' : 'pointer',
-									transition: '0.3s', // Para a mudança de cor ser suave
-								}}
-								onClick={() =>
-									fetchDeletarValidade(
-										FormEditData.idvalidades,
-										closeModalEditar,
-									)
-								}>
-								{loading ? 'Processando...' : 'Remover'}
-							</button>
+							{(FormEditData?.responsavel === user?.usuario ||
+								user?.role === 1) && (
+								<React.Fragment>
+									<button
+										type='button'
+										disabled={loading}
+										style={{
+											backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
+											color: 'white',
+											cursor: loading ? 'not-allowed' : 'pointer',
+											transition: '0.3s', // Para a mudança de cor ser suave
+										}}
+										onClick={() =>
+											fetchDeletarValidade(
+												FormEditData.idvalidades,
+												closeModalEditar,
+											)
+										}>
+										{loading ? 'Processando...' : 'Remover'}
+									</button>
 
-							<button
-								type='submit'
-								disabled={loading} // Desativa o botão enquanto loading for true
-								style={{
-									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
-									color: 'white',
-									cursor: loading ? 'not-allowed' : 'pointer',
-									transition: '0.3s', // Para a mudança de cor ser suave
-								}}>
-								{loading ? 'Processando...' : 'Atualizar'}
-							</button>
+									<button
+										type='submit'
+										disabled={loading} // Desativa o botão enquanto loading for true
+										style={{
+											backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+											color: 'white',
+											cursor: loading ? 'not-allowed' : 'pointer',
+											transition: '0.3s', // Para a mudança de cor ser suave
+										}}>
+										{loading ? 'Processando...' : 'Atualizar'}
+									</button>
+								</React.Fragment>
+							)}
 
 							<button type='button' onClick={closeModalEditar}>
 								Cancelar
