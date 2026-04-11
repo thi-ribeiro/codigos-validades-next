@@ -383,7 +383,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				<IoMdTrendingDown
 					size={20}
 					color={'#aaa'}
-					title={'Aguardando rebaixe...'}
+					title={'Aguardando rebaixa...'}
 				/>
 			);
 		}

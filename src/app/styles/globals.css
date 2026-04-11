@@ -757,6 +757,10 @@ button {
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 e Edge */
+  user-select: none; /* Padrão (Chrome, Firefox, Opera) */
 }
 
 /* Efeito de clique mais "premium" */

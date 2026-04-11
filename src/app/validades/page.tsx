@@ -406,7 +406,7 @@ function CarregarPagina({}: Props) {
 														{getInicial(validade.responsavel)}
 													</span>
 													<span className='card-produto-nome'>
-														{validade.produto}
+														{limitaTexto(validade.produto, 28)}
 													</span>
 												</div>
 												<span className='card-produto-codigo'>

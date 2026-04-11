@@ -8,8 +8,8 @@ import React, {
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
+// @ts-ignore
 import 'balloon-css';
-//import { useRouter } from 'next/navigation';
 
 interface FuncoesProviderProps {
 	children: ReactNode;
