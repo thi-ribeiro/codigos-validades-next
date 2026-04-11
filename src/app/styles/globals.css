@@ -743,8 +743,8 @@ button {
 /* --- O CARD REFORMULADO --- */
 .card-validade {
   background: #ffffff;
-  border-radius: 16px; /* Bordas bem arredondadas, estilo iOS */
-  padding: 18px;
+  border-radius: 12px;
+  padding: 10px;
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
@@ -770,7 +770,7 @@ button {
 .card-topo {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 
   .card-produto-info {
     display: flex;
@@ -780,6 +780,28 @@ button {
 
     .card-produto-codigo {
       font-size: 0.65rem;
+    }
+
+    .card-detalhes-produto-responsavel {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      /* justify-content: center; */
+
+      .card-produto-responsavel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px; /* Tamanho bom para mobile */
+        height: 24px;
+        border-radius: 35%; /* Garante que é um círculo */
+        background-color: #1d1d1f; /* Um azul vibrante (ex: azul do Next.js/Tailwind) */
+        color: #ffffff; /* Letra branca para contraste */
+        font-size: 14px;
+        font-weight: 700; /* Negrito forte para leitura rápida */
+        text-transform: uppercase; /* Força maiúscula */
+        border: 2px solid #ffffff; /* Um aro branco para destacar se o fundo for colorido */
+      }
     }
   }
 
@@ -850,10 +872,10 @@ button {
 /* --- ÍCONES DE STATUS --- */
 .card-status-icones {
   background: #f9f9fb;
-  padding: 8px 12px;
+  padding: 4px 8px;
   border-radius: 12px;
   display: flex;
-  gap: 15px;
+  gap: 5px;
   border: 1px solid #f0f0f0;
 }
 

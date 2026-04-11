@@ -354,6 +354,8 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
+	const getInicial = (nome: string) => nome?.charAt(0).toUpperCase() || '?';
+
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
 
 	return (
@@ -399,9 +401,14 @@ function CarregarPagina({}: Props) {
 										{/* Linha 1: Produto e Info Principal */}
 										<div className='card-topo'>
 											<div className='card-produto-info'>
-												<span className='card-produto-nome'>
-													{validade.produto}
-												</span>
+												<div className='card-detalhes-produto-responsavel'>
+													<span className='card-produto-responsavel'>
+														{getInicial(validade.responsavel)}
+													</span>
+													<span className='card-produto-nome'>
+														{validade.produto}
+													</span>
+												</div>
 												<span className='card-produto-codigo'>
 													PLU:{' '}
 													{validade.codigoInterno ||

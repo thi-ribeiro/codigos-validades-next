@@ -3,7 +3,13 @@ import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
 import _ from 'lodash';
 import { ptBR } from 'date-fns/locale';
-import { differenceInDays, format, isAfter } from 'date-fns';
+import {
+	differenceInDays,
+	format,
+	isAfter,
+	parseISO,
+	startOfDay,
+} from 'date-fns';
 import {
 	IoIosCheckmarkCircleOutline,
 	IoIosCloseCircleOutline,
@@ -165,7 +171,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				//console.log(agrupamenteoValidadeFinalizado);
 
 				setProdutosValidades(agrupar);
-				console.log(agrupar);
+				//console.log(agrupar);
 				//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
 
 				// Formatação do intervalo (Ex: "Janeiro/2026")
@@ -418,33 +424,55 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		}
 	};
 
+	// No topo do arquivo, certifique-se de importar do date-fns:
+	// import { parseISO, startOfDay, differenceInDays, format } from 'date-fns';
+	// import { ptBR } from 'date-fns/locale';
+
 	const calcularDiasRestantes = (
 		dataDeValidade: string,
 		finalizado: number,
 	): React.JSX.Element => {
-		const dataExpiracao = new Date(dataDeValidade);
-		//const dataAtual = new Date();
+		// 1. Normaliza a data para ignorar o horário e fuso (pega apenas YYYY-MM-DD)
+		const apenasData = dataDeValidade.split('T')[0];
+		const dataExpiracao = parseISO(apenasData);
+
+		// 2. Zera as horas da data atual para uma comparação justa de "dia contra dia"
+		const dataAtual = startOfDay(new Date());
 
 		if (finalizado) {
 			return (
 				<div style={{ color: 'green', fontWeight: 'bold' }}>Finalizado</div>
 			);
-		} else {
-			if (isAfter(dataAtual, dataExpiracao)) {
-				return <div style={{ color: 'red', fontWeight: 'bold' }}>Vencido</div>;
-			}
+		}
+
+		// Se a data de hoje passou da expiração
+		if (isAfter(dataAtual, dataExpiracao)) {
+			return <div style={{ color: 'red', fontWeight: 'bold' }}>Vencido</div>;
 		}
 
 		const diasRestantes = differenceInDays(dataExpiracao, dataAtual);
-		//const venceDiatal = addDays(dataAtual, diasRestantes);
-		const dataFormatada = format(dataDeValidade, 'EEEE (dd/MM)', {
+		const dataFormatada = format(dataExpiracao, 'EEEE (dd/MM)', {
 			locale: ptBR,
 		});
 
+		// --- Sua nova lógica de alertas ---
+
 		if (diasRestantes === 0) {
-			return <div style={{ color: 'orange', fontWeight: 'bold' }}>Hoje</div>;
+			return <div style={{ color: 'red', fontWeight: 'bold' }}>Hoje</div>;
 		}
 
+		if (diasRestantes > 0 && diasRestantes <= 5) {
+			return (
+				<div
+					aria-label={dataFormatada}
+					data-balloon-pos='right'
+					style={{ color: 'orange', fontWeight: 'bold' }}>
+					{diasRestantes} dia(s)
+				</div>
+			);
+		}
+
+		// Caso padrão (mais de 5 dias)
 		return (
 			<div
 				aria-label={dataFormatada}
