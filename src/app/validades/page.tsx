@@ -59,6 +59,8 @@ function CarregarPagina({}: Props) {
 		ValidadeFinalizada,
 		ProdutoEmRebaixa,
 		loading,
+		produtosExibidos,
+		setFiltroAtivo,
 	} = useValidades();
 
 	const { user, isLoading } = useAuth();
@@ -120,12 +122,6 @@ function CarregarPagina({}: Props) {
 
 	useEffect(() => {
 		if (!isLoading) {
-			// if (!user) {
-			// 	router.push('/login');
-			// }
-
-			//console.log(dataFimIntervalo);
-
 			if (user?.role !== 1) {
 				fetchValidades(user?.empresa);
 			} else {
@@ -380,17 +376,20 @@ function CarregarPagina({}: Props) {
 						</div>
 					))} */}
 
-					<FiltroValidades />
+					<FiltroValidades
+						filtrarVencimentos={() => setFiltroAtivo('vencendo')}
+						filtrarTodos={() => setFiltroAtivo('todos')}
+					/>
 
 					<h1>
 						De {mesAtual} até {dataFimIntervalo}
 					</h1>
 
-					{Object.keys(produtosValidades).map((marca) => (
+					{Object.keys(produtosExibidos).map((marca) => (
 						<div key={marca} className='grupo-por-marca'>
 							<h2 className='divisor-marca'>{marca}</h2>
 							<div className='lista-cards'>
-								{produtosValidades[marca]?.map((validade) => (
+								{produtosExibidos[marca]?.map((validade) => (
 									<div
 										className='card-validade'
 										key={validade.idvalidades}

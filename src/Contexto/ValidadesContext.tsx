@@ -1,4 +1,4 @@
-import React, { useContext, createContext, useState } from 'react';
+import React, { useContext, createContext, useState, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
 import _ from 'lodash';
@@ -53,6 +53,8 @@ export interface ValuesInterface {
 		finalizado: number,
 	) => React.JSX.Element;
 	produtosValidades: Record<string, ValidadeProduto[]>;
+	produtosExibidos: Record<string, ValidadeProduto[]>;
+	setFiltroAtivo: (filtro: string) => void;
 	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
 	produtosValidadesFinalizados: Record<string, ValidadeProduto[]>;
 	loading: boolean;
@@ -109,6 +111,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const [produtosValidadesFinalizados, setProdutosValidadesFinalizados] =
 		useState<Record<string, ValidadeProduto[]>>({});
+	const [filtroAtivo, setFiltroAtivo] = useState('todos'); // Pode ser 'todos' ou 'vencendo'
 
 	const [loading, setLoading] = useState(true);
 	// const [isModalOpen, setIsModalOpen] = useState(false);
@@ -158,20 +161,20 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				const agrupar = _.chain(data.dados).groupBy('marca_produto').value();
 
-				const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
-					agruparPorStatus.pendentes,
-					'marca_produto',
-				);
+				// const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
+				// 	agruparPorStatus.pendentes,
+				// 	'marca_produto',
+				// );
 
-				const agrupamenteoValidadeFinalizado = _.groupBy(
-					agruparPorStatus.finalizados,
-					'marca_produto',
-				);
+				// const agrupamenteoValidadeFinalizado = _.groupBy(
+				// 	agruparPorStatus.finalizados,
+				// 	'marca_produto',
+				// );
 
 				//console.log(agrupamenteoValidadeFinalizado);
 
 				setProdutosValidades(agrupar);
-				//console.log(agrupar);
+				console.log(agrupar);
 				//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
 
 				// Formatação do intervalo (Ex: "Janeiro/2026")
@@ -194,6 +197,35 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
+
+	const dadosParaExibir = useMemo(() => {
+		// Se o filtro estiver em 'todos', mostra o objeto original que o fetch trouxe
+		if (filtroAtivo === 'todos') return produtosValidades;
+
+		const hoje = new Date();
+		hoje.setHours(0, 0, 0, 0);
+
+		const limite5Dias = new Date();
+		limite5Dias.setDate(hoje.getDate() + 5);
+
+		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+
+		// Filtramos o objeto que o seu fetch salvou no state
+		Object.keys(produtosValidades).forEach((marca) => {
+			const itensFiltrados = produtosValidades[marca].filter((item) => {
+				const dataVal = new Date(item.validade);
+				// Regra: Vence em até 5 dias E não está finalizado
+				return dataVal <= limite5Dias && item.finalizado === 0;
+			});
+
+			// Só exibe a marca se ela tiver produtos sobrando após o filtro
+			if (itensFiltrados.length > 0) {
+				novoObjetoFiltrado[marca] = itensFiltrados;
+			}
+		});
+
+		return novoObjetoFiltrado;
+	}, [produtosValidades, filtroAtivo]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -540,6 +572,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		produtosValidadesFinalizados,
 		dataFimIntervalo,
 		loading,
+		produtosExibidos: dadosParaExibir,
+		setFiltroAtivo,
 		// isModalOpen,
 		// isModalEditOpen,
 		// setIsModalOpen,

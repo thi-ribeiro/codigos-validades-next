@@ -413,7 +413,7 @@ button:active {
 /* O botão da setinha */
 .botao-toggle {
   position: absolute;
-  right: -35px; /* Isso joga a seta para fora da div escondida */
+  right: -33px; /* Isso joga a seta para fora da div escondida */
   background: rgba(255, 255, 255, 1) !important;
   color: #000;
   border: none;
