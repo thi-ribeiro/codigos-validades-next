@@ -83,15 +83,24 @@ input[type="submit"],
 button {
   color: #ddd;
   background-color: #007bff;
+
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+
   &:hover {
     background-color: #0056b3;
   }
 }
 
+button:active {
+  transform: scale(0.92) !important; /* Dá uma leve encolhida ao tocar */
+  filter: brightness(1.2) !important; /* Dá um brilho no "vidro" ao tocar */
+  transition: transform 0.1s !important;
+}
+
 @media (max-width: 600px) {
-  body {
-    /* font-size: 0.6em; */
-  }
 }
 
 .headerGenerico {
@@ -322,14 +331,125 @@ button {
   }
 }
 
-.validadesPage {
-  padding: 5px;
-  padding-bottom: 80px;
+.menu-flutuante {
+  position: fixed;
+  left: 5px; /* Deixa um espacinho da borda da tela */
+  top: 50%;
+  transform: translateY(-50%);
 
-  /* h2 {
-    padding: 10px 0px;
-    color: #000;
-  } */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Espaço maior entre as bolinhas para não clicar errado */
+  padding: 10px 5px;
+
+  /* Tira o fundo vermelho e coloca o efeito de vidro que a gente curte */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+
+  z-index: 1000;
+  width: auto; /* Deixa ele se ajustar ao tamanho dos botões */
+}
+
+/* Cores específicas para cada função */
+.btn-todos {
+  background-color: #3b82f6;
+} /* Azul */
+.btn-vencendo {
+  background-color: #ef4444;
+} /* Vermelho */
+.btn-marca {
+  background-color: #6b7280;
+} /* Cinza */
+
+.menu-lateral {
+  position: fixed;
+  left: 0;
+  top: 50dvh;
+
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease-in-out; /* Transição suave */
+  z-index: 1000;
+
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000;
+  transform: translateY(-50%) translateZ(0); /* Força o uso da placa de vídeo do celular */
+}
+
+/* Quando estiver fechado, joga o conteúdo para fora da tela */
+.menu-lateral.fechado {
+  left: -55px; /* Ajuste esse valor para esconder tudo menos a setinha */
+}
+
+.conteudo-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  /* 1. Fundo semi-transparente (ajuste o 0.2 para mais ou menos transparência) */
+  background: rgba(255, 255, 255, 1);
+
+  /* 2. O desfoque mágico */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Essencial para iPhones */
+
+  padding: 10px;
+  border-radius: 0 30px 30px 0;
+
+  /* 3. Borda fina que dá o reflexo do vidro */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-left: none; /* Deixa colado no canto da tela */
+
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* O botão da setinha */
+.botao-toggle {
+  position: absolute;
+  right: -35px; /* Isso joga a seta para fora da div escondida */
+  background: rgba(255, 255, 255, 1) !important;
+  color: #000;
+  border: none;
+  width: 35px;
+  height: 50px;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Essencial para iPhones */
+}
+
+/* Ajuste das bolinhas dentro do menu */
+.conteudo-menu button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% !important;
+  display: flex;
+  border: none;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  /* Impede a quebra de linha */
+  white-space: nowrap;
+  overflow: hidden;
+
+  /* Ajuste o tamanho da fonte para a letra não "gritar" */
+  font-size: 1.1rem;
+}
+
+.validadesPage {
+  padding: 0 0 80px;
 
   .tabela-validades {
     width: auto;
@@ -366,6 +486,7 @@ button {
       .toogleDescription {
         --balloon-color: #007bff;
         --balloon-font-size: 15px;
+        width: 100%;
         position: absolute;
       }
     }
@@ -636,6 +757,12 @@ button {
   }
 }
 
+.functionsButons button:active {
+  transform: scale(0.92) !important; /* Dá uma leve encolhida ao tocar */
+  filter: brightness(1.2) !important; /* Dá um brilho no "vidro" ao tocar */
+  transition: transform 0.1s !important;
+}
+
 .toast-container {
   display: flex;
   flex-direction: column;
@@ -822,7 +949,12 @@ button {
   font-weight: 700;
   color: #1d1d1f;
   line-height: 1.2;
-  max-width: 70%;
+  max-width: 95%;
+  display: block; /* Garante que respeite a largura */
+  white-space: nowrap; /* Impede que o texto quebre linha */
+  overflow: hidden; /* Esconde o que sobrar */
+  text-overflow: ellipsis; /* Adiciona as reticências (...) */
+  max-width: 200px; /* Ajuste conforme a largura do seu card */
 }
 
 /* Badge de Validade com destaque */
@@ -917,11 +1049,17 @@ button {
   transition: background 0.2s ease;
   cursor: pointer;
   color: #1d1d1f;
+
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .nav-icon-wrapper:active {
-  background: rgba(0, 0, 0, 0.05); /* Feedback cinza suave ao tocar */
-  transform: scale(0.9);
+  transform: scale(0.92) !important; /* Dá uma leve encolhida ao tocar */
+  filter: brightness(1.2) !important; /* Dá um brilho no "vidro" ao tocar */
+  transition: transform 0.1s !important;
 }
 
 .userLoginFunctions {
@@ -934,7 +1072,7 @@ button {
 .header-glass-container {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 999;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -957,7 +1095,9 @@ button {
 }
 
 .nav-icon-wrapper:active {
-  background: rgba(0, 0, 0, 0.05);
+  transform: scale(0.92) !important; /* Dá uma leve encolhida ao tocar */
+  filter: brightness(1.2) !important; /* Dá um brilho no "vidro" ao tocar */
+  transition: transform 0.1s !important;
 }
 
 /* --- FORMULÁRIOS DE BUSCA --- */
@@ -1000,6 +1140,10 @@ button {
   text-transform: uppercase;
   color: #888;
   letter-spacing: 1px;
+}
+
+.lista-cards {
+  padding: 0 10px;
 }
 
 /* O "Card" de Produto na Consulta */

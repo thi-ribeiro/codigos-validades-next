@@ -21,6 +21,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import useModal from '@/Componentes/Modal/useModal';
 import { useToast } from '@/Contexto/Toast';
 import { form } from 'framer-motion/client';
+import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
 
 type Props = {};
 
@@ -379,6 +380,8 @@ function CarregarPagina({}: Props) {
 						</div>
 					))} */}
 
+					<FiltroValidades />
+
 					<h1>
 						De {mesAtual} até {dataFimIntervalo}
 					</h1>
@@ -406,7 +409,8 @@ function CarregarPagina({}: Props) {
 														{getInicial(validade.responsavel)}
 													</span>
 													<span className='card-produto-nome'>
-														{limitaTexto(validade.produto, 28)}
+														{/* {limitaTexto(validade.produto, 28)} */}
+														{validade.produto}
 													</span>
 												</div>
 												<span className='card-produto-codigo'>
@@ -772,22 +776,22 @@ function CarregarPagina({}: Props) {
 
 					<label htmlFor='produto'>Produto:</label>
 
-					{/* <AutoComplete
+					<AutoComplete
 						nome={true}
 						placeholder='Digite o nome do produto'
 						nameInput='produto'
 						valorPadrao={FormEditData?.produto || ''}
 						required={true}
-					/> */}
+					/>
 
-					<input
+					{/* <input
 						id='produto'
 						name='produto'
 						type='text'
 						value={FormEditData?.produto || ''}
 						onChange={handleChange}
 						placeholder='Digite o nome do produto'
-					/>
+					/> */}
 
 					<label htmlFor='marca'>Marca:</label>
 					{user?.empresa ? (
