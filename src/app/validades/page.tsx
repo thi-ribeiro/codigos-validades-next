@@ -19,8 +19,8 @@ import AddButton from '@/Componentes/AddButton/AddButton';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 import useModal from '@/Componentes/Modal/useModal';
-import { useToast } from '@/Contexto/Toast';
-import { form } from 'framer-motion/client';
+// import { useToast } from '@/Contexto/Toast';
+// import { form } from 'framer-motion/client';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
 
 type Props = {};
@@ -42,8 +42,8 @@ export interface scanCode {
 const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 function CarregarPagina({}: Props) {
-	const { limitaTexto } = useFuncoes();
-	const { addToast } = useToast();
+	// const { limitaTexto } = useFuncoes();
+	// const { addToast } = useToast();
 
 	const {
 		fetchValidades,
@@ -95,6 +95,7 @@ function CarregarPagina({}: Props) {
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
 	// const [teste, setteste] = useState<string | number>('');
 	const [codigoLido, setCodigoLido] = useState<string>('');
+	const [loadingScanner, setLoadingScanner] = useState<boolean>(false);
 
 	const INITIAL_STATE: ValidadeProduto = {
 		idvalidades: 0,
@@ -278,7 +279,10 @@ function CarregarPagina({}: Props) {
 			);
 
 			setFormEditData(itemCompletoSelecionado ?? ({} as ValidadeProduto));
+
+			//console.log(itemCompletoSelecionado);
 		}
+
 		//setIsModalEditOpen(true);
 	};
 
@@ -309,6 +313,9 @@ function CarregarPagina({}: Props) {
 
 	const scanCodeDb = async (codigo: string) => {
 		// Evita buscar se o código for muito curto (opcional)
+
+		setLoadingScanner(true);
+
 		if (codigo.length < 10) return;
 
 		try {
@@ -323,17 +330,17 @@ function CarregarPagina({}: Props) {
 				setFormEditData((prev) => ({
 					...prev,
 					produto: data.produto.descricao_produto, // Preenche o nome
-					marca: data.produto.marca_produto, // Preenche a marca
+					marca_produto: data.produto.marca_produto, // Preenche a marca
 					codigoInterno: data.produto.plu_produto, // Preenche o PLU
 					codigoProduto: data.produto.ean_produto, // Garante que o EAN esteja certo
 					idRelacionado: data.produto.id, // Guarda o ID para o UPDATE posterior
 				}));
-
 				console.log('Produto autocompletado com sucesso!');
 			} else {
 				// Caso não ache, você pode optar por limpar os campos ou deixar o usuário digitar
 				console.log('Produto não encontrado no banco.');
 			}
+			setLoadingScanner(false);
 		} catch (error) {
 			console.error('Erro ao consultar banco de dados:', error);
 		}
@@ -355,9 +362,30 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
+	const useLoadingDots = (isLoading: Boolean) => {
+		const [dots, setDots] = useState('');
+
+		useEffect(() => {
+			if (!isLoading) {
+				setDots('');
+				return;
+			}
+
+			const i = setInterval(() => {
+				setDots((d) => (d.length < 3 ? d + '.' : ''));
+			}, 400);
+
+			return () => clearInterval(i);
+		}, [isLoading]);
+
+		return dots;
+	};
+
 	const getInicial = (nome: string) => nome?.charAt(0).toUpperCase() || '?';
 
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
+
+	const dots = useLoadingDots(loadingScanner);
 
 	return (
 		<div className='validadesPage'>
@@ -763,14 +791,20 @@ function CarregarPagina({}: Props) {
 						type='text'
 						value={FormEditData?.codigoInterno || ''}
 						onChange={handleChange}
-						placeholder='Código interno'
+						placeholder={
+							loadingScanner
+								? `Carregando${dots}`
+								: 'Código interno do produto.'
+						}
 					/>
 
 					<label htmlFor='produto'>Produto:</label>
 
 					<AutoComplete
 						nome={true}
-						placeholder='Digite o nome do produto'
+						placeholder={
+							loadingScanner ? `Carregando${dots}` : 'Digite o nome do produto.'
+						}
 						nameInput='produto'
 						valorPadrao={FormEditData?.produto || ''}
 						required={true}
@@ -782,7 +816,9 @@ function CarregarPagina({}: Props) {
 					) : (
 						<AutoComplete
 							marca={true}
-							placeholder='Digite a marca do produto'
+							placeholder={
+								loadingScanner ? `Carregando${dots}` : 'Digite a marca.'
+							}
 							nameInput='marca'
 							valorPadrao={FormEditData?.marca_produto || ''}
 							required={false}
