@@ -35,6 +35,10 @@ const AutoComplete = (props: AutoCompleteProps) => {
 
 	// Efeito para fechar a div de autocomplete ao clicar fora
 	useEffect(() => {
+		if (valorPadrao) {
+			setProdutoSelecionado(valorPadrao); // Nome do estado que controla o texto do input
+		}
+
 		const handleClickOutside = (event: MouseEvent) => {
 			// Se a div de autocomplete existe E o clique NÃO foi dentro dela
 			if (
@@ -64,7 +68,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			document.removeEventListener('mousedown', handleClickOutside);
 			document.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [resultado.length]); // O efeito roda novamente quando a quantidade de resultados muda
+	}, [resultado.length, valorPadrao]); // O efeito roda novamente quando a quantidade de resultados muda
 
 	const fetchNameProducts = async (
 		searchByMarca: boolean,
@@ -85,7 +89,6 @@ const AutoComplete = (props: AutoCompleteProps) => {
 
 		try {
 			setLoading(true);
-
 			// 3. Chamada para a nossa nova API interna
 			// Note que passamos 'term' em vez de 'autoCompleteSearch' para bater com a rota
 			const response = await fetch(
@@ -105,7 +108,9 @@ const AutoComplete = (props: AutoCompleteProps) => {
 				setResultado([]); // Se o banco retornar vazio, escondemos a div de sugestões
 			}
 		} catch (error: any) {
-			return NextResponse.json({ erro: error.message }, { status: 500 });
+			console.error('Fetch error:', error);
+			setResultado([]);
+			// return NextResponse.json({ erro: error.message }, { status: 500 });
 			//console.error('Fetch error:', error);
 			//setResultado([]); // Limpa em caso de erro para não travar a UI aberta
 		} finally {

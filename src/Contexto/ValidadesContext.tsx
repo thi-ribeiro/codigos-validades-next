@@ -79,6 +79,7 @@ export interface ValidadeProduto {
 	rebaixa: number;
 	data_rebaixa: string;
 	tipoquantidade: string;
+	descricao_produto: string;
 }
 
 export interface MarcaProdutoInterface {

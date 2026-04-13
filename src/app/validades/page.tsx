@@ -114,6 +114,7 @@ function CarregarPagina({}: Props) {
 		data_rebaixa: '',
 		tipoquantidade: '',
 		codigoInterno: '',
+		descricao_produto: '',
 	};
 
 	// No componente:
@@ -312,7 +313,7 @@ function CarregarPagina({}: Props) {
 
 		try {
 			const response = await fetch(
-				`${acesso_validades}/procurar/?codigo=${codigo}`,
+				`${acesso_validades}/procurar?codigo=${codigo}`,
 			);
 			const data = await response.json();
 
@@ -341,13 +342,16 @@ function CarregarPagina({}: Props) {
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const valor = e.target.value;
 
-		// 1. Atualiza o estado normalmente (mantém o que o usuário digita)
 		handleChange(e);
 
-		// 2. Lógica de busca automática:
-		// Dispara se tiver 13 dígitos (EAN) ou se você definir um mínimo para códigos internos (ex: 4 dígitos)
-		if (valor.length === 13 || (valor.length >= 3 && valor.length <= 6)) {
-			scanCodeDb(valor);
+		// 1. Verifica se o valor contém APENAS números
+		const isNumeric = /^\d+$/.test(valor);
+
+		if (isNumeric) {
+			// 2. Só dispara a busca se for numérico e tiver o tamanho certo
+			if (valor.length === 13 || (valor.length >= 3 && valor.length <= 6)) {
+				scanCodeDb(valor);
+			}
 		}
 	};
 
@@ -732,17 +736,6 @@ function CarregarPagina({}: Props) {
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
 					<div className='add_scan_codigo_barras'>
-						{/* <input
-							id='codigoProduto'
-							name='codigoProduto'
-							type='text'
-							// Use apenas o estado do formulário para evitar confusão de valores
-							value={FormEditData?.codigoProduto || ''}
-							onChange={handleAutoScan}
-							maxLength={13}
-							placeholder='Código de Barras'
-						/> */}
-
 						<input
 							id='codigoProduto'
 							name='codigoProduto'
@@ -782,15 +775,6 @@ function CarregarPagina({}: Props) {
 						valorPadrao={FormEditData?.produto || ''}
 						required={true}
 					/>
-
-					{/* <input
-						id='produto'
-						name='produto'
-						type='text'
-						value={FormEditData?.produto || ''}
-						onChange={handleChange}
-						placeholder='Digite o nome do produto'
-					/> */}
 
 					<label htmlFor='marca'>Marca:</label>
 					{user?.empresa ? (
