@@ -381,6 +381,8 @@ button:active {
   backface-visibility: hidden;
   perspective: 1000;
   transform: translateY(-50%) translateZ(0); /* Força o uso da placa de vídeo do celular */
+
+  background: rgba(255, 255, 255, 1);
 }
 
 /* Quando estiver fechado, joga o conteúdo para fora da tela */
@@ -414,7 +416,7 @@ button:active {
 .botao-toggle {
   position: absolute;
   right: -33px; /* Isso joga a seta para fora da div escondida */
-  background: rgba(255, 255, 255, 1) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
   color: #000;
   border: none;
   width: 35px;
@@ -428,6 +430,13 @@ button:active {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px); /* Essencial para iPhones */
+  z-index: -1;
+}
+
+.botao-toggle:hover {
+  /* background-color: transparent !important; */
+  border: none !important;
+  /* box-shadow: none !important; */
 }
 
 /* Ajuste das bolinhas dentro do menu */

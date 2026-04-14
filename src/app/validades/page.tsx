@@ -793,7 +793,7 @@ function CarregarPagina({}: Props) {
 						onChange={handleChange}
 						placeholder={
 							loadingScanner
-								? `Carregando${dots}`
+								? `Carregando ${dots}`
 								: 'Código interno do produto.'
 						}
 					/>
@@ -803,7 +803,9 @@ function CarregarPagina({}: Props) {
 					<AutoComplete
 						nome={true}
 						placeholder={
-							loadingScanner ? `Carregando${dots}` : 'Digite o nome do produto.'
+							loadingScanner
+								? `Carregando ${dots}`
+								: 'Digite o nome do produto.'
 						}
 						nameInput='produto'
 						valorPadrao={FormEditData?.produto || ''}
@@ -817,7 +819,7 @@ function CarregarPagina({}: Props) {
 						<AutoComplete
 							marca={true}
 							placeholder={
-								loadingScanner ? `Carregando${dots}` : 'Digite a marca.'
+								loadingScanner ? `Carregando ${dots}` : 'Digite a marca.'
 							}
 							nameInput='marca'
 							valorPadrao={FormEditData?.marca_produto || ''}

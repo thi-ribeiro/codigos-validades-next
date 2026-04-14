@@ -48,21 +48,37 @@ export async function POST(request: Request) {
                 VALUES (?, ?, ?, ?)`,
                 [produto, marca || '', codigoProduto, codigoInterno || '']
             );
-            produtoId = novoProduto.insertId;
+            produtoId = novoProduto.insertId; //RESULTADO DO INSERT!
         }
 
-        // 3. Agora inserimos na tabela de validades usando o idRelacionado
+        const [validadeExistente]: any = await connection.execute(
+            "SELECT idValidades FROM validades WHERE idRelacionado = ? AND validade = ? LIMIT 1",
+            [produtoId, validade]
+        )
+
+
+        if (validadeExistente.length > 0) {
+            // IMPORTANTE: Se você iniciou uma transação, precisa encerrar ela 
+            // antes de dar o return, ou dar o rollback/commit.
+            await connection.rollback(); // Como não vamos inserir nada, desfazemos o início da transação
+            return NextResponse.json(
+                { status: 'info', message: 'Produto já cadastrado nesta validade!' },
+                { status: 400 }
+            );
+        }
+
+        // 4. Inserção (Caso não exista)
         const queryValidade = `
     INSERT INTO validades 
     (idRelacionado, responsavel, validade, data_inserido, quantidade_produto)
     VALUES (?, ?, ?, ?, ?)`;
 
         await connection.execute(queryValidade, [
-            produtoId,          // Link para a tabela ean_plu_produtos
-            responsavel || '',  // Usuário
-            validade,           // A data de vencimento
-            data_inserido,      // Data do cadastro
-            quantidadeDesc      // A quantidade/descrição (ex: "10 cx")
+            produtoId,
+            responsavel || '',
+            validade,
+            data_inserido,
+            quantidadeDesc
         ]);
 
         // Finaliza a transação com sucesso

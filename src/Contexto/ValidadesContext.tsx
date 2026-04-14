@@ -246,7 +246,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
-		setLoading(true);
 
 		const formData = new FormData(e.target as HTMLFormElement);
 		const produto = formData.get('produto') as string;
@@ -260,6 +259,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
 
 		try {
+			setLoading(true);
+
 			// Aponta para a nova rota da API no Next.js
 			const response = await fetch(`${acesso_validades}/adicionar`, {
 				method: 'POST',
