@@ -22,6 +22,7 @@ import useModal from '@/Componentes/Modal/useModal';
 // import { useToast } from '@/Contexto/Toast';
 // import { form } from 'framer-motion/client';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
+// import { QRCodeSVG } from 'qrcode.react';
 
 type Props = {};
 
@@ -280,8 +281,10 @@ function CarregarPagina({}: Props) {
 
 			setFormEditData(itemCompletoSelecionado ?? ({} as ValidadeProduto));
 
-			//console.log(itemCompletoSelecionado);
+			console.log(itemCompletoSelecionado);
 		}
+
+		//console.log(idSelecionado);
 
 		//setIsModalEditOpen(true);
 	};
@@ -387,6 +390,27 @@ function CarregarPagina({}: Props) {
 
 	const dots = useLoadingDots(loadingScanner);
 
+	// const GeradorQRCode = ({
+	// 	valorLink,
+	// 	size,
+	// }: {
+	// 	valorLink: string;
+	// 	size: number | 10;
+	// }) => {
+	// 	return (
+	// 		<div className='qrCode-plu'>
+	// 			<QRCodeSVG
+	// 				value={valorLink}
+	// 				size={size}
+	// 				bgColor={'#ffffff'}
+	// 				fgColor={'#000000'}
+	// 				level={'L'} // Nível de correção de erro
+	// 				// includeMargin={true}
+	// 			/>
+	// 		</div>
+	// 	);
+	// };
+
 	return (
 		<div className='validadesPage'>
 			{loading ? (
@@ -423,12 +447,12 @@ function CarregarPagina({}: Props) {
 							<div className='lista-cards'>
 								{produtosExibidos[marca]?.map((validade) => (
 									<div
-										className='card-validade'
+										className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
 										key={validade.idvalidades}
 										onClick={() => {
 											definirItemNoArray(
 												validade.idvalidades,
-												validade.marca_produto,
+												validade.validadeDiaMes,
 											);
 											openModalEditar();
 										}}>
@@ -436,14 +460,20 @@ function CarregarPagina({}: Props) {
 										<div className='card-topo'>
 											<div className='card-produto-info'>
 												<div className='card-detalhes-produto-responsavel'>
-													<span className='card-produto-responsavel'>
-														{getInicial(validade.responsavel)}
+													<span className='card-produto-marca'>
+														{validade.marca_produto}
 													</span>
-													<span className='card-produto-nome'>
-														{/* {limitaTexto(validade.produto, 28)} */}
-														{validade.produto}
+													<span className='card-produto-separador'>
+														<span className='card-produto-responsavel'>
+															{getInicial(validade.responsavel)}
+														</span>
+														<span className='card-produto-nome'>
+															{/* {limitaTexto(validade.produto, 28)} */}
+															{validade.produto}
+														</span>
 													</span>
 												</div>
+
 												<span className='card-produto-codigo'>
 													PLU:{' '}
 													{validade.codigoInterno ||
@@ -460,30 +490,31 @@ function CarregarPagina({}: Props) {
 											</div>
 										</div>
 
-										{/* Linha 2: Status e Ícones */}
-										<div className='card-base'>
-											<div className='card-restante'>
-												{calcularDiasRestantes(
-													validade.validade,
-													validade.finalizado,
-												)}
+										{validade.finalizado !== 1 && (
+											<div className='card-base'>
+												<div className='card-restante'>
+													{calcularDiasRestantes(
+														validade.validade,
+														validade.finalizado,
+													)}
+												</div>
+												<div className='card-status-icones'>
+													<ValidadeVerificada
+														verificado={validade.verificado}
+														dataInserida={validade.data_inserido}
+													/>
+													<ValidadeFinalizada
+														verificado={validade.verificado}
+														finalizado={validade.finalizado}
+														dataFinalizado={`${validade.data_finalizado} - ${validade.responsavel}`}
+													/>
+													<ProdutoEmRebaixa
+														Rebaixa={validade.rebaixa}
+														dataRebaixa={validade.data_rebaixa}
+													/>
+												</div>
 											</div>
-											<div className='card-status-icones'>
-												<ValidadeVerificada
-													verificado={validade.verificado}
-													dataInserida={validade.data_inserido}
-												/>
-												<ValidadeFinalizada
-													verificado={validade.verificado}
-													finalizado={validade.finalizado}
-													dataFinalizado={`${validade.data_finalizado} - ${validade.responsavel}`}
-												/>
-												<ProdutoEmRebaixa
-													Rebaixa={validade.rebaixa}
-													dataRebaixa={validade.data_rebaixa}
-												/>
-											</div>
-										</div>
+										)}
 									</div>
 								))}
 							</div>

@@ -878,7 +878,8 @@ button:active {
 
 /* --- O CARD REFORMULADO --- */
 .card-validade {
-  background: #ffffff;
+  /* background: #ffffff; */
+  background-color: rgba(0, 0, 0, 0.02);
   border-radius: 12px;
   padding: 10px;
   margin-bottom: 12px;
@@ -888,15 +889,18 @@ button:active {
   position: relative;
   overflow: hidden;
   /* Sombra suave de "elevação" */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 6px -6px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(0, 0, 0, 0.03);
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 e Edge */
   user-select: none; /* Padrão (Chrome, Firefox, Opera) */
+}
+
+.card-finalizado {
+  background-color: rgba(35, 170, 64, 0.05) !important;
 }
 
 /* Efeito de clique mais "premium" */
@@ -918,29 +922,48 @@ button:active {
     flex-grow: 1;
     gap: 5px;
 
+    .card-produtoplu-qrcode {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+    }
+
     .card-produto-codigo {
       font-size: 0.65rem;
     }
 
     .card-detalhes-produto-responsavel {
       display: flex;
+      flex-direction: column;
       align-items: baseline;
       gap: 5px;
       /* justify-content: center; */
 
-      .card-produto-responsavel {
+      .card-produto-marca {
+        font-weight: bold;
+        font-size: large;
+      }
+
+      .card-produto-separador {
         display: flex;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
-        width: 24px; /* Tamanho bom para mobile */
-        height: 24px;
-        border-radius: 35%; /* Garante que é um círculo */
-        background-color: #1d1d1f; /* Um azul vibrante (ex: azul do Next.js/Tailwind) */
-        color: #ffffff; /* Letra branca para contraste */
-        font-size: 14px;
-        font-weight: 700; /* Negrito forte para leitura rápida */
-        text-transform: uppercase; /* Força maiúscula */
-        border: 2px solid #ffffff; /* Um aro branco para destacar se o fundo for colorido */
+        gap: 5px;
+
+        .card-produto-responsavel {
+          display: flex;
+          align-items: center; /* Centraliza verticalmente */
+          justify-content: center; /* Centraliza horizontalmente */
+          width: 18px; /* Defina um tamanho fixo para o círculo/quadrado */
+          height: 18px;
+          line-height: 0; /* Zera a altura da linha para o texto não subir/descer */
+          font-size: 14px; /* O tamanho que você quer deixar fixo */
+          border-radius: 4px; /* Se for arredondado igual na imagem */
+          background-color: #000;
+          color: #fff;
+        }
       }
     }
   }
@@ -949,6 +972,26 @@ button:active {
     display: flex;
     flex-direction: row;
     gap: 5px;
+    font-size: 0.85rem;
+    font-weight: bold;
+
+    /* Badge de Validade com destaque */
+    .badge-validade {
+      background: #000; /* Preto total para contraste */
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* --- BADGE DE QUANTIDADE --- */
+    .badge-quantidade {
+      color: #666;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
   }
 }
 
@@ -964,17 +1007,6 @@ button:active {
   overflow: hidden; /* Esconde o que sobrar */
   text-overflow: ellipsis; /* Adiciona as reticências (...) */
   max-width: 200px; /* Ajuste conforme a largura do seu card */
-}
-
-/* Badge de Validade com destaque */
-.badge-validade {
-  background: #1d1d1f; /* Preto total para contraste */
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* --- LINHA 2: INFO SECUNDÁRIA --- */
@@ -1002,16 +1034,6 @@ button:active {
   font-size: 0.9rem;
   font-weight: 600;
   color: #555;
-}
-
-/* --- BADGE DE QUANTIDADE --- */
-.badge-quantidade {
-  font-size: 0.85rem;
-  color: #666;
-  background: #f0f0f2;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-weight: 500;
 }
 
 /* --- ÍCONES DE STATUS --- */

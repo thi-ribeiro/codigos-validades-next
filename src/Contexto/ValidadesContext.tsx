@@ -123,7 +123,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	const dataAtual = new Date();
 
-	const fetchValidades = async (produtoMarca: string = '') => {
+	const fetchValidadesOlder = async (produtoMarca: string = '') => {
 		setLoading(true);
 		try {
 			// Agora apontamos para a nossa nova API interna do Next.js
@@ -179,6 +179,66 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
 
 				// Formatação do intervalo (Ex: "Janeiro/2026")
+				if (data.dataFimIntervalo) {
+					setdataFimIntervalo(
+						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
+							locale: ptBR,
+						}),
+					);
+				}
+			} else {
+				// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
+				setProdutosValidades({});
+				if (data.marcas) setmarcasProdutos(data.marcas);
+			}
+		} catch (error: any) {
+			console.error('Fetch error:', error);
+			// addToast('Erro ao carregar dados', 'error');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchValidades = async (
+		produtoMarca: string = '',
+		filtro: string = 'validadeDiaMes',
+	) => {
+		setLoading(true);
+		try {
+			// Agora apontamos para a nossa nova API interna do Next.js
+			// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
+			const response = await fetch(
+				`${acesso_validades}/listar/?marca=${produtoMarca}`,
+				{
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					// Importante manter para o Middleware ler o seu cookie auth_token
+					credentials: 'include',
+				},
+			);
+
+			const data = await response.json();
+
+			// Se a API retornar erro de autenticação (ex: 401)
+			if (response.status === 401) {
+				setLoading(false);
+				logout();
+				return;
+			}
+
+			// data.dados contém os produtos e data.marcas as marcas para o filtro
+			if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
+				setmarcasProdutos(data.marcas);
+				setdataFimIntervalo(data.dataFimIntervalo);
+
+				const agruparValidade = _.chain(data.dados).groupBy(filtro).value();
+
+				setProdutosValidades(agruparValidade);
+				//console.log(agrupar);
+				console.log(agruparValidade);
+
 				if (data.dataFimIntervalo) {
 					setdataFimIntervalo(
 						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
