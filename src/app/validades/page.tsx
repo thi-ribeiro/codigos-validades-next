@@ -59,6 +59,7 @@ function CarregarPagina({}: Props) {
 		ValidadeVerificada,
 		ValidadeFinalizada,
 		ProdutoEmRebaixa,
+		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
 		setFiltroAtivo,
@@ -796,7 +797,7 @@ function CarregarPagina({}: Props) {
 			<Modal isOpen={isOpenModalAddEanPlu} onClose={closeModalAddEanPlu}>
 				<form
 					className='formularioAdicionarValidade'
-					onSubmit={(e) => fetchAddValidade(e, closeModalAdicionar)}>
+					onSubmit={(e) => fetchAddCodeEanPlu(e, closeModalAddEanPlu)}>
 					<h2>Adicionar Código EAN / PLU</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
@@ -806,7 +807,6 @@ function CarregarPagina({}: Props) {
 							name='codigoProduto'
 							type='text'
 							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
-							value={FormEditData?.codigoProduto || ''} // ÚNICA FONTE DE VERDADE
 							onChange={handleAutoScan}
 							maxLength={13}
 							placeholder='Código de Barras'
@@ -827,7 +827,6 @@ function CarregarPagina({}: Props) {
 						name='codigoInterno'
 						type='text'
 						inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
-						value={FormEditData?.codigoInterno || ''}
 						onChange={handleChange}
 						placeholder={
 							loadingScanner
@@ -846,7 +845,6 @@ function CarregarPagina({}: Props) {
 								: 'Digite o nome do produto.'
 						}
 						nameInput='produto'
-						valorPadrao={FormEditData?.produto || ''}
 						required={true}
 					/>
 
@@ -860,7 +858,6 @@ function CarregarPagina({}: Props) {
 								loadingScanner ? `Carregando ${dots}` : 'Digite a marca.'
 							}
 							nameInput='marca'
-							valorPadrao={FormEditData?.marca_produto || ''}
 							required={false}
 						/>
 					)}
@@ -869,14 +866,14 @@ function CarregarPagina({}: Props) {
 						<div className='buttonSubmCanc'>
 							<button
 								type='submit'
-								disabled={loading} // Desativa o botão enquanto loading for true
+								disabled={loadingButtons} // Desativa o botão enquanto loadingButtons for true
 								style={{
-									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									backgroundColor: loadingButtons ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
 									color: 'white',
-									cursor: loading ? 'not-allowed' : 'pointer',
+									cursor: loadingButtons ? 'not-allowed' : 'pointer',
 									transition: '0.3s', // Para a mudança de cor ser suave
 								}}>
-								{loading ? 'Adicionando...' : 'Adicionar'}
+								{loadingButtons ? 'Adicionando...' : 'Adicionar'}
 							</button>
 							<button type='button' onClick={closeModalAddEanPlu}>
 								Cancelar

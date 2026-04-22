@@ -58,6 +58,11 @@ export interface ValuesInterface {
 		dataDeValidade: string,
 		finalizado: number,
 	) => React.JSX.Element;
+
+	fetchAddCodeEanPlu: (
+		e: React.FormEvent,
+		callbackSucesso: () => void,
+	) => Promise<void>;
 	produtosValidades: Record<string, ValidadeProduto[]>;
 	produtosExibidos: Record<string, ValidadeProduto[]>;
 	setFiltroAtivo: (filtro: string) => void;
@@ -709,6 +714,58 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		}
 	};
 
+	const fetchAddCodeEanPlu = async (
+		e: React.FormEvent,
+		callbackSucesso: () => void,
+	) => {
+		e.preventDefault();
+
+		const formData = new FormData(e.target as HTMLFormElement);
+		const produto = formData.get('produto') as string;
+		const marca = (formData.get('marca') as string).trimEnd();
+		const codigoProduto = formData.get('codigoProduto') as string;
+		const codigoInterno = formData.get('codigoInterno') as string;
+
+		const novoProduto = {
+			ean_produto: codigoProduto,
+			plu_produto: codigoInterno,
+			descricao_produto: produto, // Atenção ao "ca" extra se houver no banco
+			marca_produto: marca,
+		};
+
+		try {
+			setLoadingButtons(true);
+
+			const response = await fetch(`${acesso_validades}/eanplu`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(novoProduto),
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				// Aqui você trata as duas possibilidades do INSERT IGNORE
+				if (data.message.includes('já existe')) {
+					addToast(data.message, 'error');
+					// Talvez você não queira dar um 'alert' se já existia,
+					// apenas seguir silenciosamente.
+				} else {
+					addToast(data.message, 'success');
+					callbackSucesso();
+				}
+			} else {
+				addToast('Erro ao salvar: ', 'error');
+			}
+		} catch (error) {
+			console.error('Falha na requisição:', error);
+		} finally {
+			setLoadingButtons(false);
+		}
+	};
+
 	const contextValues: ValuesInterface = {
 		fetchValidades,
 		fetchAddValidade,
@@ -719,6 +776,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		ValidadeVerificada,
 		ValidadeFinalizada,
 		ProdutoEmRebaixa,
+		fetchAddCodeEanPlu,
 		produtosValidades,
 		marcasProdutos,
 		produtosValidadesFinalizados,
