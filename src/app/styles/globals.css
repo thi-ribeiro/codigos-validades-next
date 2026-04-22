@@ -677,6 +677,10 @@ button:active {
   padding: 10px;
   border-radius: 8px;
 
+  input[type="text"] {
+    text-transform: capitalize;
+  }
+
   input:not([type="checkbox"]) {
     /* padding: 10px; */
     /* border: 1px solid #ccc; */
