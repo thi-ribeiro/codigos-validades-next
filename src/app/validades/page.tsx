@@ -22,6 +22,7 @@ import useModal from '@/Componentes/Modal/useModal';
 // import { useToast } from '@/Contexto/Toast';
 // import { form } from 'framer-motion/client';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
+import { useToast } from '@/Contexto/Toast';
 // import { QRCodeSVG } from 'qrcode.react';
 
 type Props = {};
@@ -52,8 +53,7 @@ function CarregarPagina({}: Props) {
 		fetchEditarValidade,
 		fetchDeletarValidade,
 		produtosValidades,
-		produtosValidadesFinalizados,
-		marcasProdutos,
+		loadingButtons,
 		dataFimIntervalo,
 		calcularDiasRestantes,
 		ValidadeVerificada,
@@ -65,6 +65,8 @@ function CarregarPagina({}: Props) {
 	} = useValidades();
 
 	const { user, isLoading } = useAuth();
+
+	const { addToast } = useToast();
 
 	const {
 		isOpen: isOpenAdicionar,
@@ -88,6 +90,12 @@ function CarregarPagina({}: Props) {
 		isOpen: isOpenModalScanner,
 		openModal: openModalScanner,
 		closeModal: closeModalScanner,
+	} = useModal();
+
+	const {
+		isOpen: isOpenModalAddEanPlu,
+		openModal: openModalAddEanPlu,
+		closeModal: closeModalAddEanPlu,
 	} = useModal();
 
 	const dataAtual = new Date();
@@ -196,37 +204,6 @@ function CarregarPagina({}: Props) {
 		}, 300); // 300ms é o tempo do modal animar
 	};
 
-	// useEffect(() => {
-	// 	// Função de limpeza que o React executa ANTES de o modal sumir da tela
-	// 	return () => {
-	// 		const matarHardware = async () => {
-	// 			if (scannerRef.current) {
-	// 				try {
-	// 					// Verificamos se está rodando (ajuste o isScanning se for booleano no seu TS)
-	// 					const isRunning =
-	// 						typeof scannerRef.current.isScanning === 'function'
-	// 							? scannerRef.current.isScanning
-	// 							: scannerRef.current.isScanning;
-
-	// 					if (isRunning) {
-	// 						await scannerRef.current.stop();
-	// 						console.log('Hardware liberado com sucesso.');
-	// 					}
-	// 				} catch (err) {
-	// 					console.warn('Tentativa de parar falhou, mas limpando ref.');
-	// 				} finally {
-	// 					scannerRef.current = null;
-	// 					// Força a limpeza de trilhas de vídeo se necessário
-	// 					const videoTracks = document.querySelector('video')
-	// 						?.srcObject as MediaStream;
-	// 					videoTracks?.getTracks().forEach((track) => track.stop());
-	// 				}
-	// 			}
-	// 		};
-	// 		matarHardware();
-	// 	};
-	// }, [isOpenModalAddCodeBar]); // Fica de olho no estado do Modal
-
 	const fecharComSeguranca = async () => {
 		// 1. O Await entra aqui: Espera o hardware dizer "parei"
 		if (scannerRef.current && scannerRef.current.isScanning) {
@@ -292,77 +269,70 @@ function CarregarPagina({}: Props) {
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
 	) => {
-		//console.log(e.target.value);
-
 		const { name, value, type } = e.target;
-		setFormEditData((prevData) => {
-			if (type === 'checkbox') {
-				const { checked } = e.target as HTMLInputElement;
 
-				return {
-					...prevData,
-					[name]: Number(checked),
-				};
-			} else {
-				// Lógica para inputs de texto, número, data (como você já tem)
-				return {
-					...prevData,
-					[name]: name === 'quantidade' ? Number(value) : value,
-				};
-			}
-			//return prevData; // Retorna o estado anterior se nenhuma condição for atendida
-		});
+		// Define o valor final antes de atualizar o estado
+		let finalValue: string | number;
+
+		if (type === 'checkbox') {
+			finalValue = Number((e.target as HTMLInputElement).checked);
+		} else {
+			finalValue = name === 'quantidade' ? Number(value) : value;
+		}
+
+		// Atualização limpa
+		setFormEditData((prevData) => ({
+			...prevData,
+			[name]: finalValue,
+		}));
 	};
 
 	const scanCodeDb = async (codigo: string) => {
-		// Evita buscar se o código for muito curto (opcional)
+		if (!codigo.trim()) return;
 
-		setLoadingScanner(true);
-
-		if (codigo.length < 10) return;
-
+		// if (codigo.length >= 13) {
 		try {
+			setLoadingScanner(true);
+
 			const response = await fetch(
 				`${acesso_validades}/procurar?codigo=${codigo}`,
 			);
 			const data = await response.json();
 
 			if (data.status === 'success' && data.produto) {
-				// Supondo que seu estado do formulário se chame FormEditData
-				// Nós "mesclamos" os dados novos com o que já existe
 				setFormEditData((prev) => ({
 					...prev,
-					produto: data.produto.descricao_produto, // Preenche o nome
-					marca_produto: data.produto.marca_produto, // Preenche a marca
-					codigoInterno: data.produto.plu_produto, // Preenche o PLU
-					codigoProduto: data.produto.ean_produto, // Garante que o EAN esteja certo
-					idRelacionado: data.produto.id, // Guarda o ID para o UPDATE posterior
+					produto: data.produto.descricao_produto,
+					marca_produto: data.produto.marca_produto,
+					codigoInterno: data.produto.plu_produto,
+					codigoProduto: data.produto.ean_produto,
+					idRelacionado: data.produto.id,
 				}));
-				console.log('Produto autocompletado com sucesso!');
 			} else {
-				// Caso não ache, você pode optar por limpar os campos ou deixar o usuário digitar
-				console.log('Produto não encontrado no banco.');
+				// Opcional: só avisar se for um código que "deveria" existir (ex: > 3 dígitos)
+				addToast('Produto não cadastrado.', 'info');
 			}
-			setLoadingScanner(false);
 		} catch (error) {
-			console.error('Erro ao consultar banco de dados:', error);
+			addToast('Erro ao buscar produto.', 'error');
+		} finally {
+			setLoadingScanner(false); // AGORA ELE SEMPRE VAI DESLIGAR
 		}
+		// }
 	};
 
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const valor = e.target.value;
 
+		// 1. Atualiza o input IMEDIATAMENTE (isso tira o lag de digitação)
 		handleChange(e);
 
-		// 1. Verifica se o valor contém APENAS números
-		const isNumeric = /^\d+$/.test(valor);
-
-		if (isNumeric) {
-			// 2. Só dispara a busca se for numérico e tiver o tamanho certo
-			if (valor.length === 13 || (valor.length >= 3 && valor.length <= 6)) {
-				scanCodeDb(valor);
-			}
+		// 2. SÓ chama o banco se o código estiver completo (13 dígitos)
+		// Se tiver 1, 2, 5, 10 dígitos, ele ignora e não pesa a tela
+		if (valor.length === 13) {
+			scanCodeDb(valor);
 		}
+		// Opcional: Se você usa códigos internos de 4 dígitos:
+		// else if (valor.length === 4) { scanCodeDb(valor); }
 	};
 
 	const useLoadingDots = (isLoading: Boolean) => {
@@ -385,9 +355,7 @@ function CarregarPagina({}: Props) {
 	};
 
 	const getInicial = (nome: string) => nome?.charAt(0).toUpperCase() || '?';
-
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
-
 	const dots = useLoadingDots(loadingScanner);
 
 	// const GeradorQRCode = ({
@@ -468,7 +436,6 @@ function CarregarPagina({}: Props) {
 															{getInicial(validade.responsavel)}
 														</span>
 														<span className='card-produto-nome'>
-															{/* {limitaTexto(validade.produto, 28)} */}
 															{validade.produto}
 														</span>
 													</span>
@@ -523,98 +490,9 @@ function CarregarPagina({}: Props) {
 				</React.Fragment>
 			)}
 
-			<Modal isOpen={isOpenAdicionar} onClose={closeModalAdicionar}>
-				<form
-					className='formularioAdicionarValidade'
-					onSubmit={(e) => fetchAddValidade(e, closeModalAdicionar)}>
-					<h2>Adicionar Validade</h2>
-
-					<label htmlFor='codigoProduto'>Código de Barras:</label>
-					<div className='add_scan_codigo_barras'>
-						<input
-							id='codigoProduto'
-							name='codigoProduto'
-							type='text'
-							value={FormEditData?.codigoProduto || codigoLido}
-							onChange={handleChange}
-							placeholder='Código de Barras'
-						/>
-
-						<button
-							type='button'
-							onClick={startScanner}
-							disabled={loading}
-							title='Scan'>
-							Scanear
-						</button>
-					</div>
-
-					<label htmlFor='codigoInterno'>Código interno:</label>
-					<input
-						id='codigoInterno'
-						name='codigoInterno'
-						type='text'
-						value={FormEditData?.codigoInterno || ''}
-						onChange={handleChange}
-						placeholder='Código interno'
-					/>
-
-					<label htmlFor='produto'>Produto:</label>
-
-					<AutoComplete
-						nome={true}
-						placeholder='Digite o nome do produto'
-						nameInput='produto'
-						required={true}
-					/>
-					<label htmlFor='marca'>Marca:</label>
-					{user?.empresa ? (
-						<input type='text' name='marca' value={user?.empresa} readOnly />
-					) : (
-						<AutoComplete
-							marca={true}
-							placeholder='Digite a marca do produto'
-							nameInput='marca'
-							required={true}
-						/>
-					)}
-
-					<label htmlFor='validade'>Validade:</label>
-					<input type='date' id='validade' name='validade' required />
-					<label htmlFor='quantidade'>Quantidade:</label>
-					<input type='number' id='quantidade' name='quantidade' required />
-					<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
-					<select id='tipoquantidade' name='tipoquantidade' required>
-						<option value='cx'>Caixas</option>
-						<option value='g'>Gramas</option>
-						<option value='l'>Litros</option>
-						<option value='ml'>Mililitros</option>
-						<option value='pc'>Pacotes</option>
-						<option value='kg'>Quilos</option>
-						<option value='un'>Unidades</option>
-					</select>
-					{/* <button type='submit'>Adicionar</button> */}
-
-					<div className='functionsButons'>
-						<div className='buttonSubmCanc'>
-							<button
-								type='submit'
-								disabled={loading} // Desativa o botão enquanto loading for true
-								style={{
-									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
-									color: 'white',
-									cursor: loading ? 'not-allowed' : 'pointer',
-									transition: '0.3s', // Para a mudança de cor ser suave
-								}}>
-								{loading ? 'Adicionando...' : 'Adicionar'}
-							</button>
-							<button type='button' onClick={closeModalAdicionar}>
-								Cancelar
-							</button>
-						</div>
-					</div>
-				</form>
-			</Modal>
+			{/* <Modal isOpen={isOpenAdicionar} onClose={closeModalAdicionar}>
+	
+			</Modal> */}
 
 			<Modal isOpen={isOpenEditar} onClose={closeModalEditar}>
 				<form
@@ -749,11 +627,11 @@ function CarregarPagina({}: Props) {
 								<React.Fragment>
 									<button
 										type='button'
-										disabled={loading}
+										disabled={loadingButtons}
 										style={{
 											backgroundColor: '#d32f2f', // Vermelho se carregando, verde se normal
 											color: 'white',
-											cursor: loading ? 'not-allowed' : 'pointer',
+											cursor: loadingButtons ? 'not-allowed' : 'pointer',
 											transition: '0.3s', // Para a mudança de cor ser suave
 										}}
 										onClick={() =>
@@ -762,19 +640,19 @@ function CarregarPagina({}: Props) {
 												closeModalEditar,
 											)
 										}>
-										{loading ? 'Processando...' : 'Remover'}
+										{loadingButtons ? 'Processando...' : 'Remover'}
 									</button>
 
 									<button
 										type='submit'
-										disabled={loading} // Desativa o botão enquanto loading for true
+										disabled={loadingButtons} // Desativa o botão enquanto loadingButtons for true
 										style={{
-											backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+											backgroundColor: loadingButtons ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
 											color: 'white',
-											cursor: loading ? 'not-allowed' : 'pointer',
+											cursor: loadingButtons ? 'not-allowed' : 'pointer',
 											transition: '0.3s', // Para a mudança de cor ser suave
 										}}>
-										{loading ? 'Processando...' : 'Atualizar'}
+										{loadingButtons ? 'Processando...' : 'Atualizar'}
 									</button>
 								</React.Fragment>
 							)}
@@ -881,14 +759,14 @@ function CarregarPagina({}: Props) {
 						<div className='buttonSubmCanc'>
 							<button
 								type='submit'
-								disabled={loading} // Desativa o botão enquanto loading for true
+								disabled={loadingButtons} // Desativa o botão enquanto loadingButtons for true
 								style={{
-									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									backgroundColor: loadingButtons ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
 									color: 'white',
-									cursor: loading ? 'not-allowed' : 'pointer',
+									cursor: loadingButtons ? 'not-allowed' : 'pointer',
 									transition: '0.3s', // Para a mudança de cor ser suave
 								}}>
-								{loading ? 'Processando...' : 'Adicionar'}
+								{loadingButtons ? 'Processando...' : 'Adicionar'}
 							</button>
 
 							<button
@@ -915,9 +793,103 @@ function CarregarPagina({}: Props) {
 					}}></div>
 			</Modal>
 
+			<Modal isOpen={isOpenModalAddEanPlu} onClose={closeModalAddEanPlu}>
+				<form
+					className='formularioAdicionarValidade'
+					onSubmit={(e) => fetchAddValidade(e, closeModalAdicionar)}>
+					<h2>Adicionar Código EAN / PLU</h2>
+
+					<label htmlFor='codigoProduto'>Código de Barras:</label>
+					<div className='add_scan_codigo_barras'>
+						<input
+							id='codigoProduto'
+							name='codigoProduto'
+							type='text'
+							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
+							value={FormEditData?.codigoProduto || ''} // ÚNICA FONTE DE VERDADE
+							onChange={handleAutoScan}
+							maxLength={13}
+							placeholder='Código de Barras'
+							autoComplete='off' // Evita que o preenchimento automático do celular trave o campo
+						/>
+
+						<button
+							type='button'
+							onClick={startScanner}
+							disabled={loading}
+							title='Limpar e Bipar novamente'>
+							Scanear
+						</button>
+					</div>
+					<label htmlFor='codigoInterno'>Código interno:</label>
+					<input
+						id='codigoInterno'
+						name='codigoInterno'
+						type='text'
+						inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
+						value={FormEditData?.codigoInterno || ''}
+						onChange={handleChange}
+						placeholder={
+							loadingScanner
+								? `Carregando ${dots}`
+								: 'Código interno do produto.'
+						}
+					/>
+
+					<label htmlFor='produto'>Produto:</label>
+
+					<AutoComplete
+						nome={true}
+						placeholder={
+							loadingScanner
+								? `Carregando ${dots}`
+								: 'Digite o nome do produto.'
+						}
+						nameInput='produto'
+						valorPadrao={FormEditData?.produto || ''}
+						required={true}
+					/>
+
+					<label htmlFor='marca'>Marca:</label>
+					{user?.empresa ? (
+						<input type='text' name='marca' value={user?.empresa} readOnly />
+					) : (
+						<AutoComplete
+							marca={true}
+							placeholder={
+								loadingScanner ? `Carregando ${dots}` : 'Digite a marca.'
+							}
+							nameInput='marca'
+							valorPadrao={FormEditData?.marca_produto || ''}
+							required={false}
+						/>
+					)}
+
+					<div className='functionsButons'>
+						<div className='buttonSubmCanc'>
+							<button
+								type='submit'
+								disabled={loading} // Desativa o botão enquanto loading for true
+								style={{
+									backgroundColor: loading ? '#d32f2f' : '#4CAF50', // Vermelho se carregando, verde se normal
+									color: 'white',
+									cursor: loading ? 'not-allowed' : 'pointer',
+									transition: '0.3s', // Para a mudança de cor ser suave
+								}}>
+								{loading ? 'Adicionando...' : 'Adicionar'}
+							</button>
+							<button type='button' onClick={closeModalAddEanPlu}>
+								Cancelar
+							</button>
+						</div>
+					</div>
+				</form>
+			</Modal>
+
 			<AddButton
 				openModalAddBarCode={openModalAddCodeBar}
 				openFuncion={openModalAdicionar}
+				openModalAddEanPlu={openModalAddEanPlu}
 				addUser
 				addBarCode={true}
 				addValidade={true}

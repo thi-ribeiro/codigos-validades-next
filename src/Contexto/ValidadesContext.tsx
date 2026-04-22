@@ -1,4 +1,10 @@
-import React, { useContext, createContext, useState, useMemo } from 'react';
+import React, {
+	useContext,
+	createContext,
+	useState,
+	useMemo,
+	useCallback,
+} from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
 import _ from 'lodash';
@@ -58,6 +64,7 @@ export interface ValuesInterface {
 	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
 	produtosValidadesFinalizados: Record<string, ValidadeProduto[]>;
 	loading: boolean;
+	loadingButtons: boolean;
 	dataFimIntervalo: string | 'Indefinido';
 }
 
@@ -104,6 +111,10 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		Record<string, ValidadeProduto[]>
 	>({});
 
+	// const [produtosValidades, setProdutosValidades] = useState<ValidadeProduto[]>(
+	// 	[],
+	// );
+
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
 
 	const [marcasProdutos, setmarcasProdutos] = useState<
@@ -115,89 +126,90 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const [filtroAtivo, setFiltroAtivo] = useState('todos'); // Pode ser 'todos' ou 'vencendo'
 
 	const [loading, setLoading] = useState(true);
+	const [loadingButtons, setLoadingButtons] = useState(false);
 	// const [isModalOpen, setIsModalOpen] = useState(false);
 	// const [isModalEditOpen, setIsModalEditOpen] = useState(false);
 
 	const { user, logout } = useAuth();
 	const { addToast } = useToast();
 
-	const dataAtual = new Date();
+	// const dataAtual = new Date();
 
-	const fetchValidadesOlder = async (produtoMarca: string = '') => {
-		setLoading(true);
-		try {
-			// Agora apontamos para a nossa nova API interna do Next.js
-			// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
-			const response = await fetch(
-				`${acesso_validades}/listar/?marca=${produtoMarca}`,
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					// Importante manter para o Middleware ler o seu cookie auth_token
-					credentials: 'include',
-				},
-			);
+	// const fetchValidadesOlder = async (produtoMarca: string = '') => {
+	// 	setLoading(true);
+	// 	try {
+	// 		// Agora apontamos para a nossa nova API interna do Next.js
+	// 		// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
+	// 		const response = await fetch(
+	// 			`${acesso_validades}/listar/?marca=${produtoMarca}`,
+	// 			{
+	// 				method: 'GET',
+	// 				headers: {
+	// 					'Content-Type': 'application/json',
+	// 				},
+	// 				// Importante manter para o Middleware ler o seu cookie auth_token
+	// 				credentials: 'include',
+	// 			},
+	// 		);
 
-			const data = await response.json();
+	// 		const data = await response.json();
 
-			// Se a API retornar erro de autenticação (ex: 401)
-			if (response.status === 401) {
-				setLoading(false);
-				logout();
-				return;
-			}
+	// 		// Se a API retornar erro de autenticação (ex: 401)
+	// 		if (response.status === 401) {
+	// 			setLoading(false);
+	// 			logout();
+	// 			return;
+	// 		}
 
-			// data.dados contém os produtos e data.marcas as marcas para o filtro
-			if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
-				setmarcasProdutos(data.marcas);
-				setdataFimIntervalo(data.dataFimIntervalo);
+	// 		// data.dados contém os produtos e data.marcas as marcas para o filtro
+	// 		if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
+	// 			setmarcasProdutos(data.marcas);
+	// 			setdataFimIntervalo(data.dataFimIntervalo);
 
-				const agruparPorStatus = _.chain(data.dados)
-					.groupBy((item) =>
-						item.finalizado === 1 ? 'finalizados' : 'pendentes',
-					)
-					.value();
+	// 			const agruparPorStatus = _.chain(data.dados)
+	// 				.groupBy((item) =>
+	// 					item.finalizado === 1 ? 'finalizados' : 'pendentes',
+	// 				)
+	// 				.value();
 
-				const agrupar = _.chain(data.dados).groupBy('marca_produto').value();
+	// 			const agrupar = _.chain(data.dados).groupBy('marca_produto').value();
 
-				// const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
-				// 	agruparPorStatus.pendentes,
-				// 	'marca_produto',
-				// );
+	// 			// const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
+	// 			// 	agruparPorStatus.pendentes,
+	// 			// 	'marca_produto',
+	// 			// );
 
-				// const agrupamenteoValidadeFinalizado = _.groupBy(
-				// 	agruparPorStatus.finalizados,
-				// 	'marca_produto',
-				// );
+	// 			// const agrupamenteoValidadeFinalizado = _.groupBy(
+	// 			// 	agruparPorStatus.finalizados,
+	// 			// 	'marca_produto',
+	// 			// );
 
-				//console.log(agrupamenteoValidadeFinalizado);
+	// 			//console.log(agrupamenteoValidadeFinalizado);
 
-				setProdutosValidades(agrupar);
-				console.log(agrupar);
-				//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
+	// 			setProdutosValidades(agrupar);
+	// 			console.log(agrupar);
+	// 			//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
 
-				// Formatação do intervalo (Ex: "Janeiro/2026")
-				if (data.dataFimIntervalo) {
-					setdataFimIntervalo(
-						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
-							locale: ptBR,
-						}),
-					);
-				}
-			} else {
-				// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
-				setProdutosValidades({});
-				if (data.marcas) setmarcasProdutos(data.marcas);
-			}
-		} catch (error: any) {
-			console.error('Fetch error:', error);
-			// addToast('Erro ao carregar dados', 'error');
-		} finally {
-			setLoading(false);
-		}
-	};
+	// 			// Formatação do intervalo (Ex: "Janeiro/2026")
+	// 			if (data.dataFimIntervalo) {
+	// 				setdataFimIntervalo(
+	// 					format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
+	// 						locale: ptBR,
+	// 					}),
+	// 				);
+	// 			}
+	// 		} else {
+	// 			// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
+	// 			setProdutosValidades({});
+	// 			if (data.marcas) setmarcasProdutos(data.marcas);
+	// 		}
+	// 	} catch (error: any) {
+	// 		console.error('Fetch error:', error);
+	// 		// addToast('Erro ao carregar dados', 'error');
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// };
 
 	const fetchValidades = async (
 		produtoMarca: string = '',
@@ -237,7 +249,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				setProdutosValidades(agruparValidade);
 				//console.log(agrupar);
-				console.log(agruparValidade);
+				//console.log(agruparValidade);
 
 				if (data.dataFimIntervalo) {
 					setdataFimIntervalo(
@@ -288,6 +300,25 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		return novoObjetoFiltrado;
 	}, [produtosValidades, filtroAtivo]);
 
+	// const produtosAgrupados = useMemo(() => {
+	// 	const grupos: Record<string, ValidadeProduto[]> = {};
+
+	// 	// Pegamos todos os arrays de dentro do objeto e transformamos em um "flat array"
+	// 	const listaPlana = Object.values(produtosValidades).flat();
+
+	// 	listaPlana.forEach((item) => {
+	// 		const chave = item.validadeDiaMes;
+	// 		if (!grupos[chave]) {
+	// 			grupos[chave] = [];
+	// 		}
+	// 		grupos[chave].push(item);
+	// 	});
+
+	// 	return grupos;
+	// }, [produtosValidades]);
+
+	// O parâmetro 'dados' recebe o que veio do banco ou do form
+
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
 
@@ -301,82 +332,121 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		return `${ano}-${mes}-${dia} ${horas}:${minutos}:${segundos}`;
 	};
 
-	const fetchAddValidade = async (
-		e: React.FormEvent,
-		callbackSucesso: () => void,
-	) => {
-		e.preventDefault();
+	const fetchAddValidade = useCallback(
+		async (e: React.FormEvent, callbackSucesso: () => void) => {
+			e.preventDefault();
 
-		const formData = new FormData(e.target as HTMLFormElement);
-		const produto = formData.get('produto') as string;
-		const validade = formData.get('validade') as string;
-		const quantidade = formData.get('quantidade') as string;
-		const marca = (formData.get('marca') as string).trimEnd();
-		const tipoQuantidade = formData.get('tipoquantidade') as string;
-		const codigoProduto = formData.get('codigoProduto') as string;
-		const codigoInterno = formData.get('codigoInterno') as string;
+			const formData = new FormData(e.target as HTMLFormElement);
+			const produto = formData.get('produto') as string;
+			const validade = formData.get('validade') as string;
+			const quantidade = formData.get('quantidade') as string;
+			const marca = (formData.get('marca') as string).trimEnd();
+			const tipoQuantidade = formData.get('tipoquantidade') as string;
+			const codigoProduto = formData.get('codigoProduto') as string;
+			const codigoInterno = formData.get('codigoInterno') as string;
 
-		const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
+			const quantidadeDesc = `${quantidade} ${tipoQuantidade}`;
 
-		try {
-			setLoading(true);
+			try {
+				setLoadingButtons(true);
 
-			// Aponta para a nova rota da API no Next.js
-			const response = await fetch(`${acesso_validades}/adicionar`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					produto,
-					marca,
-					validade,
-					quantidadeDesc,
-					responsavel: user?.usuario,
-					id_responsavel: user?.uid,
-					codigoProduto: codigoProduto,
-					codigoInterno: codigoInterno,
-					// Mantemos sua função de formatar data para o MySQL
-					data_inserido: formatarDataParaMySQL(new Date()),
-				}),
-				//credentials: 'include',
-			});
+				// Aponta para a nova rota da API no Next.js
+				const response = await fetch(`${acesso_validades}/adicionar`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						produto,
+						marca,
+						validade,
+						quantidadeDesc,
+						responsavel: user?.usuario,
+						id_responsavel: user?.uid,
+						codigoProduto: codigoProduto,
+						codigoInterno: codigoInterno,
+						// Mantemos sua função de formatar data para o MySQL
+						data_inserido: formatarDataParaMySQL(new Date()),
+					}),
+					//credentials: 'include',
+				});
 
-			// Se o servidor retornar 401 (Não autorizado), o Middleware ou a API avisam
-			if (response.status === 401) {
-				setLoading(false);
-				logout();
-				return;
+				// Se o servidor retornar 401 (Não autorizado), o Middleware ou a API avisam
+				if (response.status === 401) {
+					setLoading(false);
+					logout();
+					return;
+				}
+
+				const data = await response.json();
+
+				if (data && data.status === 'success') {
+					addToast(data.message, data.status);
+					// 1. Gera a data formatada para a chave
+
+					const dataObj = new Date(`${validade}T12:00:00`);
+					const validadeFormatada = dataObj.toLocaleDateString('pt-BR');
+
+					const novoItem: ValidadeProduto = {
+						idvalidades: data.id,
+						produto: produto,
+						validade: validade,
+						responsavel: user?.usuario || 'Desconhecido',
+						data_inserido: formatarDataParaMySQL(new Date()), // A função que você já tinha
+						validadeDiaMes: validadeFormatada, // Usando a data formatada aqui também
+						marca_produto: marca,
+						quantidade_produto: quantidadeDesc,
+						codigoProduto: codigoProduto,
+						codigoInterno: codigoInterno,
+						tipoquantidade: tipoQuantidade,
+						descricao_produto: produto,
+						verificado: 0,
+						data_verificado: '',
+						finalizado: 0,
+						data_finalizado: '',
+						rebaixa: 0,
+						data_rebaixa: '',
+					};
+
+					setProdutosValidades((prev) => {
+						// 1. Localiza a "gaveta" (array) da data específica
+						// Se não existir nada nessa data ainda, começa com um array vazio
+						const listaDaData = prev[validadeFormatada] || [];
+
+						// 2. Cria a nova lista adicionando o novo item ao FINAL
+						// Isso mantém a ordem de ID (quem chega por último, fica por último na lista daquela data)
+						const novaListaAtualizada = [...listaDaData, novoItem];
+
+						// 3. Retorna o objeto INTEIRO atualizado
+						return {
+							...prev, // Mantém todas as outras datas que já estavam no estado
+							[validadeFormatada]: novaListaAtualizada, // Atualiza/Cria apenas a data deste produto
+						};
+					});
+
+					callbackSucesso();
+				} else {
+					addToast(data.message || 'Erro ao cadastrar', data.status || 'error');
+				}
+			} catch (error) {
+				console.error('Fetch error:', error);
+				addToast(
+					'Erro ao conectar com o servidor. Verifique sua conexão.',
+					'error',
+				);
+			} finally {
+				setLoadingButtons(false);
 			}
-
-			const data = await response.json();
-
-			if (data && data.status === 'success') {
-				addToast(data.message, data.status);
-				// Atualiza a lista após inserir
-				await fetchValidades();
-				// Executa o callback (geralmente fechar o modal ou limpar form)
-				callbackSucesso();
-			} else {
-				addToast(data.message || 'Erro ao cadastrar', data.status || 'error');
-			}
-		} catch (error) {
-			console.error('Fetch error:', error);
-			addToast(
-				'Erro ao conectar com o servidor. Verifique sua conexão.',
-				'error',
-			);
-		} finally {
-			setLoading(false);
-		}
-	};
+		},
+		[user, acesso_validades, setProdutosValidades, fetchValidades],
+	);
 
 	const fetchEditarValidade = async (
 		e: React.FormEvent,
 		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
-		setLoading(true);
+		setLoadingButtons(true);
 
 		const form = e.target as HTMLFormElement;
 		const formData = new FormData(form);
@@ -426,9 +496,32 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			if (response.ok && data.status === 'success') {
 				addToast(data.message, 'success');
+
+				setProdutosValidades((prev) => {
+					const validadeFormatada = new Date(
+						`${dadosParaEnviar.validade}T12:00:00`,
+					).toLocaleDateString('pt-BR');
+					const lista = prev[validadeFormatada] || [];
+
+					const novaLista = lista.map((item) =>
+						item.idvalidades === dadosParaEnviar.id_validade
+							? ({
+									...item,
+									...dadosParaEnviar,
+									marca_produto: dadosParaEnviar.marca,
+									quantidade_produto: dadosParaEnviar.quantidadeDesc,
+									validadeDiaMes: validadeFormatada,
+									// Forçamos para string para bater com o seu tipo ValidadeProduto
+									codigoProduto: String(dadosParaEnviar.codigoProduto),
+									codigoInterno: String(dadosParaEnviar.codigoInterno),
+								} as ValidadeProduto)
+							: item,
+					);
+
+					return { ...prev, [validadeFormatada]: novaLista };
+				});
+
 				callbackSucesso();
-				// Importante: fetchValidades() aqui atualiza sua lista principal
-				await fetchValidades();
 			} else {
 				// Se cair aqui, o 'data.message' vai te dizer o erro real do MySQL (ex: coluna faltando)
 				addToast(data.message || 'Erro ao atualizar', 'error');
@@ -436,7 +529,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		} catch (error) {
 			addToast('Erro de conexão com o servidor', 'error');
 		} finally {
-			setLoading(false);
+			setLoadingButtons(false);
 		}
 	};
 
@@ -518,10 +611,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		}
 	};
 
-	// No topo do arquivo, certifique-se de importar do date-fns:
-	// import { parseISO, startOfDay, differenceInDays, format } from 'date-fns';
-	// import { ptBR } from 'date-fns/locale';
-
 	const calcularDiasRestantes = (
 		dataDeValidade: string,
 		finalizado: number,
@@ -581,14 +670,13 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		id: string | number,
 		callbackSucesso: () => void,
 	) => {
-		// 1. Confirmação para evitar exclusão por erro
 		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
 
-		//setLoading(true);
-
 		try {
+			setLoadingButtons(true);
+
 			const response = await fetch(`${acesso_validades}/deletar`, {
-				method: 'DELETE', // Usamos o método DELETE para ser bem profissional
+				method: 'DELETE',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ id_validade: id }),
 			});
@@ -597,25 +685,27 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			if (data.status === 'success') {
 				addToast(data.message, data.status);
-				callbackSucesso(); // Fecha o modal
-
+				// Aqui a lógica está matadora: filtra por ID e agrupa por Data
 				const listaFiltrada = Object.values(produtosValidades)
 					.flat()
 					.filter((item) => item.idvalidades !== id);
 
 				const novaListaProdutos = Object.groupBy(
 					listaFiltrada,
-					(item) => item.marca_produto,
+					(item) => item.validadeDiaMes,
 				) as Record<string, ValidadeProduto[]>;
 
 				setProdutosValidades(novaListaProdutos);
+
+				callbackSucesso();
 			} else {
 				addToast(data.message, 'error');
-				setLoading(false);
 			}
 		} catch (error) {
+			console.error(error);
 			addToast('Erro ao deletar', 'error');
-			setLoading(false);
+		} finally {
+			setLoadingButtons(false);
 		}
 	};
 
@@ -636,10 +726,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		loading,
 		produtosExibidos: dadosParaExibir,
 		setFiltroAtivo,
-		// isModalOpen,
-		// isModalEditOpen,
-		// setIsModalOpen,
-		// setIsModalEditOpen,
+		loadingButtons,
 	};
 
 	return (

@@ -630,25 +630,41 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* position: fixed; */
-    /* bottom: 20px;
-    right: 20px; */
     background-color: #28a745;
     color: white;
     border: none;
     border-radius: 100%;
-
     width: 40px;
     height: 40px;
     text-align: center;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease-in-out;
+    opacity: 0.5;
+  }
+
+  /* Quando o mouse passa por cima */
+  .buttonAdd:hover {
+    opacity: 1;
+    /* background-color: #218838; Um verde um pouco mais escuro */
+    transform: scale(1.1); /* Dá um leve aumento, fica bem moderno */
+  }
+
+  /* Quando você clica (segura o clique) */
+  .buttonAdd:active {
+    transform: scale(0.95); /* Efeito de "afundar" o botão ao clicar */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .buttonAddCodeBar {
+    background-color: #007bff;
+    /* width: 35px;
+    height: 35px; */
   }
 
   .buttonAddUser {
-    width: 30px;
-    height: 30px;
+    /* width: 30px;
+    height: 30px; */
     background-color: #007bff;
   }
 }

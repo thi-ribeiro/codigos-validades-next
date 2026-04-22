@@ -1,6 +1,6 @@
 import { useAuth } from '@/Contexto/AuthContext';
 import React from 'react';
-import { IoMdPersonAdd, IoMdQrScanner } from 'react-icons/io';
+import { IoMdBarcode, IoMdPersonAdd, IoMdQrScanner } from 'react-icons/io';
 import { IoAdd } from 'react-icons/io5';
 import useModal from '../Modal/useModal';
 import Modal from '../Modal/Modal';
@@ -10,6 +10,7 @@ import { add } from 'lodash';
 type Props = {
 	openFuncion: () => void;
 	openModalAddBarCode?: () => void;
+	openModalAddEanPlu?: () => void;
 	//openFuncionAddUser?: () => void;
 	addUser?: boolean;
 	addValidade?: boolean;
@@ -20,6 +21,7 @@ type Props = {
 export default function AddButton({
 	openFuncion,
 	openModalAddBarCode,
+	openModalAddEanPlu,
 	addUser = false,
 	addBarCode = false,
 	addCodigo = false,
@@ -83,6 +85,7 @@ export default function AddButton({
 				addValidade={addValidade}
 				openFuncion={openFuncion}
 				openModalAddBarCode={openModalAddBarCode}
+				openModalAddEanPlu={openModalAddEanPlu}
 				isOpenModalAddUser={isOpenModalAddUser}
 				openModalAddUser={openModalAddUser}
 				closeModalAddUser={closeModalAddUser}
@@ -100,6 +103,7 @@ const SelectAddButtonOptions = ({
 	addValidade,
 	openFuncion,
 	openModalAddBarCode,
+	openModalAddEanPlu,
 	isOpenModalAddUser,
 	openModalAddUser,
 	closeModalAddUser,
@@ -112,16 +116,23 @@ const SelectAddButtonOptions = ({
 		return (
 			<>
 				{addUser && (
-					<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
-						<IoMdPersonAdd size={15} />
-					</div>
+					<>
+						<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
+							<IoMdPersonAdd size={20} />
+						</div>
+						<div
+							className='buttonAddBarCodeScan buttonAdd buttonAddCodeBar'
+							onClick={openModalAddEanPlu}>
+							<IoMdBarcode size={20} />
+						</div>
+					</>
 				)}
 
 				{addBarCode ? (
 					<div
 						className='buttonAddBarCodeScan buttonAdd'
 						onClick={openModalAddBarCode}>
-						<IoMdQrScanner size={15} />
+						<IoMdQrScanner size={20} />
 					</div>
 				) : (
 					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
@@ -157,7 +168,7 @@ const SelectAddButtonOptions = ({
 			<div
 				className='buttonAddBarCodeScan buttonAdd'
 				onClick={openModalAddBarCode}>
-				<IoMdQrScanner size={15} />
+				<IoMdQrScanner size={20} />
 			</div>
 		);
 	}
