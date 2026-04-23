@@ -69,11 +69,11 @@ export async function POST(request: Request) {
 
         // 4. Inserção (Caso não exista)
         const queryValidade = `
-    INSERT INTO validades 
-    (idRelacionado, responsavel, validade, data_inserido, quantidade_produto)
-    VALUES (?, ?, ?, ?, ?)`;
+            INSERT INTO validades 
+            (idRelacionado, responsavel, validade, data_inserido, quantidade_produto)
+            VALUES (?, ?, ?, ?, ?)`;
 
-        await connection.execute(queryValidade, [
+        const [resultValidade]: any = await connection.execute(queryValidade, [
             produtoId,
             responsavel || '',
             validade,
@@ -81,11 +81,40 @@ export async function POST(request: Request) {
             quantidadeDesc
         ]);
 
+        // 5. BUSCA O ITEM COMPLETO PARA O FRONTEND
+        // Usamos o insertId para pegar exatamente o que acabamos de criar
+        const [rows]: any = await connection.execute(`
+            SELECT 
+                v.idValidades, 
+                v.idRelacionado,
+                v.responsavel,
+                v.validade,
+                DATE_FORMAT(v.validade, '%d/%m/%Y') as validadeDiaMes,
+                v.data_inserido,
+                v.quantidade_produto,
+                v.verificado,
+                v.finalizado,
+                v.rebaixa,
+                p.descricao_produto as produto, 
+                p.marca_produto,
+                p.ean_produto as codigoProduto,
+                p.plu_produto as codigoInterno
+            FROM validades v
+            JOIN ean_plu_produtos p ON v.idRelacionado = p.id
+            WHERE v.idValidades = ?
+        `, [resultValidade.insertId]);
+
+        const itemCompleto = rows[0];
+
         // Finaliza a transação com sucesso
         await connection.commit();
 
         return NextResponse.json(
-            { status: 'success', message: 'Produto vinculado e validade cadastrada!' },
+            {
+                status: 'success',
+                message: 'Produto vinculado e validade cadastrada!',
+                item: itemCompleto // <--- O "pulo do gato" está aqui
+            },
             { status: 200 }
         );
 

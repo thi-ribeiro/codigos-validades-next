@@ -205,7 +205,7 @@ function CarregarPagina({}: Props) {
 		}, 300); // 300ms é o tempo do modal animar
 	};
 
-	const fecharComSeguranca = async () => {
+	const fecharComSeguranca = async (callbackFinal?: () => void) => {
 		// 1. O Await entra aqui: Espera o hardware dizer "parei"
 		if (scannerRef.current && scannerRef.current.isScanning) {
 			try {
@@ -219,9 +219,13 @@ function CarregarPagina({}: Props) {
 		}
 
 		// 2. Agora que a câmera desligou, a gente fecha o Modal de fato
-		closeModalAddCodeBar();
+
 		setFormEditData(INITIAL_STATE);
 		setCodigoLido('');
+
+		if (callbackFinal) {
+			callbackFinal();
+		}
 	};
 
 	const fecharModalScanner = async () => {
@@ -251,20 +255,21 @@ function CarregarPagina({}: Props) {
 		//setFiltroMarca(marca);
 	};
 
-	const definirItemNoArray = (idSelecionado: number, marca: string) => {
-		if (idSelecionado) {
-			const itemCompletoSelecionado = produtosValidades[marca]?.find(
-				(item) => item.idvalidades === idSelecionado,
-			);
+	const definirItemNoArray = (idSelecionado: number, dataChave: string) => {
+		// Se a chave não existir no objeto, produtosValidades[dataChave] será undefined
+		const listaDestaData = produtosValidades[dataChave];
 
-			setFormEditData(itemCompletoSelecionado ?? ({} as ValidadeProduto));
+		if (listaDestaData) {
+			const item = listaDestaData.find((v) => v.idvalidades === idSelecionado);
 
-			console.log(itemCompletoSelecionado);
+			if (item) {
+				setFormEditData(item);
+				return;
+			}
 		}
 
-		//console.log(idSelecionado);
-
-		//setIsModalEditOpen(true);
+		// Se chegou aqui, algo deu errado, então limpamos o form por segurança
+		setFormEditData(INITIAL_STATE);
 	};
 
 	const handleChange = (
@@ -323,6 +328,8 @@ function CarregarPagina({}: Props) {
 
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const valor = e.target.value;
+
+		console.log(valor);
 
 		// 1. Atualiza o input IMEDIATAMENTE (isso tira o lag de digitação)
 		handleChange(e);
@@ -417,7 +424,7 @@ function CarregarPagina({}: Props) {
 								{produtosExibidos[marca]?.map((validade) => (
 									<div
 										className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
-										key={validade.idvalidades}
+										key={validade.idvalidades + validade.validadeDiaMes}
 										onClick={() => {
 											definirItemNoArray(
 												validade.idvalidades,
@@ -490,10 +497,6 @@ function CarregarPagina({}: Props) {
 					))}
 				</React.Fragment>
 			)}
-
-			{/* <Modal isOpen={isOpenAdicionar} onClose={closeModalAdicionar}>
-	
-			</Modal> */}
 
 			<Modal isOpen={isOpenEditar} onClose={closeModalEditar}>
 				<form
@@ -666,10 +669,14 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<Modal isOpen={isOpenModalAddCodeBar} onClose={fecharComSeguranca}>
+			<Modal
+				isOpen={isOpenModalAddCodeBar}
+				onClose={() => fecharComSeguranca(closeModalAddCodeBar)}>
 				<form
 					className='formularioAdicionarValidade'
-					onSubmit={(e) => fetchAddValidade(e, fecharComSeguranca)}>
+					onSubmit={(e) =>
+						fetchAddValidade(e, () => fecharComSeguranca(closeModalAddCodeBar))
+					}>
 					<h2>Adicionar Validade Via Código de Barras</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
@@ -699,6 +706,7 @@ function CarregarPagina({}: Props) {
 						id='codigoInterno'
 						name='codigoInterno'
 						type='text'
+						inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
 						value={FormEditData?.codigoInterno || ''}
 						onChange={handleChange}
 						placeholder={
@@ -773,7 +781,7 @@ function CarregarPagina({}: Props) {
 							<button
 								type='button'
 								className='suas-classes-de-cancelar'
-								onClick={fecharComSeguranca}>
+								onClick={() => fecharComSeguranca(closeModalAddCodeBar)}>
 								Cancelar
 							</button>
 						</div>
@@ -781,23 +789,14 @@ function CarregarPagina({}: Props) {
 				</form>
 			</Modal>
 
-			<Modal isOpen={isOpenModalScanner} onClose={fecharModalScanner}>
-				<h2>Escanear Código de Barras</h2>
-
-				<div
-					className='scanner-container'
-					id='reader'
-					style={{
-						width: '100%',
-						height: '100%',
-						//minHeight: '300px',
-					}}></div>
-			</Modal>
-
-			<Modal isOpen={isOpenModalAddEanPlu} onClose={closeModalAddEanPlu}>
+			<Modal
+				isOpen={isOpenModalAddEanPlu}
+				onClose={() => fecharComSeguranca(closeModalAddEanPlu)}>
 				<form
 					className='formularioAdicionarValidade'
-					onSubmit={(e) => fetchAddCodeEanPlu(e, closeModalAddEanPlu)}>
+					onSubmit={(e) =>
+						fetchAddCodeEanPlu(e, () => fecharComSeguranca(closeModalAddEanPlu))
+					}>
 					<h2>Adicionar Código EAN / PLU</h2>
 
 					<label htmlFor='codigoProduto'>Código de Barras:</label>
@@ -807,6 +806,7 @@ function CarregarPagina({}: Props) {
 							name='codigoProduto'
 							type='text'
 							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
+							value={FormEditData?.codigoProduto || ''}
 							onChange={handleAutoScan}
 							maxLength={13}
 							placeholder='Código de Barras'
@@ -828,6 +828,7 @@ function CarregarPagina({}: Props) {
 						type='text'
 						inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
 						onChange={handleChange}
+						value={FormEditData?.codigoInterno || ''}
 						placeholder={
 							loadingScanner
 								? `Carregando ${dots}`
@@ -839,6 +840,7 @@ function CarregarPagina({}: Props) {
 
 					<AutoComplete
 						nome={true}
+						valorPadrao={FormEditData?.produto || ''}
 						placeholder={
 							loadingScanner
 								? `Carregando ${dots}`
@@ -854,6 +856,7 @@ function CarregarPagina({}: Props) {
 					) : (
 						<AutoComplete
 							marca={true}
+							valorPadrao={FormEditData?.marca_produto || ''}
 							placeholder={
 								loadingScanner ? `Carregando ${dots}` : 'Digite a marca.'
 							}
@@ -875,12 +878,27 @@ function CarregarPagina({}: Props) {
 								}}>
 								{loadingButtons ? 'Adicionando...' : 'Adicionar'}
 							</button>
-							<button type='button' onClick={closeModalAddEanPlu}>
+							<button
+								type='button'
+								onClick={() => fecharComSeguranca(closeModalAddEanPlu)}>
 								Cancelar
 							</button>
 						</div>
 					</div>
 				</form>
+			</Modal>
+
+			<Modal isOpen={isOpenModalScanner} onClose={fecharModalScanner}>
+				<h2>Escanear Código de Barras</h2>
+
+				<div
+					className='scanner-container'
+					id='reader'
+					style={{
+						width: '100%',
+						height: '100%',
+						//minHeight: '300px',
+					}}></div>
 			</Modal>
 
 			<AddButton

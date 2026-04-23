@@ -387,45 +387,18 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 				if (data && data.status === 'success') {
 					addToast(data.message, data.status);
-					// 1. Gera a data formatada para a chave
 
+					const itemVindoDoBanco = data.item; // Objeto completo e organizado
+
+					// Formata a chave da data para o grupo (Ex: "25/12/2026")
 					const dataObj = new Date(`${validade}T12:00:00`);
 					const validadeFormatada = dataObj.toLocaleDateString('pt-BR');
 
-					const novoItem: ValidadeProduto = {
-						idvalidades: data.id,
-						produto: produto,
-						validade: validade,
-						responsavel: user?.usuario || 'Desconhecido',
-						data_inserido: formatarDataParaMySQL(new Date()), // A função que você já tinha
-						validadeDiaMes: validadeFormatada, // Usando a data formatada aqui também
-						marca_produto: marca,
-						quantidade_produto: quantidadeDesc,
-						codigoProduto: codigoProduto,
-						codigoInterno: codigoInterno,
-						tipoquantidade: tipoQuantidade,
-						descricao_produto: produto,
-						verificado: 0,
-						data_verificado: '',
-						finalizado: 0,
-						data_finalizado: '',
-						rebaixa: 0,
-						data_rebaixa: '',
-					};
-
 					setProdutosValidades((prev) => {
-						// 1. Localiza a "gaveta" (array) da data específica
-						// Se não existir nada nessa data ainda, começa com um array vazio
 						const listaDaData = prev[validadeFormatada] || [];
-
-						// 2. Cria a nova lista adicionando o novo item ao FINAL
-						// Isso mantém a ordem de ID (quem chega por último, fica por último na lista daquela data)
-						const novaListaAtualizada = [...listaDaData, novoItem];
-
-						// 3. Retorna o objeto INTEIRO atualizado
 						return {
-							...prev, // Mantém todas as outras datas que já estavam no estado
-							[validadeFormatada]: novaListaAtualizada, // Atualiza/Cria apenas a data deste produto
+							...prev,
+							[validadeFormatada]: [...listaDaData, itemVindoDoBanco],
 						};
 					});
 
