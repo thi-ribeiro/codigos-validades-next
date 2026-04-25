@@ -62,6 +62,8 @@ function CarregarPagina({}: Props) {
 		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
+		nomeProduto,
+		setNomeProduto,
 		setFiltroAtivo,
 	} = useValidades();
 
@@ -909,6 +911,15 @@ function CarregarPagina({}: Props) {
 				addBarCode={true}
 				addValidade={true}
 			/>
+
+			<div className='search-container'>
+				<input
+					type='text'
+					placeholder='Buscar por nome do produto...'
+					value={nomeProduto}
+					onChange={(e) => setNomeProduto(e.target.value)}
+				/>
+			</div>
 		</div>
 	);
 }

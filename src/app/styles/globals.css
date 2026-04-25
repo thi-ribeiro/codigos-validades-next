@@ -467,6 +467,39 @@ button:active {
     overflow: hidden; /* Para garantir que as bordas arredondadas funcionem corretamente */
   }
 
+  .search-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    /* background: rgba(255, 255, 255, 0.7); */
+    /* backdrop-filter: blur(10px); */
+    /* border-top: 1px solid rgba(0, 0, 0, 0.1); */
+    display: flex;
+    justify-content: center;
+    z-index: 999;
+
+    input {
+      width: 60%;
+      max-width: 500px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      outline: none;
+      /* font-size: 16px; */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      &:focus {
+        border-color: #007bff7a;
+      }
+    }
+  }
+
+  main {
+    padding-bottom: 80px;
+  }
+
   /* Estilo para as linhas (cabeçalho e dados) */
   .linha-header,
   .linha-dados {
@@ -640,12 +673,12 @@ button:active {
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease-in-out;
-    opacity: 0.5;
+    /* opacity: 0.5; */
   }
 
   /* Quando o mouse passa por cima */
   .buttonAdd:hover {
-    opacity: 1;
+    /* opacity: 1; */
     /* background-color: #218838; Um verde um pouco mais escuro */
     transform: scale(1.1); /* Dá um leve aumento, fica bem moderno */
   }

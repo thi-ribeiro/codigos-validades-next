@@ -71,6 +71,8 @@ export interface ValuesInterface {
 	loading: boolean;
 	loadingButtons: boolean;
 	dataFimIntervalo: string | 'Indefinido';
+	nomeProduto: string;
+	setNomeProduto: (nome: string) => void;
 }
 
 export interface ValidadeProduto {
@@ -116,105 +118,20 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		Record<string, ValidadeProduto[]>
 	>({});
 
-	// const [produtosValidades, setProdutosValidades] = useState<ValidadeProduto[]>(
-	// 	[],
-	// );
-
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
-
 	const [marcasProdutos, setmarcasProdutos] = useState<
 		Record<string, MarcaProdutoInterface[]>
 	>({});
-
 	const [produtosValidadesFinalizados, setProdutosValidadesFinalizados] =
 		useState<Record<string, ValidadeProduto[]>>({});
 	const [filtroAtivo, setFiltroAtivo] = useState('todos'); // Pode ser 'todos' ou 'vencendo'
+	const [nomeProduto, setNomeProduto] = useState<string>('');
 
 	const [loading, setLoading] = useState(true);
 	const [loadingButtons, setLoadingButtons] = useState(false);
-	// const [isModalOpen, setIsModalOpen] = useState(false);
-	// const [isModalEditOpen, setIsModalEditOpen] = useState(false);
 
 	const { user, logout } = useAuth();
 	const { addToast } = useToast();
-
-	// const dataAtual = new Date();
-
-	// const fetchValidadesOlder = async (produtoMarca: string = '') => {
-	// 	setLoading(true);
-	// 	try {
-	// 		// Agora apontamos para a nossa nova API interna do Next.js
-	// 		// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
-	// 		const response = await fetch(
-	// 			`${acesso_validades}/listar/?marca=${produtoMarca}`,
-	// 			{
-	// 				method: 'GET',
-	// 				headers: {
-	// 					'Content-Type': 'application/json',
-	// 				},
-	// 				// Importante manter para o Middleware ler o seu cookie auth_token
-	// 				credentials: 'include',
-	// 			},
-	// 		);
-
-	// 		const data = await response.json();
-
-	// 		// Se a API retornar erro de autenticação (ex: 401)
-	// 		if (response.status === 401) {
-	// 			setLoading(false);
-	// 			logout();
-	// 			return;
-	// 		}
-
-	// 		// data.dados contém os produtos e data.marcas as marcas para o filtro
-	// 		if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
-	// 			setmarcasProdutos(data.marcas);
-	// 			setdataFimIntervalo(data.dataFimIntervalo);
-
-	// 			const agruparPorStatus = _.chain(data.dados)
-	// 				.groupBy((item) =>
-	// 					item.finalizado === 1 ? 'finalizados' : 'pendentes',
-	// 				)
-	// 				.value();
-
-	// 			const agrupar = _.chain(data.dados).groupBy('marca_produto').value();
-
-	// 			// const agrupamentoValidadePorMarcaProdutoPendente = _.groupBy(
-	// 			// 	agruparPorStatus.pendentes,
-	// 			// 	'marca_produto',
-	// 			// );
-
-	// 			// const agrupamenteoValidadeFinalizado = _.groupBy(
-	// 			// 	agruparPorStatus.finalizados,
-	// 			// 	'marca_produto',
-	// 			// );
-
-	// 			//console.log(agrupamenteoValidadeFinalizado);
-
-	// 			setProdutosValidades(agrupar);
-	// 			console.log(agrupar);
-	// 			//setProdutosValidadesFinalizados(agrupamenteoValidadeFinalizado);
-
-	// 			// Formatação do intervalo (Ex: "Janeiro/2026")
-	// 			if (data.dataFimIntervalo) {
-	// 				setdataFimIntervalo(
-	// 					format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
-	// 						locale: ptBR,
-	// 					}),
-	// 				);
-	// 			}
-	// 		} else {
-	// 			// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
-	// 			setProdutosValidades({});
-	// 			if (data.marcas) setmarcasProdutos(data.marcas);
-	// 		}
-	// 	} catch (error: any) {
-	// 		console.error('Fetch error:', error);
-	// 		// addToast('Erro ao carregar dados', 'error');
-	// 	} finally {
-	// 		setLoading(false);
-	// 	}
-	// };
 
 	const fetchValidades = async (
 		produtoMarca: string = '',
@@ -275,10 +192,64 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
+	// Remova o parâmetro (nomeProduto) da função interna
+	// const dadosParaExibir = useMemo(() => {
+	// 	// 1. Se estiver em 'todos' e NÃO houver busca por nome, mostra tudo
+	// 	if (filtroAtivo === 'todos' && !nomeProduto) {
+	// 		return produtosValidades;
+	// 	}
+
+	// 	const hoje = new Date();
+	// 	hoje.setHours(0, 0, 0, 0);
+
+	// 	const limite5Dias = new Date();
+	// 	limite5Dias.setDate(hoje.getDate() + 5);
+
+	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+
+	// 	// Percorre as chaves (ex: 'Laticínios', 'Frios', etc.)
+	// 	Object.keys(produtosValidades).forEach((tipoFiltro) => {
+	// 		const itensFiltrados = produtosValidades[tipoFiltro].filter((item) => {
+	// 			const dataVal = new Date(item.validade);
+
+	// 			// Lógica para o filtro de "Vencendo"
+	// 			if (filtroAtivo === 'vencendo') {
+	// 				const estaVencendo = dataVal <= limite5Dias && item.finalizado === 0;
+
+	// 				// Se também houver busca por nome, combinamos as duas regras
+	// 				if (nomeProduto) {
+	// 					const produto = item.produto
+	// 						.toLowerCase()
+	// 						.includes(nomeProduto.toLowerCase());
+	// 					return estaVencendo && produto;
+	// 				}
+
+	// 				return estaVencendo;
+	// 			}
+
+	// 			// Lógica para quando o filtro estiver em 'todos' mas o usuário digitar um nome
+	// 			if (nomeProduto) {
+	// 				return item.produto.toLowerCase().includes(nomeProduto.toLowerCase());
+	// 			}
+
+	// 			return true;
+	// 		});
+
+	// 		if (itensFiltrados.length > 0) {
+	// 			novoObjetoFiltrado[tipoFiltro] = itensFiltrados;
+	// 		}
+	// 	});
+
+	// 	return novoObjetoFiltrado;
+
+	// 	// IMPORTANTE: Adicione nomeProduto nas dependências
+	// }, [produtosValidades, filtroAtivo, nomeProduto]);
 
 	const dadosParaExibir = useMemo(() => {
-		// Se o filtro estiver em 'todos', mostra o objeto original que o fetch trouxe
-		if (filtroAtivo === 'todos') return produtosValidades;
+		// Se não tem texto de busca e o filtro está em 'todos', mostra a lista original
+		if (filtroAtivo === 'todos' && !nomeProduto) {
+			return produtosValidades;
+		}
 
 		const hoje = new Date();
 		hoje.setHours(0, 0, 0, 0);
@@ -288,41 +259,35 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
 
-		// Filtramos o objeto que o seu fetch salvou no state
-		Object.keys(produtosValidades).forEach((marca) => {
-			const itensFiltrados = produtosValidades[marca].filter((item) => {
+		Object.keys(produtosValidades).forEach((dataChave) => {
+			const itensFiltrados = produtosValidades[dataChave].filter((item) => {
+				// 1. Lógica da Data (Voltou para esconder o que passa de 5 dias)
 				const dataVal = new Date(item.validade);
-				// Regra: Vence em até 5 dias E não está finalizado
-				return dataVal <= limite5Dias && item.finalizado === 0;
+				const dentroDoPrazo = dataVal <= limite5Dias;
+
+				// 2. Filtro por Nome
+				const matchesNome = nomeProduto
+					? item.produto.toLowerCase().includes(nomeProduto.toLowerCase())
+					: true;
+
+				// 3. Filtro por Status "Vencendo"
+				if (filtroAtivo === 'vencendo') {
+					// SÓ passa se: (estiver no prazo de 5 dias) E (não estiver finalizado) E (nome bater)
+					return dentroDoPrazo && item.finalizado === 0 && matchesNome;
+				}
+
+				// Se o filtro for 'todos' mas tiver busca por nome
+				return matchesNome;
 			});
 
-			// Só exibe a marca se ela tiver produtos sobrando após o filtro
+			// Só mostra a data se sobrou algum produto nela
 			if (itensFiltrados.length > 0) {
-				novoObjetoFiltrado[marca] = itensFiltrados;
+				novoObjetoFiltrado[dataChave] = itensFiltrados;
 			}
 		});
 
 		return novoObjetoFiltrado;
-	}, [produtosValidades, filtroAtivo]);
-
-	// const produtosAgrupados = useMemo(() => {
-	// 	const grupos: Record<string, ValidadeProduto[]> = {};
-
-	// 	// Pegamos todos os arrays de dentro do objeto e transformamos em um "flat array"
-	// 	const listaPlana = Object.values(produtosValidades).flat();
-
-	// 	listaPlana.forEach((item) => {
-	// 		const chave = item.validadeDiaMes;
-	// 		if (!grupos[chave]) {
-	// 			grupos[chave] = [];
-	// 		}
-	// 		grupos[chave].push(item);
-	// 	});
-
-	// 	return grupos;
-	// }, [produtosValidades]);
-
-	// O parâmetro 'dados' recebe o que veio do banco ou do form
+	}, [produtosValidades, filtroAtivo, nomeProduto]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -757,6 +722,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		loading,
 		produtosExibidos: dadosParaExibir,
 		setFiltroAtivo,
+		nomeProduto,
+		setNomeProduto,
 		loadingButtons,
 	};
 
