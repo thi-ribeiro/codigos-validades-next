@@ -7,6 +7,7 @@
   --white: #ffffff;
   --text-main: #1d1d1f;
   --cinza: #666;
+  --bradius: 8px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,7 +75,7 @@ button,
 select {
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: var(--bradius);
   font-size: 1rem;
   transition: background-color 0.3s ease;
 }
@@ -195,16 +196,16 @@ button:active {
     gap: 10px;
     padding: 10px;
 
-    input {
+    /* input {
       padding: 5px;
       border: 1px solid #ccc;
       width: 100%;
-    }
+    } */
 
     button {
-      padding: 5px;
+      /* padding: 5px;
       border: none;
-      background-color: #007bff;
+      background-color: #007bff; */
       color: white;
       cursor: pointer;
       transition: background-color 0.3s ease;
@@ -469,10 +470,10 @@ button:active {
 
   .search-container {
     position: fixed;
-    bottom: 0vh;
-    left: 0vh;
+    bottom: 20px;
+    right: 3vh;
     width: 100%;
-    padding: 15px;
+    /* padding: 15px; */
     /* background: rgba(255, 255, 255, 0.7); */
     /* backdrop-filter: blur(10px); */
     /* border-top: 1px solid rgba(0, 0, 0, 0.1); */
@@ -481,7 +482,7 @@ button:active {
     z-index: 999;
 
     input {
-      width: 90%;
+      width: 80%;
       max-width: 500px;
       padding: 12px 20px;
       border-radius: 12px;
@@ -657,7 +658,7 @@ button:active {
   align-items: center;
   justify-content: center;
   position: fixed;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
 
   z-index: 1001;
@@ -841,6 +842,7 @@ button:active {
   .toast {
     display: flex;
     padding: 10px;
+    border-radius: 8px;
     font-size: small;
     flex-direction: column;
     flex-wrap: wrap;
