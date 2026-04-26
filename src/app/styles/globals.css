@@ -458,7 +458,7 @@ button:active {
 }
 
 .validadesPage {
-  padding: 0 0 80px;
+  padding: 0 0 40px;
 
   .tabela-validades {
     width: auto;
@@ -481,7 +481,7 @@ button:active {
     z-index: 999;
 
     input {
-      width: 70%;
+      width: 90%;
       max-width: 500px;
       padding: 12px 20px;
       border-radius: 12px;
@@ -489,6 +489,7 @@ button:active {
       outline: none;
       /* font-size: 16px; */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
 
       &:focus {
         border-color: #007bff7a;
@@ -656,8 +657,10 @@ button:active {
   align-items: center;
   justify-content: center;
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
+
+  z-index: 1001;
 
   .buttonAdd {
     display: flex;
@@ -1266,12 +1269,4 @@ button:active {
   gap: 15px;
   align-items: center;
   color: #555;
-}
-
-/* Botão de Add Flutuante */
-.buttonAddContainer {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1001;
 }
