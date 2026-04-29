@@ -65,6 +65,7 @@ function CarregarPagina({}: Props) {
 		nomeProduto,
 		setNomeProduto,
 		setFiltroAtivo,
+		listaBruta,
 	} = useValidades();
 
 	const { user, isLoading } = useAuth();
@@ -106,7 +107,11 @@ function CarregarPagina({}: Props) {
 
 	const [filtroMarca, setFiltroMarca] = useState<string>('');
 	// const [teste, setteste] = useState<string | number>('');
-	const [codigoLido, setCodigoLido] = useState<string>('');
+	// const [codigoLido, setCodigoLido] = useState<string>('');
+	const [codigoLido, setCodigoLido] = useState<{ ean: string; plu: string }>({
+		ean: '',
+		plu: '',
+	});
 	const [loadingScanner, setLoadingScanner] = useState<boolean>(false);
 
 	const INITIAL_STATE: ValidadeProduto = {
@@ -152,12 +157,27 @@ function CarregarPagina({}: Props) {
 	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
 
 	useEffect(() => {
-		if (codigoLido && codigoLido !== FormEditData?.codigoProduto) {
-			// Simula um evento para o handleChange ou atualiza direto
-			setFormEditData((prev) => ({ ...prev, codigoProduto: codigoLido }));
-			scanCodeDb(codigoLido);
+		// 1. Pega o valor que realmente importa (PLU se existir, senão EAN)
+		const valorAtual = codigoLido.plu || codigoLido.ean;
+
+		// 2. Só dispara se houver um valor e se ele for diferente do que já está no formulário
+		if (
+			valorAtual &&
+			valorAtual !== FormEditData?.codigoProduto &&
+			valorAtual !== FormEditData?.codigoInterno
+		) {
+			// 3. Atualiza o formulário com a string limpa
+			setFormEditData((prev) => ({
+				...prev,
+				// Se for EAN (tamanho >=13), salva no campo de EAN, senão no Interno
+				codigoProduto: codigoLido.ean || prev.codigoProduto,
+				codigoInterno: codigoLido.plu || prev.codigoInterno,
+			}));
+
+			// 4. Envia apenas a STRING para a busca no banco, não o objeto
+			scanCodeDb(valorAtual);
 		}
-	}, [codigoLido]);
+	}, [codigoLido]); // Ele ainda monitora o objeto, mas extrai a string lá dentro
 
 	const scannerRef = useRef<Html5Qrcode | null>(null);
 
@@ -177,6 +197,7 @@ function CarregarPagina({}: Props) {
 						Html5QrcodeSupportedFormats.EAN_13,
 						Html5QrcodeSupportedFormats.EAN_8,
 						Html5QrcodeSupportedFormats.CODE_128,
+						Html5QrcodeSupportedFormats.QR_CODE,
 					],
 				});
 
@@ -193,13 +214,33 @@ function CarregarPagina({}: Props) {
 					{ facingMode: 'environment' },
 					config,
 					(decodedText) => {
-						setCodigoLido(decodedText);
-						navigator.vibrate(200);
+						if (decodedText.includes(':p:')) {
+							const partes = decodedText.split(':');
+							const pluExtraido = partes[2]; // Pega o que está entre o segundo e terceiro ':'
 
-						// 4. USAR A REF PARA PARAR
+							// Garante que o que extraímos tem o tamanho de um PLU (4 a 6 dígitos)
+							if (
+								pluExtraido &&
+								pluExtraido.length >= 4 &&
+								pluExtraido.length <= 6
+							) {
+								setCodigoLido({ ean: '', plu: pluExtraido });
+							}
+
+							alert(pluExtraido);
+						}
+						// 2. Se for um bip comum de EAN (13 dígitos)
+						else if (decodedText.length >= 13) {
+							setCodigoLido({ ean: decodedText, plu: '' });
+						}
+						// 3. Se for um bip comum de PLU (direto os 4 a 6 dígitos)
+						else if (decodedText.length >= 4 && decodedText.length <= 6) {
+							setCodigoLido({ ean: '', plu: decodedText });
+						}
+						navigator.vibrate(200);
 						fecharModalScanner();
 					},
-					() => {},
+					(errorMessage) => {},
 				);
 			} catch (err) {
 				console.error('Erro ao iniciar:', err);
@@ -220,10 +261,8 @@ function CarregarPagina({}: Props) {
 			}
 		}
 
-		// 2. Agora que a câmera desligou, a gente fecha o Modal de fato
-
 		setFormEditData(INITIAL_STATE);
-		setCodigoLido('');
+		setCodigoLido({ ean: '', plu: '' });
 
 		if (callbackFinal) {
 			callbackFinal();
@@ -257,21 +296,33 @@ function CarregarPagina({}: Props) {
 		//setFiltroMarca(marca);
 	};
 
-	const definirItemNoArray = (idSelecionado: number, dataChave: string) => {
-		// Se a chave não existir no objeto, produtosValidades[dataChave] será undefined
-		const listaDestaData = produtosValidades[dataChave];
+	// const definirItemNoArray = (idSelecionado: number, dataChave: string) => {
+	// 	// Se a chave não existir no objeto, produtosValidades[dataChave] será undefined
+	// 	const listaDestaData = produtosValidades[dataChave];
 
-		if (listaDestaData) {
-			const item = listaDestaData.find((v) => v.idvalidades === idSelecionado);
+	// 	if (listaDestaData) {
+	// 		const item = listaDestaData.find((v) => v.idvalidades === idSelecionado);
 
-			if (item) {
-				setFormEditData(item);
-				return;
-			}
+	// 		if (item) {
+	// 			setFormEditData(item);
+	// 			return;
+	// 		}
+	// 	}
+
+	// 	// Se chegou aqui, algo deu errado, então limpamos o form por segurança
+	// 	setFormEditData(INITIAL_STATE);
+	// };
+
+	const definirItemNoArray = (idSelecionado: number) => {
+		// Agora a gente ignora a data e foca no ID dentro da lista principal
+		const produtoParaEditar = listaBruta.find(
+			(item) => item.idvalidades === idSelecionado,
+		);
+
+		if (produtoParaEditar) {
+			// Aqui você seta o estado que o seu Modal de edição consome
+			setFormEditData(produtoParaEditar);
 		}
-
-		// Se chegou aqui, algo deu errado, então limpamos o form por segurança
-		setFormEditData(INITIAL_STATE);
 	};
 
 	const handleChange = (
@@ -295,8 +346,10 @@ function CarregarPagina({}: Props) {
 		}));
 	};
 
-	const scanCodeDb = async (codigo: string) => {
-		if (!codigo.trim()) return;
+	const scanCodeDb = async (codigo: string | { ean: string; plu: string }) => {
+		//if (!codigo.trim()) return;
+
+		if (String(codigo || '').trim()) return;
 
 		// if (codigo.length >= 13) {
 		try {
@@ -331,16 +384,16 @@ function CarregarPagina({}: Props) {
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const valor = e.target.value;
 
-		console.log(valor);
+		//console.log(valor);
 
 		// 1. Atualiza o input IMEDIATAMENTE (isso tira o lag de digitação)
 		handleChange(e);
 
 		// 2. SÓ chama o banco se o código estiver completo (13 dígitos)
 		// Se tiver 1, 2, 5, 10 dígitos, ele ignora e não pesa a tela
-		if (valor.length === 13) {
-			scanCodeDb(valor);
-		}
+		//if (valor.length === 13) {
+		scanCodeDb(valor);
+		//}
 		// Opcional: Se você usa códigos internos de 4 dígitos:
 		// else if (valor.length === 4) { scanCodeDb(valor); }
 	};
@@ -412,7 +465,8 @@ function CarregarPagina({}: Props) {
 
 					<FiltroValidades
 						filtrarVencimentos={() => setFiltroAtivo('vencendo')}
-						filtrarTodos={() => setFiltroAtivo('todos')}
+						filtrarEmAberto={() => setFiltroAtivo('Em Aberto')}
+						filtrarFinalizados={() => setFiltroAtivo('finalizado')}
 					/>
 
 					<h1>
@@ -430,7 +484,7 @@ function CarregarPagina({}: Props) {
 										onClick={() => {
 											definirItemNoArray(
 												validade.idvalidades,
-												validade.validadeDiaMes,
+												// validade.validadeDiaMes,
 											);
 											openModalEditar();
 										}}>
@@ -512,7 +566,7 @@ function CarregarPagina({}: Props) {
 							id='codigoProduto'
 							name='codigoProduto'
 							type='text'
-							value={FormEditData?.codigoProduto || codigoLido}
+							value={FormEditData?.codigoProduto || codigoLido.ean || ''}
 							onChange={handleChange}
 							placeholder='Código de Barras'
 						/>
@@ -531,7 +585,7 @@ function CarregarPagina({}: Props) {
 						id='codigoInterno'
 						name='codigoInterno'
 						type='text'
-						value={FormEditData?.codigoInterno || ''}
+						value={FormEditData?.codigoInterno || codigoLido.plu || ''}
 						onChange={handleChange}
 						placeholder='Código interno'
 					/>
@@ -568,6 +622,7 @@ function CarregarPagina({}: Props) {
 						onChange={handleChange}
 					/>
 					<label htmlFor='quantidade'>
+						{/* {Number(FormEditData?.quantidade_produto.replace(/\D/g, ''))} */}
 						Quantidade: {FormEditData?.quantidade_produto}
 					</label>
 					<input
@@ -576,7 +631,12 @@ function CarregarPagina({}: Props) {
 						name='quantidade_produto'
 						required
 						onChange={handleChange}
-						value={Number(FormEditData?.quantidade_produto.replace(/\D/g, ''))}
+						placeholder={FormEditData?.quantidade_produto}
+						// value={Number(FormEditData?.quantidade_produto.replace(/\D/g, ''))}
+						value={
+							Number(FormEditData?.quantidade_produto.replace(/\D/g, '')) ||
+							FormEditData?.quantidade_produto
+						}
 					/>
 					<label htmlFor='tipoquantidade'>Tipo de quantidade:</label>
 					<select
@@ -695,15 +755,13 @@ function CarregarPagina({}: Props) {
 							autoComplete='off' // Evita que o preenchimento automático do celular trave o campo
 						/>
 
-						<button
-							type='button'
-							onClick={startScanner}
-							disabled={loading}
-							title='Limpar e Bipar novamente'>
-							Scanear
+						<button type='button' onClick={startScanner} disabled={loading}>
+							Scanear EAN
 						</button>
 					</div>
+
 					<label htmlFor='codigoInterno'>Código interno:</label>
+
 					<input
 						id='codigoInterno'
 						name='codigoInterno'
@@ -823,14 +881,16 @@ function CarregarPagina({}: Props) {
 							Scanear
 						</button>
 					</div>
+
 					<label htmlFor='codigoInterno'>Código interno:</label>
+
 					<input
 						id='codigoInterno'
 						name='codigoInterno'
 						type='text'
 						inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
-						onChange={handleChange}
 						value={FormEditData?.codigoInterno || ''}
+						onChange={handleChange}
 						placeholder={
 							loadingScanner
 								? `Carregando ${dots}`

@@ -67,12 +67,13 @@ export interface ValuesInterface {
 	produtosExibidos: Record<string, ValidadeProduto[]>;
 	setFiltroAtivo: (filtro: string) => void;
 	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
-	produtosValidadesFinalizados: Record<string, ValidadeProduto[]>;
+	// validadesSeparadas: Record<string, ValidadeProduto[]>;
 	loading: boolean;
 	loadingButtons: boolean;
 	dataFimIntervalo: string | 'Indefinido';
 	nomeProduto: string;
 	setNomeProduto: (nome: string) => void;
+	listaBruta: ValidadeProduto[];
 }
 
 export interface ValidadeProduto {
@@ -109,6 +110,12 @@ interface ResponseData {
 	dataFimIntervalo?: Date;
 }
 
+interface EstoqueOrganizado {
+	finalizados?: Record<string, ValidadeProduto[]>;
+	pendentes?: Record<string, ValidadeProduto[]>;
+	[key: string]: any; //pra evitar erro ... a chave vai ser sempre uma string...
+}
+
 const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 const ValidadesContexto = createContext<ValuesInterface | undefined>(undefined);
@@ -122,18 +129,76 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const [marcasProdutos, setmarcasProdutos] = useState<
 		Record<string, MarcaProdutoInterface[]>
 	>({});
-	const [produtosValidadesFinalizados, setProdutosValidadesFinalizados] =
-		useState<Record<string, ValidadeProduto[]>>({});
+	// const [validadesSeparadas, setValidadesSeparadas] =
+	// 	useState<EstoqueOrganizado>({ finalizados: {}, pendentes: {} });
 	const [filtroAtivo, setFiltroAtivo] = useState('todos'); // Pode ser 'todos' ou 'vencendo'
 	const [nomeProduto, setNomeProduto] = useState<string>('');
 
 	const [loading, setLoading] = useState(true);
 	const [loadingButtons, setLoadingButtons] = useState(false);
 
+	const [listaBruta, setListaBruta] = useState<ValidadeProduto[]>([]);
+
 	const { user, logout } = useAuth();
 	const { addToast } = useToast();
 
-	const fetchValidades = async (
+	// Isso aqui fica "solto" no corpo do seu componente ValidadesProvider
+	//FICA OBSERVANDO O ESTADO DE LISTA BRUTA E ORGANIZANDO OS DADOS
+	const validadesSeparadas = useMemo(() => {
+		// 1. ORDENAÇÃO: Garante que tudo esteja em ordem cronológica antes de separar
+		// Usamos o campo 'validade' (que deve ser YYYY-MM-DD) para ordenar corretamente
+		const listaOrdenada = _.sortBy(listaBruta, ['validade']);
+
+		// 2. Separa o que é finalizado do que é pendente (usando a lista já ordenada)
+		const [finalizados, pendentes] = _.partition(listaOrdenada, {
+			finalizado: 1,
+		});
+
+		// 3. Agrupa os dois. Como a lista já veio ordenada, os grupos ficarão na ordem certa
+		return {
+			finalizados: _.groupBy(finalizados, 'validadeDiaMes'),
+			pendentes: _.groupBy(pendentes, 'validadeDiaMes'),
+		};
+	}, [listaBruta]);
+
+	const fetchValidades = async (produtoMarca: string = '') => {
+		setLoading(true);
+		try {
+			const response = await fetch(
+				`${acesso_validades}/listar/?marca=${produtoMarca}`,
+				{
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					// Importante manter para o Middleware ler o seu cookie auth_token
+					credentials: 'include',
+				},
+			);
+
+			const data = await response.json();
+
+			if (data && Array.isArray(data.dados)) {
+				setmarcasProdutos(data.marcas);
+				// Salva a lista bruta! O useMemo lá em cima vai perceber e agrupar.
+				setListaBruta(data.dados);
+
+				if (data.dataFimIntervalo) {
+					setdataFimIntervalo(
+						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
+							locale: ptBR,
+						}),
+					);
+				}
+			}
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchValidadesX = async (
 		produtoMarca: string = '',
 		filtro: string = 'validadeDiaMes',
 	) => {
@@ -167,9 +232,27 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				setmarcasProdutos(data.marcas);
 				setdataFimIntervalo(data.dataFimIntervalo);
 
-				const agruparValidade = _.chain(data.dados).groupBy(filtro).value();
+				// const agruparValidade = _.chain(data.dados)
+				// 	.filter((item) => item.finalizado === 1)
+				// 	.groupBy(filtro)
+				// 	.value();
 
-				setProdutosValidades(agruparValidade);
+				const [pendentes, finalizados] = _.partition(data.dados, {
+					finalizado: 1,
+				});
+
+				let agrupar = {
+					finalizados: _.groupBy(finalizados, filtro),
+					pendentes: _.groupBy(pendentes, filtro),
+				};
+
+				//setValidadesSeparadas(agrupar);
+
+				//console.log(agrupar);
+
+				//let grupoPendencia = _.groupBy(agrupados[0], filtro);
+
+				//setProdutosValidades(grupoPendencia);
 				//console.log(agrupar);
 				//console.log(agruparValidade);
 
@@ -183,6 +266,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			} else {
 				// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
 				setProdutosValidades({});
+				//setValidadesSeparadas({});
 				if (data.marcas) setmarcasProdutos(data.marcas);
 			}
 		} catch (error: any) {
@@ -192,7 +276,54 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			setLoading(false);
 		}
 	};
-	// Remova o parâmetro (nomeProduto) da função interna
+
+	const dadosParaExibir = useMemo(() => {
+		// Pegamos a caixa de pendentes que o Lodash já separou para nós
+		let listaTotal = validadesSeparadas;
+		// console.log(validadesSeparadas);
+		// Se não tem busca por nome e o filtro está em 'todos', mostra todos os pendentes
+		if (filtroAtivo === 'finalizado' && !nomeProduto) {
+			return validadesSeparadas.finalizados;
+		}
+
+		const hoje = startOfDay(new Date());
+		const limite5Dias = new Date();
+		limite5Dias.setDate(hoje.getDate() + 5);
+
+		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+
+		// Percorremos apenas as datas que têm produtos pendentes
+		Object.keys(listaTotal.pendentes).forEach((dataChave) => {
+			const itensFiltrados = listaTotal.pendentes[dataChave].filter((item) => {
+				// 1. Filtro por Nome
+				const matchesNome = nomeProduto
+					? item.produto.toLowerCase().includes(nomeProduto.toLowerCase())
+					: true;
+
+				// 2. Filtro por Status "Vencendo" (menos de 5 dias)
+				if (filtroAtivo === 'vencendo') {
+					const dataVal = parseISO(item.validade.split('T')[0]);
+					const estaPertoDeVencer = dataVal <= limite5Dias;
+					return estaPertoDeVencer && matchesNome;
+				}
+
+				return matchesNome;
+			});
+
+			if (itensFiltrados.length > 0) {
+				novoObjetoFiltrado[dataChave] = itensFiltrados;
+			}
+		});
+
+		return novoObjetoFiltrado;
+	}, [
+		validadesSeparadas.pendentes,
+		validadesSeparadas,
+		filtroAtivo,
+		nomeProduto,
+	]); // Importante: depende dos pendentes agora
+
+	//Remova o parâmetro (nomeProduto) da função interna
 	// const dadosParaExibir = useMemo(() => {
 	// 	// 1. Se estiver em 'todos' e NÃO houver busca por nome, mostra tudo
 	// 	if (filtroAtivo === 'todos' && !nomeProduto) {
@@ -245,49 +376,49 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	// 	// IMPORTANTE: Adicione nomeProduto nas dependências
 	// }, [produtosValidades, filtroAtivo, nomeProduto]);
 
-	const dadosParaExibir = useMemo(() => {
-		// Se não tem texto de busca e o filtro está em 'todos', mostra a lista original
-		if (filtroAtivo === 'todos' && !nomeProduto) {
-			return produtosValidades;
-		}
+	// const dadosParaExibir = useMemo(() => {
+	// 	// Se não tem texto de busca e o filtro está em 'todos', mostra a lista original
+	// 	if (filtroAtivo === 'todos' && !nomeProduto) {
+	// 		return produtosValidades;
+	// 	}
 
-		const hoje = new Date();
-		hoje.setHours(0, 0, 0, 0);
+	// 	const hoje = new Date();
+	// 	hoje.setHours(0, 0, 0, 0);
 
-		const limite5Dias = new Date();
-		limite5Dias.setDate(hoje.getDate() + 5);
+	// 	const limite5Dias = new Date();
+	// 	limite5Dias.setDate(hoje.getDate() + 5);
 
-		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
 
-		Object.keys(produtosValidades).forEach((dataChave) => {
-			const itensFiltrados = produtosValidades[dataChave].filter((item) => {
-				// 1. Lógica da Data (Voltou para esconder o que passa de 5 dias)
-				const dataVal = new Date(item.validade);
-				const dentroDoPrazo = dataVal <= limite5Dias;
+	// 	Object.keys(produtosValidades).forEach((dataChave) => {
+	// 		const itensFiltrados = produtosValidades[dataChave].filter((item) => {
+	// 			// 1. Lógica da Data (Voltou para esconder o que passa de 5 dias)
+	// 			const dataVal = new Date(item.validade);
+	// 			const dentroDoPrazo = dataVal <= limite5Dias;
 
-				// 2. Filtro por Nome
-				const matchesNome = nomeProduto
-					? item.produto.toLowerCase().includes(nomeProduto.toLowerCase())
-					: true;
+	// 			// 2. Filtro por Nome
+	// 			const matchesNome = nomeProduto
+	// 				? item.produto.toLowerCase().includes(nomeProduto.toLowerCase())
+	// 				: true;
 
-				// 3. Filtro por Status "Vencendo"
-				if (filtroAtivo === 'vencendo') {
-					// SÓ passa se: (estiver no prazo de 5 dias) E (não estiver finalizado) E (nome bater)
-					return dentroDoPrazo && item.finalizado === 0 && matchesNome;
-				}
+	// 			// 3. Filtro por Status "Vencendo"
+	// 			if (filtroAtivo === 'vencendo') {
+	// 				// SÓ passa se: (estiver no prazo de 5 dias) E (não estiver finalizado) E (nome bater)
+	// 				return dentroDoPrazo && item.finalizado === 0 && matchesNome;
+	// 			}
 
-				// Se o filtro for 'todos' mas tiver busca por nome
-				return matchesNome;
-			});
+	// 			// Se o filtro for 'todos' mas tiver busca por nome
+	// 			return matchesNome;
+	// 		});
 
-			// Só mostra a data se sobrou algum produto nela
-			if (itensFiltrados.length > 0) {
-				novoObjetoFiltrado[dataChave] = itensFiltrados;
-			}
-		});
+	// 		// Só mostra a data se sobrou algum produto nela
+	// 		if (itensFiltrados.length > 0) {
+	// 			novoObjetoFiltrado[dataChave] = itensFiltrados;
+	// 		}
+	// 	});
 
-		return novoObjetoFiltrado;
-	}, [produtosValidades, filtroAtivo, nomeProduto]);
+	// 	return novoObjetoFiltrado;
+	// }, [produtosValidades, filtroAtivo, nomeProduto]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -354,17 +485,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 					addToast(data.message, data.status);
 
 					const itemVindoDoBanco = data.item; // Objeto completo e organizado
+					console.log(itemVindoDoBanco);
 
 					// Formata a chave da data para o grupo (Ex: "25/12/2026")
-					const dataObj = new Date(`${validade}T12:00:00`);
-					const validadeFormatada = dataObj.toLocaleDateString('pt-BR');
+					//const dataObj = new Date(`${validade}T12:00:00`);
+					//const validadeFormatada = dataObj.toLocaleDateString('pt-BR');
 
-					setProdutosValidades((prev) => {
-						const listaDaData = prev[validadeFormatada] || [];
-						return {
-							...prev,
-							[validadeFormatada]: [...listaDaData, itemVindoDoBanco],
-						};
+					setListaBruta((prev) => {
+						return [...prev, itemVindoDoBanco];
 					});
 
 					callbackSucesso();
@@ -414,14 +542,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const dadosParaEnviar = {
 			// Forçamos o ID a ser número para não quebrar o WHERE no MySQL da Vercel
 			id_validade: Number(formData.get('id_validade')),
-			produto: formData.get('produto') as string,
-			marca: (formData.get('marca') as string).trimEnd(),
+			//produto: formData.get('produto') as string,
+			//marca: (formData.get('marca') as string).trimEnd(),
 			validade: formData.get('validade') as string,
 			// Garanta que o name do input de quantidade seja 'quantidade_produto'
 			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get('tipoquantidade')}`,
 			responsavel: user?.usuario || 'Sistema',
 			id_responsavel: user?.uid ? Number(user.uid) : null,
-			codigoProduto: formData.get('codigoProduto') || 0,
+			//codigoProduto: String(formData.get('codigoProduto') || '').trim(),
 			codigoInterno: formData.get('codigoInterno') || 0,
 			verificado,
 			finalizado,
@@ -440,28 +568,26 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (response.ok && data.status === 'success') {
 				addToast(data.message, 'success');
 
-				setProdutosValidades((prev) => {
-					const validadeFormatada = new Date(
-						`${dadosParaEnviar.validade}T12:00:00`,
-					).toLocaleDateString('pt-BR');
-					const lista = prev[validadeFormatada] || [];
+				setListaBruta((prev) => {
+					return prev.map((item) => {
+						if (item.idvalidades === dadosParaEnviar.id_validade) {
+							// Recriamos a validade formatada caso a data tenha mudado na edição
+							const novaDataFormatada = new Date(
+								`${dadosParaEnviar.validade}T12:00:00`,
+							).toLocaleDateString('pt-BR');
 
-					const novaLista = lista.map((item) =>
-						item.idvalidades === dadosParaEnviar.id_validade
-							? ({
-									...item,
-									...dadosParaEnviar,
-									marca_produto: dadosParaEnviar.marca,
-									quantidade_produto: dadosParaEnviar.quantidadeDesc,
-									validadeDiaMes: validadeFormatada,
-									// Forçamos para string para bater com o seu tipo ValidadeProduto
-									codigoProduto: String(dadosParaEnviar.codigoProduto),
-									codigoInterno: String(dadosParaEnviar.codigoInterno),
-								} as ValidadeProduto)
-							: item,
-					);
-
-					return { ...prev, [validadeFormatada]: novaLista };
+							return {
+								...item,
+								...dadosParaEnviar,
+								//marca_produto: dadosParaEnviar.marca,
+								quantidade_produto: dadosParaEnviar.quantidadeDesc,
+								validadeDiaMes: novaDataFormatada,
+								//codigoProduto: String(dadosParaEnviar.codigoProduto),
+								codigoInterno: String(dadosParaEnviar.codigoInterno),
+							} as ValidadeProduto;
+						}
+						return item; // Se não for o ID que editamos, mantém o item como está
+					});
 				});
 
 				callbackSucesso();
@@ -628,17 +754,10 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			if (data.status === 'success') {
 				addToast(data.message, data.status);
-				// Aqui a lógica está matadora: filtra por ID e agrupa por Data
-				const listaFiltrada = Object.values(produtosValidades)
-					.flat()
-					.filter((item) => item.idvalidades !== id);
 
-				const novaListaProdutos = Object.groupBy(
-					listaFiltrada,
-					(item) => item.validadeDiaMes,
-				) as Record<string, ValidadeProduto[]>;
-
-				setProdutosValidades(novaListaProdutos);
+				setListaBruta((prev) => {
+					return prev.filter((item) => item.idvalidades !== id);
+				});
 
 				callbackSucesso();
 			} else {
@@ -717,7 +836,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		fetchAddCodeEanPlu,
 		produtosValidades,
 		marcasProdutos,
-		produtosValidadesFinalizados,
+		// validadesSeparadas,
 		dataFimIntervalo,
 		loading,
 		produtosExibidos: dadosParaExibir,
@@ -725,6 +844,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		nomeProduto,
 		setNomeProduto,
 		loadingButtons,
+		listaBruta,
 	};
 
 	return (

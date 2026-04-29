@@ -1,73 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import { pool } from '@/app/lib/db'; // Seu arquivo de conexão com o pool [cite: 2025-12-31]
-
-// export async function POST(request: Request) {
-//     try {
-//         const body = await request.json();
-
-//         // Extraímos os dados que vêm do frontend
-//         const {
-//             id_validade, produto, marca, validade, quantidadeDesc,
-//             responsavel, id_responsavel, verificado, finalizado, rebaixa, codigoProduto,
-//             codigoInterno
-//         } = body;
-
-//         const agora = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-//         const data_verificado = verificado ? agora : null;
-//         const data_finalizado = finalizado ? agora : null;
-//         const data_rebaixa = rebaixa ? agora : null;
-
-//         console.log(body);
-
-//         // Query atualizada com os nomes REAIS da sua foto
-//         const query = `
-//             UPDATE validades SET 
-//                 produto = ?, 
-//                 validade = ?, 
-//                 responsavel = ?, 
-//                 verificado = ?, 
-//                 data_verificado = ?, 
-//                 finalizado = ?, 
-//                 data_finalizado = ?, 
-//                 marca_produto = ?, 
-//                 quantidade_produto = ?, 
-//                 id_responsavel = ?, 
-//                 rebaixa = ?, 
-//                 data_rebaixa = ?,
-//                 codigoProduto = ?,
-// 			    codigoInterno = ?
-//             WHERE idvalidades = ?
-//         `;
-
-//         const values = [
-//             produto,           // produto
-//             validade,          // validade
-//             responsavel,       // responsavel
-//             verificado,        // verificado
-//             data_verificado,   // data_verificado
-//             finalizado,        // finalizado
-//             data_finalizado,   // data_finalizado
-//             marca,             // marca_produto
-//             quantidadeDesc,    // quantidade_produto
-//             id_responsavel,    // id_responsavel
-//             rebaixa,           // rebaixa
-//             data_rebaixa,      // data_rebaixa
-//             codigoProduto,
-//             codigoInterno,
-//             id_validade
-//         ];
-
-//         await pool.execute(query, values); // [cite: 2025-12-31]
-
-//         return NextResponse.json({ status: 'success', message: 'Validade atualizada com sucesso!' });
-
-//     } catch (error: any) {
-//         console.error("Erro ao editar:", error);
-//         return NextResponse.json({ status: 'error', message: 'Erro ao salvar no banco' }, { status: 500 });
-//     }
-// }
-
 import { NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
 
@@ -80,13 +10,13 @@ export async function POST(request: Request) {
         // 1. Extração dos dados do Frontend
         const {
             id_validade,
-            produto,         // Vai para descricao_produto na tabela ean
-            marca,           // Vai para marca_produto na tabela ean
+            //produto,         // Vai para descricao_produto na tabela ean
+            //marca,           // Vai para marca_produto na tabela ean
             validade,
             quantidadeDesc,  // Vai para quantidade_produto na tabela validades
             responsavel,
             id_responsavel,
-            codigoProduto,   // EAN
+            //codigoProduto,   // EAN
             codigoInterno,   // PLU (usado para busca)
             verificado,      // INT (0 ou 1)
             finalizado,      // INT (0 ou 1)
@@ -111,27 +41,9 @@ export async function POST(request: Request) {
             throw new Error(`Produto com código interno ${codigoInterno} não localizado no cadastro.`);
         }
 
+        //PEGA O ID DO PRODUTO NA TABELA EAN_PLU_PRODUTOS
         const idRealDoProduto = produtoRows[0].id;
 
-        // --- PASSO 2: Atualizar a tabela EAN_PLU_PRODUTOS ---
-        const queryEan = `
-            UPDATE ean_plu_produtos SET 
-                ean_produto = ?, 
-                plu_produto = ?, 
-                descricao_produto = ?, 
-                marca_produto = ?
-            WHERE id = ?
-        `;
-        await connection.execute(queryEan, [
-            codigoProduto || null,
-            codigoInterno || null,
-            produto || null,
-            marca || null,
-            idRealDoProduto
-        ]);
-
-        // --- PASSO 3: Atualizar a tabela VALIDADES ---
-        // ATENÇÃO: A ordem aqui deve ser idêntica à do array de valores abaixo
         const queryValidades = `
             UPDATE validades SET 
                 validade = ?, 
@@ -170,7 +82,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             status: 'success',
-            message: 'Validade e Produto atualizados com sucesso!'
+            message: 'Validade atualizada com sucesso!'
         });
 
     } catch (error: any) {

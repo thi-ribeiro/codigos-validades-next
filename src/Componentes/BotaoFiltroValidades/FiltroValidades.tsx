@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 
 interface MenuProps {
 	filtrarVencimentos: () => void;
-	filtrarTodos: () => void;
+	filtrarEmAberto: () => void;
+	filtrarFinalizados: () => void;
 }
 
 // Desestruturando as funções direto nas chaves
 export default function FiltroValidades({
 	filtrarVencimentos,
-	filtrarTodos,
+	filtrarEmAberto,
+	filtrarFinalizados,
 }: MenuProps) {
 	const [menuAberto, setMenuAberto] = useState(false);
 
@@ -28,10 +30,19 @@ export default function FiltroValidades({
 					type='button'
 					className='btn-todos'
 					onClick={() => {
-						filtrarTodos();
+						filtrarEmAberto();
 						setMenuAberto(false);
 					}}>
-					T
+					EA
+				</button>
+				<button
+					type='button'
+					className='btn-finalizado'
+					onClick={() => {
+						filtrarFinalizados();
+						setMenuAberto(false);
+					}}>
+					F
 				</button>
 				<button
 					type='button'

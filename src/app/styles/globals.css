@@ -360,6 +360,9 @@ button:active {
 .btn-todos {
   background-color: #3b82f6;
 } /* Azul */
+.btn-finalizado {
+  background-color: #28a745;
+} /* Azul */
 .btn-vencendo {
   background-color: #ef4444;
 } /* Vermelho */

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         const { usuario, senha, empresa } = body;
 
         // 1. Validação (mesma que você fez no front, mas garantindo no back)
-        if (!usuario || !senha || !empresa) {
+        if (!usuario || !senha) {
             return NextResponse.json(
                 { status: 'error', message: 'Dados incompletos!' },
                 { status: 400 }

@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         }
 
         const [validadeExistente]: any = await connection.execute(
-            "SELECT idValidades FROM validades WHERE idRelacionado = ? AND validade = ? LIMIT 1",
+            "SELECT idvalidades FROM validades WHERE idRelacionado = ? AND validade = ? LIMIT 1",
             [produtoId, validade]
         )
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
         // Usamos o insertId para pegar exatamente o que acabamos de criar
         const [rows]: any = await connection.execute(`
             SELECT 
-                v.idValidades, 
+                v.idvalidades, 
                 v.idRelacionado,
                 v.responsavel,
                 v.validade,
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
                 p.plu_produto as codigoInterno
             FROM validades v
             JOIN ean_plu_produtos p ON v.idRelacionado = p.id
-            WHERE v.idValidades = ?
+            WHERE v.idvalidades = ?
         `, [resultValidade.insertId]);
 
         const itemCompleto = rows[0];
