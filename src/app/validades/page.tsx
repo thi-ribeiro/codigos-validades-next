@@ -23,7 +23,12 @@ import useModal from '@/Componentes/Modal/useModal';
 // import { form } from 'framer-motion/client';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
 import { useToast } from '@/Contexto/Toast';
-import { IoAdd, IoRemoveCircle, IoSearchCircle } from 'react-icons/io5';
+import {
+	IoAdd,
+	IoCloseOutline,
+	IoRemoveCircle,
+	IoSearchCircle,
+} from 'react-icons/io5';
 // import { QRCodeSVG } from 'qrcode.react';
 
 type Props = {};
@@ -353,7 +358,7 @@ function CarregarPagina({}: Props) {
 
 		// Evita buscar códigos irrelevantes (ex: leituras acidentais de 2 ou 3 dígitos)
 		// Se for PLU (interno) pode ser menor, se for EAN costuma ter 8, 13 ou 14.
-		if (codigoLimpo.length < 4) return;
+		if (codigoLimpo.length < 6) return;
 
 		try {
 			setLoadingScanner(true);
@@ -365,7 +370,7 @@ function CarregarPagina({}: Props) {
 
 			const data = await response.json();
 
-			if (data.status === 'success' && data.produto) {
+			if (data.status === 'success') {
 				setFormEditData((prev) => ({
 					...prev,
 					produto: data.produto.descricao_produto,
@@ -374,16 +379,15 @@ function CarregarPagina({}: Props) {
 					codigoProduto: data.produto.ean_produto,
 					idRelacionado: data.produto.id,
 				}));
-			}
-			// Só mostramos o toast se a leitura parecer um código completo
-			if (data.status === 'not_found') {
+			} else if (data.status === 'not_found') {
 				addToast('Produto não cadastrado.', 'info');
+
 				setFormEditData((prev) => ({
 					...prev,
 					produto: '', // Limpando de verdade
 					marca_produto: '',
 					codigoInterno: '',
-					codigoProduto: '', // Importante limpar o código que falhou
+					//codigoProduto: '', // Importante limpar o código que falhou
 					idRelacionado: null, // Não esqueça do ID se ele existir
 				}));
 			}
@@ -998,8 +1002,8 @@ function CarregarPagina({}: Props) {
 					value={nomeProduto}
 					onChange={(e) => setNomeProduto(e.target.value)}
 				/>
-				<button name='oksearch'>
-					<IoRemoveCircle size={20} />
+				<button name='oksearch' onClick={() => setNomeProduto('')}>
+					<IoCloseOutline size={25} />
 				</button>
 			</div>
 		</div>

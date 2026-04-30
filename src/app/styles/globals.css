@@ -474,39 +474,52 @@ button:active {
   .search-container {
     position: fixed;
     bottom: 20px;
-    left: 20px;
-    width: 80%;
-    /* padding: 15px; */
-    /* background: rgba(255, 255, 255, 0.7); */
-    /* backdrop-filter: blur(10px); */
-    /* border-top: 1px solid rgba(0, 0, 0, 0.1); */
+    left: 45%; /* Mudado para 50% para facilitar a centralização na tela */
+    transform: translateX(-50%); /* Centraliza o container horizontalmente na página */
+    width: 70%; /* Ajustado para dar um respiro nas bordas em telas menores */
+    max-width: 600px; /* Limite para não ficar largo demais no desktop */
     display: flex;
-    justify-content: center;
+    align-items: center; /* Alinha verticalmente input e botão */
+    justify-content: space-between; /* Garante que o input use o espaço e o botão fique no canto */
     background-color: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    border-radius: var(--bradius);
     z-index: 999;
+    padding: 0 5px; /* Adicionado um padding interno para os elementos não colarem na borda */
     outline: none;
 
-    &:focus {
+    &:focus-within {
+      /* Usa focus-within para destacar a borda quando clicar no input */
       border-color: #007bff7a;
     }
 
     input {
-      width: 80%;
-      max-width: 500px;
-      padding: 12px 20px;
+      flex-grow: 1; /* Faz o input ocupar todo o espaço disponível */
+      padding: 12px; /* Aumentado para facilitar o toque no celular */
       border: none;
       text-align: center;
-      flex-grow: 1;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
     }
 
     button {
+      display: flex;
+      align-items: center; /* Centraliza o SVG verticalmente */
+      justify-content: center; /* Centraliza o SVG horizontalmente */
       background-color: transparent;
+      color: red;
       border: none;
       box-shadow: none;
       cursor: pointer;
+      outline: none;
+      padding: 10px; /* Área de clique melhorada */
+      min-width: 40px; /* Garante que o botão seja um quadrado clicável */
+
+      svg {
+        display: block; /* Remove espaços vazios abaixo do SVG */
+      }
     }
   }
 

@@ -805,14 +805,12 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			if (response.ok) {
 				// Aqui você trata as duas possibilidades do INSERT IGNORE
-				if (data.message.includes('já existe')) {
+				if (data.message.exists) {
 					addToast(data.message, 'error');
-					// Talvez você não queira dar um 'alert' se já existia,
-					// apenas seguir silenciosamente.
 				} else {
 					addToast(data.message, 'success');
-					callbackSucesso();
 				}
+				callbackSucesso();
 			} else {
 				addToast('Erro ao salvar: ', 'error');
 			}
