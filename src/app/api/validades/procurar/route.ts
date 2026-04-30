@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     try {
         // Buscamos o produto que combine com o EAN ou com o PLU (Código Interno)
         const query = `
-            SELECT id, ean_produto, plu_produto, descricao_produto, marca_produto 
+            SELECT * 
             FROM ean_plu_produtos 
             WHERE ean_produto = ? OR plu_produto = ? 
             LIMIT 1

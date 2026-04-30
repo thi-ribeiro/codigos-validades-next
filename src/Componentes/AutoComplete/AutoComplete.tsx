@@ -10,6 +10,7 @@ export interface AutoCompleteProps {
 	required?: boolean;
 	valorPadrao?: string;
 	readOnly?: boolean;
+	eanplu?: boolean;
 }
 
 const AutoComplete = (props: AutoCompleteProps) => {
@@ -22,6 +23,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 		required = false, // Valor padrão para required
 		valorPadrao = '',
 		readOnly = false,
+		eanplu = false,
 	} = props;
 
 	const [loading, setLoading] = useState<boolean>(false);
@@ -33,11 +35,21 @@ const AutoComplete = (props: AutoCompleteProps) => {
 
 	const autocompleteRef = useRef<HTMLDivElement>(null); // Ref para a div de resultados
 
+	useEffect(() => {
+		// Só atualiza o estado interno se o valor que vem do Modal (Scanner)
+		// for diferente do que o usuário já digitou no input.
+		if (valorPadrao !== produtoSelecionado) {
+			setProdutoSelecionado(valorPadrao || '');
+		}
+	}, [valorPadrao]); // Remova o produtoSelecionado daqui para não entrar em loop
+
 	// Efeito para fechar a div de autocomplete ao clicar fora
 	useEffect(() => {
-		if (valorPadrao) {
-			setProdutoSelecionado(valorPadrao); // Nome do estado que controla o texto do input
-		}
+		// if (valorPadrao) {
+		// 	setProdutoSelecionado(valorPadrao); // Nome do estado que controla o texto do input
+		// }
+
+		//setProdutoSelecionado(valorPadrao || '');
 
 		const handleClickOutside = (event: MouseEvent) => {
 			// Se a div de autocomplete existe E o clique NÃO foi dentro dela
@@ -68,7 +80,7 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			document.removeEventListener('mousedown', handleClickOutside);
 			document.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [resultado.length, valorPadrao]); // O efeito roda novamente quando a quantidade de resultados muda
+	}, [resultado.length]); // O efeito roda novamente quando a quantidade de resultados muda
 
 	const fetchNameProducts = async (
 		searchByMarca: boolean,
@@ -91,11 +103,19 @@ const AutoComplete = (props: AutoCompleteProps) => {
 			setLoading(true);
 			// 3. Chamada para a nossa nova API interna
 			// Note que passamos 'term' em vez de 'autoCompleteSearch' para bater com a rota
-			const response = await fetch(
-				`/api/codigos/autocomplete?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
-			);
+			let response: Response | null = null;
 
-			if (!response.ok) {
+			if (eanplu) {
+				response = await fetch(
+					`/api/validades/autocompleteValidades?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
+				);
+			} else {
+				response = await fetch(
+					`/api/codigos/autocomplete?term=${encodeURIComponent(produtoDetail)}&searchByMarca=${searchByMarca}&searchByNome=${searchByNome}`,
+				);
+			}
+
+			if (!response?.ok) {
 				throw new Error('Falha ao buscar sugestões');
 			}
 
@@ -162,48 +182,6 @@ const AutoComplete = (props: AutoCompleteProps) => {
 							))}
 						</div>
 					)}
-
-					{/* {resultado?.length >= 1 && (
-						<div className='autocompleteResults' ref={autocompleteRef}>
-							{resultado.map((produto: any, index: number) => {
-								const displayParts = [];
-								if (nome && produto.nome_produto) {
-									displayParts.push(produto.nome_produto);
-								}
-								if (marca && produto.marca_produto) {
-									displayParts.push(produto.marca_produto);
-								}
-
-								if (displayParts.length === 0) {
-									return null;
-								}
-
-								// 1. Calcule o texto exato que será exibido
-								const textoExibido = displayParts.join(' - ');
-
-								return (
-									<div
-										key={index + 1} // Sempre use uma chave única e estável
-										className='autocompleteItem'
-										onClick={() => selecionarProdutoHandler(textoExibido)}>
-										{textoExibido}
-									</div>
-								);
-								// if (!produto.nome_produto || !produto.marca_produto) {
-								// 	return null;
-								// } else {
-								// 	return (
-								// 		<div
-								// 			key={index}
-								// 			className='autocompleteItem'
-								// 			onClick={() => selecionarProdutoHandler(produto)}>
-								// 			{produto.nome_produto} - {produto.marca_produto}
-								// 		</div>
-								// 	);
-								// }
-							})}
-						</div>
-					)} */}
 				</div>
 			}
 		</React.Fragment>

@@ -23,6 +23,7 @@ import useModal from '@/Componentes/Modal/useModal';
 // import { form } from 'framer-motion/client';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
 import { useToast } from '@/Contexto/Toast';
+import { IoAdd, IoRemoveCircle, IoSearchCircle } from 'react-icons/io5';
 // import { QRCodeSVG } from 'qrcode.react';
 
 type Props = {};
@@ -197,7 +198,7 @@ function CarregarPagina({}: Props) {
 						Html5QrcodeSupportedFormats.EAN_13,
 						Html5QrcodeSupportedFormats.EAN_8,
 						Html5QrcodeSupportedFormats.CODE_128,
-						Html5QrcodeSupportedFormats.QR_CODE,
+						// Html5QrcodeSupportedFormats.QR_CODE,
 					],
 				});
 
@@ -227,7 +228,7 @@ function CarregarPagina({}: Props) {
 								setCodigoLido({ ean: '', plu: pluExtraido });
 							}
 
-							alert(pluExtraido);
+							//alert(pluExtraido);
 						}
 						// 2. Se for um bip comum de EAN (13 dígitos)
 						else if (decodedText.length >= 13) {
@@ -346,18 +347,22 @@ function CarregarPagina({}: Props) {
 		}));
 	};
 
-	const scanCodeDb = async (codigo: string | { ean: string; plu: string }) => {
-		//if (!codigo.trim()) return;
+	const scanCodeDb = async (codigo: string) => {
+		// 1. Limpeza e Validação Inicial
+		const codigoLimpo = String(codigo || '').trim();
 
-		if (String(codigo || '').trim()) return;
+		// Evita buscar códigos irrelevantes (ex: leituras acidentais de 2 ou 3 dígitos)
+		// Se for PLU (interno) pode ser menor, se for EAN costuma ter 8, 13 ou 14.
+		if (codigoLimpo.length < 4) return;
 
-		// if (codigo.length >= 13) {
 		try {
 			setLoadingScanner(true);
 
+			// O encodeURIComponent é vital para evitar que caracteres especiais quebrem a URL
 			const response = await fetch(
-				`${acesso_validades}/procurar?codigo=${codigo}`,
+				`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoLimpo)}`,
 			);
+
 			const data = await response.json();
 
 			if (data.status === 'success' && data.produto) {
@@ -369,16 +374,27 @@ function CarregarPagina({}: Props) {
 					codigoProduto: data.produto.ean_produto,
 					idRelacionado: data.produto.id,
 				}));
-			} else {
-				// Opcional: só avisar se for um código que "deveria" existir (ex: > 3 dígitos)
+			}
+			// Só mostramos o toast se a leitura parecer um código completo
+			if (data.status === 'not_found') {
 				addToast('Produto não cadastrado.', 'info');
+				setFormEditData((prev) => ({
+					...prev,
+					produto: '', // Limpando de verdade
+					marca_produto: '',
+					codigoInterno: '',
+					codigoProduto: '', // Importante limpar o código que falhou
+					idRelacionado: null, // Não esqueça do ID se ele existir
+				}));
 			}
 		} catch (error) {
+			// Se o erro for porque cancelamos a requisição, nem mostra o toast
+			//if (error.name !== 'AbortError') {
 			addToast('Erro ao buscar produto.', 'error');
+			//}
 		} finally {
-			setLoadingScanner(false); // AGORA ELE SEMPRE VAI DESLIGAR
+			setLoadingScanner(false);
 		}
-		// }
 	};
 
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -774,6 +790,7 @@ function CarregarPagina({}: Props) {
 								? `Carregando ${dots}`
 								: 'Código interno do produto.'
 						}
+						autoComplete='off'
 					/>
 
 					<label htmlFor='produto'>Produto:</label>
@@ -896,6 +913,7 @@ function CarregarPagina({}: Props) {
 								? `Carregando ${dots}`
 								: 'Código interno do produto.'
 						}
+						autoComplete='off'
 					/>
 
 					<label htmlFor='produto'>Produto:</label>
@@ -924,6 +942,7 @@ function CarregarPagina({}: Props) {
 							}
 							nameInput='marca'
 							required={false}
+							eanplu={true}
 						/>
 					)}
 
@@ -979,6 +998,9 @@ function CarregarPagina({}: Props) {
 					value={nomeProduto}
 					onChange={(e) => setNomeProduto(e.target.value)}
 				/>
+				<button name='oksearch'>
+					<IoRemoveCircle size={20} />
+				</button>
 			</div>
 		</div>
 	);
