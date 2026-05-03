@@ -161,8 +161,11 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		};
 	}, [listaBruta]);
 
-	const fetchValidades = async (produtoMarca: string = '') => {
-		setLoading(true);
+	const fetchValidades = async (
+		produtoMarca: string = '',
+		isSilent = false,
+	) => {
+		if (!isSilent) setLoading(true);
 		try {
 			const response = await fetch(
 				`${acesso_validades}/listar/?marca=${produtoMarca}`,
@@ -194,9 +197,27 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		} catch (error) {
 			console.error(error);
 		} finally {
-			setLoading(false);
+			if (!isSilent) setLoading(false);
 		}
 	};
+	// useEffect(() => {
+	// 	const eventSource = new EventSource(`${acesso_validades}/events`);
+
+	// 	eventSource.onopen = () => console.log('✅ Conectado ao Realtime!');
+
+	// 	eventSource.onmessage = (event) => {
+	// 		console.log('Sinal recebido:', event.data);
+	// 		// Não importa o que venha no texto, se o servidor mandou mensagem, a gente atualiza
+	// 		fetchValidades('', true);
+	// 	};
+
+	// 	eventSource.onerror = (err) => {
+	// 		console.error('Erro no EventSource:', err);
+	// 		eventSource.close();
+	// 	};
+
+	// 	return () => eventSource.close();
+	// }, [fetchValidades]);
 
 	const fetchValidadesX = async (
 		produtoMarca: string = '',
@@ -463,7 +484,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 						validade,
 						quantidadeDesc,
 						responsavel: user?.usuario,
-						id_responsavel: user?.uid,
+						//id_responsavel: user?.uid,
 						codigoProduto: codigoProduto,
 						codigoInterno: codigoInterno,
 						// Mantemos sua função de formatar data para o MySQL
@@ -548,7 +569,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			// Garanta que o name do input de quantidade seja 'quantidade_produto'
 			quantidadeDesc: `${formData.get('quantidade_produto')} ${formData.get('tipoquantidade')}`,
 			responsavel: user?.usuario || 'Sistema',
-			id_responsavel: user?.uid ? Number(user.uid) : null,
+			//id_responsavel: user?.uid ? Number(user.uid) : null,
 			//codigoProduto: String(formData.get('codigoProduto') || '').trim(),
 			codigoInterno: formData.get('codigoInterno') || 0,
 			verificado,
@@ -802,17 +823,13 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			});
 
 			const data = await response.json();
+			//console.log(data);
 
 			if (response.ok) {
-				// Aqui você trata as duas possibilidades do INSERT IGNORE
-				if (data.message.exists) {
-					addToast(data.message, 'error');
-				} else {
-					addToast(data.message, 'success');
-				}
-				callbackSucesso();
+				addToast(data.message, 'info');
+				if (!data.exists) callbackSucesso();
 			} else {
-				addToast('Erro ao salvar: ', 'error');
+				addToast(data.error, 'error');
 			}
 		} catch (error) {
 			console.error('Falha na requisição:', error);

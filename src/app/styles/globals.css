@@ -32,8 +32,15 @@ body {
 }
 
 h1 {
-  text-transform: capitalize;
-  margin: 10px 5px;
+  /* text-transform: capitalize; */
+  margin: 15px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.2;
+  max-width: 95%;
+  display: block; /* Garante que respeite a largura */
+  white-space: nowrap; /* Impede que o texto quebre linha */
+  max-width: 200px; /* Ajuste conforme a largura do seu card */
 }
 
 * {

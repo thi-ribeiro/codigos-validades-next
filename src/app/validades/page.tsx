@@ -500,14 +500,7 @@ function CarregarPagina({}: Props) {
 								{produtosExibidos[marca]?.map((validade) => (
 									<div
 										className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
-										key={validade.idvalidades + validade.validadeDiaMes}
-										onClick={() => {
-											definirItemNoArray(
-												validade.idvalidades,
-												// validade.validadeDiaMes,
-											);
-											openModalEditar();
-										}}>
+										key={validade.idvalidades + validade.validadeDiaMes}>
 										{/* Linha 1: Produto e Info Principal */}
 										<div className='card-topo'>
 											<div className='card-produto-info'>
@@ -549,7 +542,15 @@ function CarregarPagina({}: Props) {
 														validade.finalizado,
 													)}
 												</div>
-												<div className='card-status-icones'>
+												<div
+													className='card-status-icones'
+													onClick={() => {
+														definirItemNoArray(
+															validade.idvalidades,
+															// validade.validadeDiaMes,
+														);
+														openModalEditar();
+													}}>
 													<ValidadeVerificada
 														verificado={validade.verificado}
 														dataInserida={validade.data_inserido}

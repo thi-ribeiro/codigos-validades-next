@@ -6,17 +6,25 @@ export async function POST(request: Request) {
 		const body = await request.json();
 		const { ean_produto, plu_produto, descricao_produto, marca_produto } = body;
 
-		// Substitua seu SQL por este:
+		const [existente]: any = await pool.execute(
+			'SELECT * FROM ean_plu_produtos WHERE ean_produto = ? OR plu_produto = ? LIMIT 1',
+			[ean_produto, plu_produto],
+		);
+
+		if (existente.length > 0) {
+			// Se achou, interrompe e avisa o usuário
+			return NextResponse.json({
+				success: true,
+				exists: true,
+				message: 'Produto já existe no cadastro. Nada foi alterado.',
+			});
+		}
+
 		const sql = `
     INSERT INTO ean_plu_produtos 
     (ean_produto, plu_produto, descricao_produto, marca_produto) 
     VALUES (?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE 
-    plu_produto = VALUES(plu_produto),
-    descricao_produto = VALUES(descricao_produto),
-    marca_produto = VALUES(marca_produto)
-`;
-
+	`;
 		const values = [
 			ean_produto || null,
 			plu_produto || null,
@@ -25,25 +33,6 @@ export async function POST(request: Request) {
 		];
 
 		const [result]: any = await pool.execute(sql, values);
-
-		// Se affectedRows for 0, o banco ignorou porque já existia.
-		if (result.affectedRows === 0) {
-			return NextResponse.json({
-				success: true,
-				exists: true,
-				message: 'Produto já existe no cadastro. Nada foi alterado.',
-			});
-		}
-
-		// Logica de resposta atualizada:
-		// No MySQL, affectedRows é 1 para insert novo e 2 para update de registro existente.
-		if (result.affectedRows === 2) {
-			return NextResponse.json({
-				success: true,
-				updated: true,
-				message: 'Produto já existia e os dados foram atualizados!',
-			});
-		}
 
 		return NextResponse.json({
 			success: true,

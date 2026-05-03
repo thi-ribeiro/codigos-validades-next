@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
+//import { msgBus } from '../events/events'; // Certifique-se que o caminho aponta para o events.ts que você criou
 
 export async function POST(request: Request) {
     const connection = await pool.getConnection();
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
             validade,
             quantidadeDesc,  // Vai para quantidade_produto na tabela validades
             responsavel,
-            id_responsavel,
+            // id_responsavel,
             //codigoProduto,   // EAN
             codigoInterno,   // PLU (usado para busca)
             verificado,      // INT (0 ou 1)
@@ -52,8 +53,7 @@ export async function POST(request: Request) {
                 data_verificado = ?, 
                 finalizado = ?, 
                 data_finalizado = ?, 
-                quantidade_produto = ?, 
-                id_responsavel = ?, 
+                quantidade_produto = ?,             
                 rebaixa = ?, 
                 data_rebaixa = ?,
                 idRelacionado = ?
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
             finalizado,         // int (0 ou 1) - SEMPRE ENVIAR O INT AQUI
             data_finalizado,    // datetime ou null
             quantidadeDesc,     // varchar
-            id_responsavel,     // int
+            // id_responsavel,     // int
             rebaixa,            // int (0 ou 1) - SEMPRE ENVIAR O INT AQUI
             data_rebaixa,       // datetime ou null
             idRealDoProduto,    // int
@@ -79,6 +79,7 @@ export async function POST(request: Request) {
 
         // Se tudo deu certo, confirma as alterações
         await connection.commit();
+        //msgBus.emit('atualizou'); // Mudado de 'atualizacao' para 'atualizou'
 
         return NextResponse.json({
             status: 'success',
