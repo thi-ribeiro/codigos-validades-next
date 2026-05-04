@@ -969,8 +969,8 @@ button:active {
 /* --- O CARD REFORMULADO --- */
 .card-validade {
   /* background: #ffffff; */
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 12px;
+  background-color: rgba(255, 255, 255);
+  border-radius: var(--bradius);
   padding: 10px;
   margin-bottom: 12px;
   display: flex;
@@ -978,12 +978,10 @@ button:active {
   gap: 12px;
   position: relative;
   overflow: hidden;
-  /* Sombra suave de "elevação" */
-  box-shadow: 0 8px 6px -6px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+
+  box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 e Edge */
   user-select: none; /* Padrão (Chrome, Firefox, Opera) */
@@ -991,13 +989,6 @@ button:active {
 
 .card-finalizado {
   background-color: rgba(35, 170, 64, 0.05) !important;
-}
-
-/* Efeito de clique mais "premium" */
-.card-validade:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  background-color: #fcfcfc;
 }
 
 /* --- LINHA 1: PRODUTO --- */
@@ -1069,9 +1060,9 @@ button:active {
     .badge-validade {
       background: #000; /* Preto total para contraste */
       color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px none rgba(255, 255, 255, 0.1);
       padding: 4px 10px;
-      border-radius: 6px;
+      border-radius: var(--bradius);
     }
 
     /* --- BADGE DE QUANTIDADE --- */
@@ -1080,7 +1071,7 @@ button:active {
       background: #fff;
       border: 1px solid rgba(0, 0, 0, 0.1);
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: var(--bradius);
     }
   }
 }
@@ -1091,12 +1082,12 @@ button:active {
   font-weight: 700;
   color: #1d1d1f;
   line-height: 1.2;
-  max-width: 95%;
+  max-width: 90%;
   display: block; /* Garante que respeite a largura */
   white-space: nowrap; /* Impede que o texto quebre linha */
   overflow: hidden; /* Esconde o que sobrar */
   text-overflow: ellipsis; /* Adiciona as reticências (...) */
-  max-width: 200px; /* Ajuste conforme a largura do seu card */
+  /* max-width: 200px; Ajuste conforme a largura do seu card */
 }
 
 /* --- LINHA 2: INFO SECUNDÁRIA --- */
@@ -1128,13 +1119,23 @@ button:active {
 
 /* --- ÍCONES DE STATUS --- */
 .card-status-icones {
-  background: #f9f9fb;
+  background: rgba(109, 109, 109, 0.02);
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--bradius);
   display: flex;
   gap: 5px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  /* transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out; */
 }
+
+/* Efeito de clique mais "premium"
+.card-status-icones:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fcfcfc;
+} */
 
 /* --- HEADER GLASSMORPHISM --- */
 .header-glass-container {

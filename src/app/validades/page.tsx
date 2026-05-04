@@ -398,19 +398,8 @@ function CarregarPagina({}: Props) {
 
 	const handleAutoScan = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const valor = e.target.value;
-
-		//console.log(valor);
-
-		// 1. Atualiza o input IMEDIATAMENTE (isso tira o lag de digitação)
 		handleChange(e);
-
-		// 2. SÓ chama o banco se o código estiver completo (13 dígitos)
-		// Se tiver 1, 2, 5, 10 dígitos, ele ignora e não pesa a tela
-		//if (valor.length === 13) {
 		scanCodeDb(valor);
-		//}
-		// Opcional: Se você usa códigos internos de 4 dígitos:
-		// else if (valor.length === 4) { scanCodeDb(valor); }
 	};
 
 	const useLoadingDots = (isLoading: Boolean) => {
