@@ -29,6 +29,7 @@ import {
 	IoRemoveCircle,
 	IoSearchCircle,
 } from 'react-icons/io5';
+import BarraBusca from '@/Componentes/BarraBusca/BarraBusca';
 // import { QRCodeSVG } from 'qrcode.react';
 
 type Props = {};
@@ -50,15 +51,11 @@ export interface scanCode {
 const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 function CarregarPagina({}: Props) {
-	// const { limitaTexto } = useFuncoes();
-	// const { addToast } = useToast();
-
 	const {
 		fetchValidades,
 		fetchAddValidade,
 		fetchEditarValidade,
 		fetchDeletarValidade,
-		produtosValidades,
 		loadingButtons,
 		dataFimIntervalo,
 		calcularDiasRestantes,
@@ -68,8 +65,6 @@ function CarregarPagina({}: Props) {
 		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
-		nomeProduto,
-		setNomeProduto,
 		setFiltroAtivo,
 		listaBruta,
 	} = useValidades();
@@ -996,17 +991,7 @@ function CarregarPagina({}: Props) {
 				addValidade={true}
 			/>
 
-			<div className='search-container'>
-				<input
-					type='text'
-					placeholder='Buscar por nome do produto...'
-					value={nomeProduto}
-					onChange={(e) => setNomeProduto(e.target.value)}
-				/>
-				<button name='oksearch' onClick={() => setNomeProduto('')}>
-					<IoCloseOutline size={25} />
-				</button>
-			</div>
+			<BarraBusca />
 		</div>
 	);
 }
