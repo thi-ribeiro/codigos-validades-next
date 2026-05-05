@@ -215,29 +215,37 @@ function CarregarPagina({}: Props) {
 					{ facingMode: 'environment' },
 					config,
 					(decodedText) => {
-						if (decodedText.includes(':p:')) {
-							const partes = decodedText.split(':');
-							const pluExtraido = partes[2]; // Pega o que está entre o segundo e terceiro ':'
+						setCodigoLido((prev) => {
+							// 1. Se for o padrão especial ":p:"
+							if (decodedText.includes(':p:')) {
+								const partes = decodedText.split(':');
+								const pluExtraido = partes[2];
 
-							// Garante que o que extraímos tem o tamanho de um PLU (4 a 6 dígitos)
-							if (
-								pluExtraido &&
-								pluExtraido.length >= 4 &&
-								pluExtraido.length <= 6
-							) {
-								setCodigoLido({ ean: '', plu: pluExtraido });
+								if (
+									pluExtraido &&
+									pluExtraido.length >= 4 &&
+									pluExtraido.length <= 6
+								) {
+									// Se o PLU atual for igual ao lido, mas você apagou o campo,
+									// o React às vezes precisa de um novo objeto para "sentir" a mudança.
+									return { ...prev, plu: pluExtraido };
+								}
 							}
 
-							//alert(pluExtraido);
-						}
-						// 2. Se for um bip comum de EAN (13 dígitos)
-						else if (decodedText.length >= 13) {
-							setCodigoLido({ ean: decodedText, plu: '' });
-						}
-						// 3. Se for um bip comum de PLU (direto os 4 a 6 dígitos)
-						else if (decodedText.length >= 4 && decodedText.length <= 6) {
-							setCodigoLido({ ean: '', plu: decodedText });
-						}
+							// 2. Se for um bip comum de EAN (13+ dígitos)
+							else if (decodedText.length >= 13) {
+								// Se você está bipando um EAN novo, talvez queira zerar o PLU anterior
+								// para não misturar dados de produtos diferentes
+								return { ean: decodedText, plu: '' };
+							}
+
+							// 3. Se for um bip comum de PLU (4 a 6 dígitos)
+							else if (decodedText.length >= 4 && decodedText.length <= 6) {
+								return { ...prev, plu: decodedText };
+							}
+
+							return prev;
+						});
 						navigator.vibrate(200);
 						fecharModalScanner();
 					},
