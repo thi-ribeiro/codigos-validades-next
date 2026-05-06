@@ -34,6 +34,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: 'Validades / Códigos de Produtos',
 	description: 'Controle de validades e códigos de produtos - Thiago',
+	manifest: '/manifest.json',
 };
 
 export default function RootLayout({
