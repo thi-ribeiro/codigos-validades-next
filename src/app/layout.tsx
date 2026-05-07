@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: 'Ceres - Gestão de Validades',
+	title: 'Ceres I - Gestão de Validades',
 	description: 'Controle de validades e códigos de produtos - Thiago',
 	manifest: '/manifest.json',
 };
