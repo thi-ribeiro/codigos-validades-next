@@ -1,5 +1,3 @@
-//'use client';
-
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './styles/globals.css';
@@ -7,19 +5,6 @@ import { AuthProvider } from '@/Contexto/AuthContext';
 import UserLoginMenuFunctions from '../Componentes/UserLoginMenuFunctions/UserLoginMenuFunctions';
 import React from 'react';
 import { ToastProvider } from '@/Contexto/Toast';
-
-// --- ADICIONE ESTE BLOCO AQUI (O MOCK DO LOCALSTORAGE) ---
-// if (typeof window === 'undefined') {
-// 	(global as any).localStorage = {
-// 		getItem: () => null,
-// 		setItem: () => null,
-// 		removeItem: () => null,
-// 		clear: () => null,
-// 		key: () => null,
-// 		length: 0,
-// 	};
-// }
-// -------------------------------------------------------
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -32,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: 'Validades / Códigos de Produtos',
+	title: 'Ceres - Gestão de Validades',
 	description: 'Controle de validades e códigos de produtos - Thiago',
 	manifest: '/manifest.json',
 };

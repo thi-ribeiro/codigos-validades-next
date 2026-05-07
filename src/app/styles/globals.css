@@ -483,7 +483,7 @@ button:active {
     bottom: 20px;
     left: 45%; /* Mudado para 50% para facilitar a centralização na tela */
     transform: translateX(-50%); /* Centraliza o container horizontalmente na página */
-    width: 70%; /* Ajustado para dar um respiro nas bordas em telas menores */
+    /* width: 70%; Ajustado para dar um respiro nas bordas em telas menores */
     max-width: 600px; /* Limite para não ficar largo demais no desktop */
     display: flex;
     align-items: center; /* Alinha verticalmente input e botão */
@@ -501,14 +501,14 @@ button:active {
       border-color: #007bff7a;
     }
 
-    input {
+    input[type="text"] {
       flex-grow: 1; /* Faz o input ocupar todo o espaço disponível */
       padding: 12px; /* Aumentado para facilitar o toque no celular */
       border: none;
       text-align: center;
       outline: none;
       background: transparent;
-      font-size: 16px;
+      font-size: 14px;
     }
 
     button {
@@ -521,8 +521,8 @@ button:active {
       box-shadow: none;
       cursor: pointer;
       outline: none;
-      padding: 10px; /* Área de clique melhorada */
-      min-width: 40px; /* Garante que o botão seja um quadrado clicável */
+      padding: 5px;
+      /* min-width: 40px; Garante que o botão seja um quadrado clicável */
 
       svg {
         display: block; /* Remove espaços vazios abaixo do SVG */
