@@ -21,6 +21,7 @@ import {
 	IoIosCloseCircleOutline,
 	IoMdTrendingDown,
 } from 'react-icons/io';
+import { IoShieldCheckmark, IoShieldOutline } from 'react-icons/io5';
 
 export interface ProviderProps {
 	children: React.ReactNode;
@@ -631,7 +632,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		if (!!props.verificado) {
 			//NEGACAO DUPLA, QUE LINDO!?! FORçA O BOOLEANO
 			return (
-				<IoIosCheckmarkCircleOutline
+				<IoShieldCheckmark
 					size={20}
 					color={'green'}
 					title={props.dataInserida}
@@ -639,7 +640,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			);
 		} else {
 			return (
-				<IoIosCloseCircleOutline
+				<IoShieldOutline
 					size={20}
 					color={'red'}
 					title='Aguardando aprovação.'

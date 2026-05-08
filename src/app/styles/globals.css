@@ -91,7 +91,6 @@ input[type="submit"],
 button {
   color: #ddd;
   background-color: #007bff;
-
   -webkit-user-select: none !important;
   user-select: none !important;
   outline: none !important;
@@ -164,31 +163,6 @@ button:active {
     }
   }
 }
-
-/* .removerCodigoProdutos {
-  display: flex;
-  flex-direction: column;
-
-  .removerCodigoProdutosContent {
-    margin: 10px 0;
-  }
-
-  .buttonsRemoverCodigoProdutos {
-    display: flex;
-    flex-direction: row;
-
-    gap: 5px;
-
-    button {
-      margin: 5px 0;
-      flex-grow: 1;
-    }
-
-    button[name="deletar"] {
-      background-color: #e74c3c;
-    }
-  }
-} */
 
 .loginPage {
   display: flex;
@@ -469,7 +443,7 @@ button:active {
 }
 
 .validadesPage {
-  padding: 0 0 40px;
+  padding: 0 0 130px;
 
   .tabela-validades {
     width: auto;
@@ -662,7 +636,7 @@ button:active {
 .modal-content {
   background-color: white;
   padding: 5px;
-  border-radius: 8px;
+  border-radius: var(--bradius);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   position: relative; /* Essencial para o botão de fechar */
@@ -692,7 +666,6 @@ button:active {
   position: fixed;
   bottom: 20px;
   right: 20px;
-
   z-index: 1001;
 
   .buttonAdd {
@@ -710,6 +683,11 @@ button:active {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease-in-out;
     /* opacity: 0.5; */
+  }
+
+  .botoes-adicionais {
+    width: 30px;
+    height: 30px;
   }
 
   /* Quando o mouse passa por cima */
@@ -744,7 +722,7 @@ button:active {
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--bradius);
 
   input[type="text"] {
     text-transform: capitalize;
@@ -806,10 +784,10 @@ button:active {
   button {
     padding: 10px;
     border: none;
-    background-color: #007bff;
+    /* background-color: #007bff; */
     color: white;
     cursor: pointer;
-    min-width: 100px;
+    /* min-width: 100px; */
     transition:
       background-color,
       filter 0.3s ease;
@@ -829,8 +807,6 @@ button:active {
 
   .functionsButons {
     display: flex;
-
-    /* gap: 10px; */
 
     .buttonDelete {
       flex-grow: 1;
@@ -944,26 +920,6 @@ button:active {
 /* --- TÍTULO DA MARCA (O "HEADER" DO GRUPO) --- */
 .grupo-por-marca {
   margin-bottom: 30px;
-}
-
-.divisor-marca {
-  font-size: 0.85rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: #888; /* Cinza médio para um ar minimalista */
-  margin-bottom: 12px;
-  padding-left: 5px;
-  display: flex;
-  align-items: center;
-}
-
-.divisor-marca::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: #e0e0e0;
-  margin-left: 5px;
 }
 
 /* --- O CARD REFORMULADO --- */
@@ -1258,10 +1214,18 @@ button:active {
 .marcaDiv h2,
 .divisor-marca {
   font-size: 1.15rem;
-  font-weight: 800;
+  /*font-weight: 800; */
   text-transform: uppercase;
   color: #888;
   letter-spacing: 1px;
+}
+
+.divisor-marca::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ededed;
+  margin-left: 5px;
 }
 
 .lista-cards {

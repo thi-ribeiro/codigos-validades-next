@@ -1,7 +1,7 @@
 import { useAuth } from '@/Contexto/AuthContext';
 import React from 'react';
 import { IoMdBarcode, IoMdPersonAdd, IoMdQrScanner } from 'react-icons/io';
-import { IoAdd } from 'react-icons/io5';
+import { IoAdd, IoDocumentTextOutline } from 'react-icons/io5';
 import useModal from '../Modal/useModal';
 import Modal from '../Modal/Modal';
 import { useToast } from '@/Contexto/Toast';
@@ -117,22 +117,24 @@ const SelectAddButtonOptions = ({
 			<>
 				{addUser && (
 					<>
-						<div className='buttonAdd buttonAddUser' onClick={openModalAddUser}>
-							<IoMdPersonAdd size={20} />
+						<div
+							className='botoes-adicionais buttonAdd buttonAddUser'
+							onClick={openModalAddUser}>
+							<IoMdPersonAdd size={15} />
 						</div>
 						<div
-							className='buttonAddBarCodeScan buttonAdd buttonAddCodeBar'
+							className='botoes-adicionais buttonAdd buttonAddCodeBar'
 							onClick={openModalAddEanPlu}>
-							<IoMdBarcode size={20} />
+							<IoMdBarcode size={15} />
 						</div>
 					</>
 				)}
 
 				{addBarCode ? (
 					<div
-						className='buttonAddBarCodeScan buttonAdd'
+						className='buttonAddValidade buttonAdd'
 						onClick={openModalAddBarCode}>
-						<IoMdQrScanner size={20} />
+						<IoDocumentTextOutline size={20} />
 					</div>
 				) : (
 					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>

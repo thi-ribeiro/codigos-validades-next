@@ -8,7 +8,6 @@ import { useAuth } from '@/Contexto/AuthContext';
 import ValidadesProvider, { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
-import { Html5Qrcode } from 'html5-qrcode';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
 import { useToast } from '@/Contexto/Toast';
 import BarraBusca from '@/Componentes/BarraBusca/BarraBusca';
@@ -342,11 +341,6 @@ function CarregarPagina({}: Props) {
 													<ValidadeVerificada
 														verificado={validade.verificado}
 														dataInserida={validade.data_inserido}
-													/>
-													<ValidadeFinalizada
-														verificado={validade.verificado}
-														finalizado={validade.finalizado}
-														dataFinalizado={`${validade.data_finalizado} - ${validade.responsavel}`}
 													/>
 													<ProdutoEmRebaixa
 														Rebaixa={validade.rebaixa}
