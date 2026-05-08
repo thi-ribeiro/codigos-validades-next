@@ -734,6 +734,24 @@ button:active {
     width: 100%;
   }
 
+  .nav-icon-scanner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    background-color: #007bff;
+    border: none;
+    border-radius: var(--bradius);
+
+    svg {
+      color: #fff;
+    }
+  }
+
   .add_scan_codigo_barras {
     display: flex;
     gap: 10px;
@@ -970,17 +988,17 @@ button:active {
       font-size: 0.65rem;
     }
 
+    .card-produto-marca {
+      font-weight: bold;
+      font-size: small;
+    }
+
     .card-detalhes-produto-responsavel {
       display: flex;
       flex-direction: column;
       align-items: baseline;
       gap: 5px;
       /* justify-content: center; */
-
-      .card-produto-marca {
-        font-weight: bold;
-        font-size: large;
-      }
 
       .card-produto-separador {
         display: flex;

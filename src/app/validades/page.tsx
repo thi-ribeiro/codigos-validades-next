@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FuncoesProvider } from '../../Contexto/FuncoesContext';
 import Modal from '@/Componentes/Modal/Modal';
 import AutoComplete from '@/Componentes/AutoComplete/AutoComplete';
@@ -13,6 +13,7 @@ import { useToast } from '@/Contexto/Toast';
 import BarraBusca from '@/Componentes/BarraBusca/BarraBusca';
 import ModalCeres from '@/Componentes/ModalCeres/ModalCeres';
 import useModalCeres from '@/Componentes/ModalCeres/useModalCeres';
+import { IoBarcode, IoBarcodeOutline, IoScan } from 'react-icons/io5';
 
 type Props = {};
 
@@ -42,7 +43,7 @@ function CarregarPagina({}: Props) {
 		dataFimIntervalo,
 		calcularDiasRestantes,
 		ValidadeVerificada,
-		ValidadeFinalizada,
+		//ValidadeFinalizada,
 		ProdutoEmRebaixa,
 		fetchAddCodeEanPlu,
 		loading,
@@ -85,10 +86,24 @@ function CarregarPagina({}: Props) {
 		closeModal: closeModalAddEanPlu,
 	} = useModalCeres();
 
+	const handleOpenAdicionar = () => {
+		setFormEditData(INITIAL_STATE);
+		openModalAdicionar();
+	};
+	const handleOpenAddCodeBar = () => {
+		setFormEditData(INITIAL_STATE);
+		openModalAddCodeBar();
+	};
+	const handleOpenAddEanPlu = () => {
+		setFormEditData(INITIAL_STATE);
+		openModalAddEanPlu();
+	};
+
 	const [codigoLido, setCodigoLido] = useState<{ ean: string; plu: string }>({
 		ean: '',
 		plu: '',
 	});
+
 	const [loadingScanner, setLoadingScanner] = useState<boolean>(false);
 
 	const INITIAL_STATE: ValidadeProduto = {
@@ -117,14 +132,13 @@ function CarregarPagina({}: Props) {
 		useState<ValidadeProduto>(INITIAL_STATE);
 
 	useEffect(() => {
-		if (!isLoading) {
-			if (user?.role !== 1) {
-				fetchValidades(user?.empresa);
-			} else {
-				fetchValidades();
-			}
+		// Se o user existe, eu busco. Se não existe (deslogado ou carregando), não faço nada.
+		if (user) {
+			const empresa = user.role !== 1 ? user.empresa : undefined;
+			fetchValidades(empresa);
 		}
-	}, [isLoading]);
+		// Deixando apenas [user.id] ou [user], o React só dispara quando o usuário loga
+	}, [user?.role]);
 
 	useEffect(() => {
 		// Se NENHUM dos modais estiver aberto, significa que um deles acabou de fechar
@@ -134,27 +148,23 @@ function CarregarPagina({}: Props) {
 	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
 
 	useEffect(() => {
-		// 1. Pega o valor que realmente importa (PLU se existir, senão EAN)
-		const valorAtual = codigoLido.plu || codigoLido.ean;
+		const codigo = FormEditData?.codigoProduto;
 
-		// 2. Só dispara se houver um valor e se ele for diferente do que já está no formulário
+		// SÓ BUSCA SE:
+		// 1. Tiver o tamanho certo
+		// 2. O idRelacionado for null (significa que ainda não buscamos ou não achamos)
 		if (
-			valorAtual &&
-			valorAtual !== FormEditData?.codigoProduto &&
-			valorAtual !== FormEditData?.codigoInterno
+			codigo &&
+			(codigo.length === 13 || codigo.length === 5) &&
+			!FormEditData?.idRelacionado
 		) {
-			// 3. Atualiza o formulário com a string limpa
-			setFormEditData((prev) => ({
-				...prev,
-				// Se for EAN (tamanho >=13), salva no campo de EAN, senão no Interno
-				codigoProduto: codigoLido.ean || prev.codigoProduto,
-				codigoInterno: codigoLido.plu || prev.codigoInterno,
-			}));
+			const timer = setTimeout(() => {
+				fetchScanDb(codigo);
+			}, 600); // Aumentei um tiquinho para dar fôlego ao banco
 
-			// 4. Envia apenas a STRING para a busca no banco, não o objeto
-			fetchScanDb(valorAtual);
+			return () => clearTimeout(timer);
 		}
-	}, [codigoLido]); // Ele ainda monitora o objeto, mas extrai a string lá dentro
+	}, [FormEditData?.codigoProduto, FormEditData?.idRelacionado]);
 
 	const definirItemNoArray = (idSelecionado: number) => {
 		// Agora a gente ignora a data e foca no ID dentro da lista principal
@@ -190,17 +200,14 @@ function CarregarPagina({}: Props) {
 	};
 
 	const fetchScanDb = async (codigo: string) => {
-		// 1. Limpeza e Validação Inicial
 		const codigoLimpo = String(codigo || '').trim();
 
-		// Evita buscar códigos irrelevantes (ex: leituras acidentais de 2 ou 3 dígitos)
-		// Se for PLU (interno) pode ser menor, se for EAN costuma ter 8, 13 ou 14.
-		if (codigoLimpo.length < 6) return;
+		// 1. Trava simples de comprimento (evita lixo no banco)
+		if (codigoLimpo.length < 5) return;
 
 		try {
 			setLoadingScanner(true);
 
-			// O encodeURIComponent é vital para evitar que caracteres especiais quebrem a URL
 			const response = await fetch(
 				`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoLimpo)}`,
 			);
@@ -217,28 +224,18 @@ function CarregarPagina({}: Props) {
 					idRelacionado: data.produto.id,
 				}));
 			} else if (data.status === 'not_found') {
-				addToast('Produto não cadastrado.', 'info');
-
 				setFormEditData((prev) => ({
 					...prev,
-					produto: '',
-					marca_produto: '',
-					codigoInterno: '',
-					// Mantemos o código que acabou de ser bipado para o usuário cadastrar!
 					codigoProduto: codigoLimpo,
-					idRelacionado: null,
+					idRelacionado: null, // Novo cadastro
 				}));
 			}
 		} catch (error) {
-			// Se o erro for porque cancelamos a requisição, nem mostra o toast
-			//if (error.name !== 'AbortError') {
-			addToast('Erro ao buscar produto.', 'error');
-			//}
+			console.error('Erro na busca:', error);
 		} finally {
 			setLoadingScanner(false);
 		}
 	};
-
 	const useLoadingDots = (isLoading: Boolean) => {
 		const [dots, setDots] = useState('');
 
@@ -262,6 +259,82 @@ function CarregarPagina({}: Props) {
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
 	const dots = useLoadingDots(loadingScanner);
 
+	const ListaDeProdutosMemoized = useMemo(() => {
+		return Object.keys(produtosExibidos).map((marca) => (
+			<div key={marca} className='grupo-por-marca'>
+				<h2 className='divisor-marca'>{marca}</h2>
+				<div className='lista-cards'>
+					{produtosExibidos[marca]?.map((validade) => (
+						<div
+							className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
+							key={validade.idvalidades + validade.validadeDiaMes}>
+							{/* Linha 1: Produto e Info Principal */}
+							<div className='card-topo'>
+								<div className='card-produto-info'>
+									<div className='card-detalhes-produto-responsavel'>
+										<span className='card-produto-separador'>
+											<span className='card-produto-responsavel'>
+												{getInicial(validade.responsavel)}
+											</span>
+											<span className='card-produto-nome'>
+												{validade.produto}
+											</span>
+										</span>
+									</div>
+
+									<span className='card-produto-marca'>
+										{validade.marca_produto}
+									</span>
+									<span className='card-produto-codigo'>
+										PLU:{' '}
+										{validade.codigoInterno || 'Código interno não cadastrado.'}
+									</span>
+								</div>
+								<div className='card-info-badges'>
+									<span className='badge-quantidade'>
+										{validade.quantidade_produto}
+									</span>
+									<span className='badge-validade'>
+										{validade.validadeDiaMes.substring(0, 5)}
+									</span>
+								</div>
+							</div>
+
+							{validade.finalizado !== 1 && (
+								<div className='card-base'>
+									<div className='card-restante'>
+										{calcularDiasRestantes(
+											validade.validade,
+											validade.finalizado,
+										)}
+									</div>
+									<div
+										className='card-status-icones'
+										onClick={() => {
+											definirItemNoArray(
+												validade.idvalidades,
+												// validade.validadeDiaMes,
+											);
+											openModalEditar();
+										}}>
+										<ValidadeVerificada
+											verificado={validade.verificado}
+											dataInserida={validade.data_inserido}
+										/>
+										<ProdutoEmRebaixa
+											Rebaixa={validade.rebaixa}
+											dataRebaixa={validade.data_rebaixa}
+										/>
+									</div>
+								</div>
+							)}
+						</div>
+					))}
+				</div>
+			</div>
+		));
+	}, [produtosExibidos]);
+
 	return (
 		<div className='validadesPage'>
 			{loading ? (
@@ -279,81 +352,13 @@ function CarregarPagina({}: Props) {
 					<h1>
 						De {mesAtual} até {dataFimIntervalo}
 					</h1>
-
-					{Object.keys(produtosExibidos).map((marca) => (
-						<div key={marca} className='grupo-por-marca'>
-							<h2 className='divisor-marca'>{marca}</h2>
-							<div className='lista-cards'>
-								{produtosExibidos[marca]?.map((validade) => (
-									<div
-										className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
-										key={validade.idvalidades + validade.validadeDiaMes}>
-										{/* Linha 1: Produto e Info Principal */}
-										<div className='card-topo'>
-											<div className='card-produto-info'>
-												<div className='card-detalhes-produto-responsavel'>
-													<span className='card-produto-marca'>
-														{validade.marca_produto}
-													</span>
-													<span className='card-produto-separador'>
-														<span className='card-produto-responsavel'>
-															{getInicial(validade.responsavel)}
-														</span>
-														<span className='card-produto-nome'>
-															{validade.produto}
-														</span>
-													</span>
-												</div>
-
-												<span className='card-produto-codigo'>
-													PLU:{' '}
-													{validade.codigoInterno ||
-														'Código interno não cadastrado.'}
-												</span>
-											</div>
-											<div className='card-info-badges'>
-												<span className='badge-quantidade'>
-													{validade.quantidade_produto}
-												</span>
-												<span className='badge-validade'>
-													{validade.validadeDiaMes.substring(0, 5)}
-												</span>
-											</div>
-										</div>
-
-										{validade.finalizado !== 1 && (
-											<div className='card-base'>
-												<div className='card-restante'>
-													{calcularDiasRestantes(
-														validade.validade,
-														validade.finalizado,
-													)}
-												</div>
-												<div
-													className='card-status-icones'
-													onClick={() => {
-														definirItemNoArray(
-															validade.idvalidades,
-															// validade.validadeDiaMes,
-														);
-														openModalEditar();
-													}}>
-													<ValidadeVerificada
-														verificado={validade.verificado}
-														dataInserida={validade.data_inserido}
-													/>
-													<ProdutoEmRebaixa
-														Rebaixa={validade.rebaixa}
-														dataRebaixa={validade.data_rebaixa}
-													/>
-												</div>
-											</div>
-										)}
-									</div>
-								))}
-							</div>
-						</div>
-					))}
+					{Object.keys(produtosExibidos).length > 0 ? (
+						ListaDeProdutosMemoized
+					) : (
+						<p className='mensagem-vazia'>
+							Nenhum produto para exibir no momento.
+						</p>
+					)}
 				</React.Fragment>
 			)}
 
@@ -370,18 +375,14 @@ function CarregarPagina({}: Props) {
 							id='codigoProduto'
 							name='codigoProduto'
 							type='text'
-							value={FormEditData?.codigoProduto || codigoLido.ean || ''}
+							value={FormEditData?.codigoProduto || ''}
 							onChange={handleChange}
 							placeholder='Código de Barras'
 						/>
 
-						<button
-							type='button'
-							onClick={openModalScanner}
-							disabled={loading}
-							title='Scan'>
-							Scanear
-						</button>
+						<div className='nav-icon-scanner'>
+							<IoBarcodeOutline size={30} onClick={openModalScanner} />
+						</div>
 					</div>
 
 					<label htmlFor='codigoInterno'>Código interno:</label>
@@ -549,16 +550,16 @@ function CarregarPagina({}: Props) {
 							name='codigoProduto'
 							type='text'
 							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
-							value={FormEditData?.codigoProduto || ''} // ÚNICA FONTE DE VERDADE
-							onChange={(e) => fetchScanDb(e.target.value)}
+							value={FormEditData?.codigoProduto || ''}
+							onChange={handleChange}
 							maxLength={13}
 							placeholder='Código de Barras'
 							autoComplete='off' // Evita que o preenchimento automático do celular trave o campo
 						/>
 
-						<button type='button' onClick={openModalScanner} disabled={loading}>
-							Scanear EAN
-						</button>
+						<div className='nav-icon-scanner'>
+							<IoBarcodeOutline size={30} onClick={openModalScanner} />
+						</div>
 					</div>
 
 					<label htmlFor='codigoInterno'>Código interno:</label>
@@ -666,20 +667,16 @@ function CarregarPagina({}: Props) {
 							type='text'
 							inputMode='numeric' // Força teclado numérico no celular sem quebrar o evento
 							value={FormEditData?.codigoProduto || ''}
-							onChange={(e) => fetchScanDb(e.target.value)}
+							onChange={handleChange}
 							maxLength={13}
 							placeholder='Código de Barras'
 							required
 							autoComplete='off' // Evita que o preenchimento automático do celular trave o campo
 						/>
 
-						<button
-							type='button'
-							onClick={openModalScanner}
-							disabled={loading}
-							title='Limpar e Bipar novamente'>
-							Scanear
-						</button>
+						<div className='nav-icon-scanner'>
+							<IoBarcodeOutline size={30} onClick={openModalScanner} />
+						</div>
 					</div>
 
 					<label htmlFor='codigoInterno'>Código interno:</label>
@@ -753,31 +750,21 @@ function CarregarPagina({}: Props) {
 			</Modal>
 
 			{/* COMPONENTES E MODAIS DE SCANNER */}
-			<ModalCeres
-				id='ceres-scanner-editar-validade'
-				isOpen={isOpenModalScanner}
-				onClose={closeModalScanner}
-				onResult={fetchScanDb}
-			/>
 
 			<ModalCeres
-				id='ceres-scanner-add-code-bar'
+				id='ceres-scanner-geral'
 				isOpen={isOpenModalScanner}
 				onClose={closeModalScanner}
-				onResult={fetchScanDb}
-			/>
-
-			<ModalCeres
-				id='ceres-scanner-ean-plu'
-				isOpen={isOpenModalScanner}
-				onClose={closeModalScanner}
-				onResult={fetchScanDb}
+				onResult={(codigo) => {
+					fetchScanDb(codigo); // A função de busca já atualiza o FormEditData
+					closeModalScanner(); // Fecha o scanner após ler
+				}}
 			/>
 
 			<AddButton
-				openModalAddBarCode={openModalAddCodeBar}
-				openFuncion={openModalAdicionar}
-				openModalAddEanPlu={openModalAddEanPlu}
+				openModalAddBarCode={handleOpenAddCodeBar} // Chama a função que limpa e abre
+				openFuncion={handleOpenAdicionar} // Chama a função que limpa e abre
+				openModalAddEanPlu={handleOpenAddEanPlu} // Chama a função que limpa e abre
 				addUser
 				addBarCode={true}
 				addValidade={true}

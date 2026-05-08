@@ -96,6 +96,7 @@ export interface ValidadeProduto {
 	data_rebaixa: string;
 	tipoquantidade: string;
 	descricao_produto: string;
+	idRelacionado?: number | null;
 }
 
 export interface MarcaProdutoInterface {
