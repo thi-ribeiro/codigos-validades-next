@@ -35,6 +35,11 @@ export async function POST(request: Request) {
             [codigoProduto]
         );
 
+        // const [produtoExistente]: any = await connection.execute(
+        //     "SELECT id FROM ean_plu_produtos WHERE ean_produto = ? OR plu_produto = ? LIMIT 1",
+        //     [codigoProduto, codigoInterno || ''] // Verifica os dois campos
+        // );
+
         let produtoId: number;
 
         if (produtoExistente.length > 0) {

@@ -82,7 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 				console.log(errorData);
 				throw new Error(
-					errorData.message || 'Falha ao buscar dados do usuário.'
+					errorData.message || 'Falha ao buscar dados do usuário.',
 				);
 			}
 

@@ -464,7 +464,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			const formData = new FormData(e.target as HTMLFormElement);
 			const produto = formData.get('produto') as string;
 			const validade = formData.get('validade') as string;
-			const quantidade = formData.get('quantidade') as string;
+			const quantidade = formData.get('quantidade_produto') as string;
 			const marca = (formData.get('marca') as string).trimEnd();
 			const tipoQuantidade = formData.get('tipoquantidade') as string;
 			const codigoProduto = formData.get('codigoProduto') as string;

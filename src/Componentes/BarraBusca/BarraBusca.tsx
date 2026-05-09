@@ -6,7 +6,8 @@ import { useAuth } from '@/Contexto/AuthContext';
 import useModal from '../Modal/useModal';
 import React from 'react';
 import ModalCeres from '../ModalCeres/ModalCeres';
-import { IoIosBarcode } from 'react-icons/io';
+import { IoIosBarcode, IoMdBarcode } from 'react-icons/io';
+import { MdOutlineQrCodeScanner } from 'react-icons/md';
 
 export default function BarraBusca() {
 	const { setNomeProduto, nomeProduto } = useValidades();
@@ -49,7 +50,7 @@ export default function BarraBusca() {
 					onClick={openModal}
 					title='Escanear etiqueta'
 					className='btn-scanner'>
-					<IoIosBarcode size={25} color='#0056b3' />
+					<MdOutlineQrCodeScanner size={20} color='#000' />
 				</button>
 
 				<button name='oksearch' onClick={() => setNomeProduto('')}>
