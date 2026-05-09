@@ -170,7 +170,7 @@ function CarregarPagina({}: Props) {
 			const data = await response.json();
 
 			if (data.status === 'success') {
-				console.log(data);
+				//console.log(data);
 				setFormEditData((prev) => ({
 					...prev,
 					produto: data.produto.descricao_produto,

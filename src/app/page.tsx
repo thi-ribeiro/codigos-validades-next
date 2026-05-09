@@ -5,11 +5,11 @@ import _ from 'lodash';
 import { IoRemoveCircleOutline } from 'react-icons/io5';
 import { useAuth } from '@/Contexto/AuthContext';
 import { FuncoesProvider, useFuncoes } from '@/Contexto/FuncoesContext';
-import Modal from '@/Componentes/Modal/Modal';
+import Modal from '@/Componentes/ModalCodigoProdutos/Modal';
 import AutoComplete from '@/Componentes/AutoComplete/AutoComplete';
 import AddButton from '@/Componentes/AddButton/AddButton';
 
-import { useModal } from '@/Componentes/Modal/useModal';
+import { useModal } from '@/Componentes/ModalCodigoProdutos/useModal';
 import { IoIosSwap } from 'react-icons/io';
 
 export interface Props {}
