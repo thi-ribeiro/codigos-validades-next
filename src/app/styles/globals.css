@@ -78,6 +78,7 @@ input[type="number"],
 input[type="password"],
 input[type="date"],
 input[type="submit"],
+input[type="button"],
 button,
 select {
   padding: 12px;
@@ -728,7 +729,15 @@ button:active {
     text-transform: capitalize;
   }
 
-  input:not([type="checkbox"]) {
+  .buttonSubmCanc {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  input:not([type="checkbox"], [type="button"], [type="submit"]) {
     /* padding: 10px; */
     /* border: 1px solid #ccc; */
     width: 100%;
@@ -829,7 +838,6 @@ button:active {
     .buttonDelete {
       flex-grow: 1;
     }
-
     .buttonSubmCanc {
       display: flex;
       width: 100%;
