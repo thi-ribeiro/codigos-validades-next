@@ -149,6 +149,14 @@ export default function Modal({
 		onClose();
 	};
 
+	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+		const valor = e.target.value;
+		// Só dispara se o campo não estiver vazio e for diferente do que já estava lá
+		if (valor && valor !== dadosIniciais?.codigoProduto) {
+			fetchScan?.(Number(valor));
+		}
+	};
+
 	return (
 		<div className='modal-container'>
 			<div className='modal-backdrop' onClick={onClose}></div>
@@ -213,12 +221,8 @@ export default function Modal({
 								type='text'
 								inputMode='numeric'
 								value={formEditData?.codigoProduto || ''}
-								onChange={(e) => {
-									if (fetchScan) {
-										fetchScan(Number(e.target.value));
-									}
-									handleChange(e);
-								}}
+								onChange={(e) => handleChange(e)}
+								onBlur={handleBlur}
 								maxLength={13}
 								placeholder='Código de Barras'
 								required

@@ -30,37 +30,58 @@ export async function POST(request: Request) {
         await connection.beginTransaction();
 
         // 1. Verificar se o produto já existe no cadastro (pelo EAN)
-        const [produtoExistente]: any = await connection.execute(
-            "SELECT id FROM ean_plu_produtos WHERE ean_produto = ? LIMIT 1",
-            [codigoProduto]
-        );
-
         // const [produtoExistente]: any = await connection.execute(
-        //     "SELECT id FROM ean_plu_produtos WHERE ean_produto = ? OR plu_produto = ? LIMIT 1",
-        //     [codigoProduto, codigoInterno || ''] // Verifica os dois campos
+        //     "SELECT id FROM ean_plu_produtos WHERE ean_produto = ? LIMIT 1",
+        //     [codigoProduto]
         // );
 
-        let produtoId: number;
+        // 1. PRIMEIRO: Verifica se o produto (EAN ou PLU) já existe
+        const [produtoExistente]: any = await connection.execute(
+            // Adicionei as colunas aqui no SELECT:
+            "SELECT id, ean_produto, plu_produto FROM ean_plu_produtos WHERE ean_produto = ? OR plu_produto = ? LIMIT 1",
+            [codigoProduto, codigoInterno || '']
+        );
 
+        let produtoId: number;
         if (produtoExistente.length > 0) {
-            // Se existir, pegamos o ID dele
-            produtoId = produtoExistente[0].id;
+            const p = produtoExistente[0];
+
+            // VALIDAÇÃO DE INTEGRIDADE:
+            // 1. Se o EAN que você enviou já existe, mas está cadastrado com OUTRO PLU no banco...
+            if (p.ean_produto === codigoProduto && p.plu_produto !== (codigoInterno || '')) {
+                await connection.rollback();
+                return NextResponse.json(
+                    { status: 'info', message: `Conflito: O EAN ${codigoProduto} já está cadastrado com outro Código Interno (${p.plu_produto})!` },
+                    { status: 400 }
+                );
+            }
+
+            // 2. Se o PLU que você enviou já existe, mas está cadastrado com OUTRO EAN no banco...
+            if (p.plu_produto === (codigoInterno || '') && p.ean_produto !== codigoProduto) {
+                await connection.rollback();
+                return NextResponse.json(
+                    { status: 'info', message: `Conflito: O Código Interno ${codigoInterno} já pertence ao produto com EAN ${p.ean_produto}!` },
+                    { status: 400 }
+                );
+            }
+            // Se passou pelas validações, significa que o que você digitou bate com o que está no banco
+            produtoId = p.id;
         } else {
-            // 2. Se não existir, inserimos no cadastro de produtos primeiro
+            // SE NÃO EXISTE: Aí sim fazemos o INSERT do produto novo.
             const [novoProduto]: any = await connection.execute(
                 `INSERT INTO ean_plu_produtos 
-                (descricao_produto, marca_produto, ean_produto, plu_produto) 
-                VALUES (?, ?, ?, ?)`,
+        (descricao_produto, marca_produto, ean_produto, plu_produto) 
+        VALUES (?, ?, ?, ?)`,
                 [produto, marca || '', codigoProduto, codigoInterno || '']
             );
-            produtoId = novoProduto.insertId; //RESULTADO DO INSERT!
+            produtoId = novoProduto.insertId;
         }
 
+        // 2. AGORA: Verifica se ESSA VALIDADE específica já existe para ESSE produtoId
         const [validadeExistente]: any = await connection.execute(
             "SELECT idvalidades FROM validades WHERE idRelacionado = ? AND validade = ? LIMIT 1",
             [produtoId, validade]
-        )
-
+        );
 
         if (validadeExistente.length > 0) {
             // IMPORTANTE: Se você iniciou uma transação, precisa encerrar ela 
