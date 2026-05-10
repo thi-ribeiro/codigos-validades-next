@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
     // 1. Tenta pegar o token do cookie
     const token = request.cookies.get('auth_token')?.value;
-    console.log("Passou pelo Middleware! Rota acessada:", request.nextUrl.pathname);
+    //console.log("Passou pelo Middleware! Rota acessada:", request.nextUrl.pathname);
 
     // 1. Defina a lista de rotas que precisam de login
     const protectedRoutes = ['/validades', '/admin', '/configuracoes'];

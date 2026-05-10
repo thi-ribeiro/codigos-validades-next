@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         }
 
         const user = rows[0];
-        console.log(user);
+        //console.log(user);
 
         const hashFormatado = user.senha_usuario.replace(/^\$2y\$/, '$2a$');
         // 2. Compara a senha (compatível com password_hash do PHP)
