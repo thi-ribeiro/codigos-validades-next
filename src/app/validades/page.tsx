@@ -244,29 +244,24 @@ function CarregarPagina({}: Props) {
 
 	return (
 		<div className='validadesPage'>
-			{loading ? (
-				<div className='loaderContainer'>
-					<div className='loader'></div>
-				</div>
-			) : (
-				<React.Fragment>
-					<FiltroValidades
-						filtrarVencimentos={() => setFiltroAtivo('vencendo')}
-						filtrarEmAberto={() => setFiltroAtivo('Em Aberto')}
-						filtrarFinalizados={() => setFiltroAtivo('finalizado')}
-					/>
+			<React.Fragment>
+				<FiltroValidades
+					filtrarVencimentos={() => setFiltroAtivo('vencendo')}
+					filtrarEmAberto={() => setFiltroAtivo('Em Aberto')}
+					filtrarFinalizados={() => setFiltroAtivo('finalizado')}
+				/>
 
-					<h1>
-						De {mesAtual} até {dataFimIntervalo}
-					</h1>
+				<h1>
+					De {mesAtual} até {dataFimIntervalo}
+				</h1>
 
-					<ListaProdutos
-						formIdEditar={setFormEditData}
-						openModalEditar={openModalEditar}
-						produtosExibidos={produtosExibidos}
-					/>
-				</React.Fragment>
-			)}
+				<ListaProdutos
+					loading={loading}
+					formIdEditar={setFormEditData}
+					openModalEditar={openModalEditar}
+					produtosExibidos={produtosExibidos}
+				/>
+			</React.Fragment>
 
 			<Modal
 				isOpen={isOpenAdicionar}

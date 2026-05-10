@@ -11,6 +11,7 @@ import AddButton from '@/Componentes/AddButton/AddButton';
 
 import { useModal } from '@/Componentes/ModalCodigoProdutos/useModal';
 import { IoIosSwap } from 'react-icons/io';
+import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
 
 export interface Props {}
 
@@ -115,11 +116,7 @@ function Pagina({}: Props) {
 				</form>
 			</div>
 
-			{loading && (
-				<div className='loaderContainer'>
-					<div className='loader'></div>
-				</div>
-			)}
+			<LoadingLogo loading={loading} />
 
 			<div className='produtosBusca'>
 				{produto &&

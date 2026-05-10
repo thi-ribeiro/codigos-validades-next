@@ -1,16 +1,19 @@
 import { useValidades, ValidadeProduto } from '@/Contexto/ValidadesContext';
 import React, { memo } from 'react';
+import LoadingLogo from '../LoadingLogo/LoadingLogo';
 
 export interface produtosInterface {
 	produtosExibidos: Record<string, ValidadeProduto[]>;
 	openModalEditar: () => void;
 	formIdEditar: React.Dispatch<React.SetStateAction<ValidadeProduto>>;
+	loading: boolean;
 }
 
 const ListaProdutos = ({
 	produtosExibidos,
 	openModalEditar,
 	formIdEditar,
+	loading,
 }: produtosInterface) => {
 	const {
 		calcularDiasRestantes,
@@ -56,77 +59,89 @@ const ListaProdutos = ({
 
 	const getInicial = (nome: string) => nome?.charAt(0).toUpperCase() || '?';
 
-	if (!produtosExibidos || Object.keys(produtosExibidos).length === 0) {
-		return <h2 className='alertah2'>Nenhum produto para exibir no momento.</h2>;
-	}
+	return (
+		<React.Fragment>
+			<LoadingLogo loading={loading} />
+			{!loading && (
+				<>
+					{!produtosExibidos || Object.keys(produtosExibidos).length === 0 ? (
+						<h2 className='alertah2'>Nenhum produto para exibir no momento.</h2>
+					) : (
+						Object.keys(produtosExibidos).map((marca) => (
+							<div key={marca} className='grupo-por-marca'>
+								<h2 className='divisor-marca'>{marca}</h2>
+								<div className='lista-cards'>
+									{produtosExibidos[marca]?.map((validade) => (
+										<div
+											className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
+											key={validade.idvalidades}>
+											{/* Linha 1: Produto e Info Principal */}
+											<div className='card-topo'>
+												<div className='card-produto-info'>
+													<div className='card-detalhes-produto-responsavel'>
+														<span className='card-produto-separador'>
+															<span className='card-produto-responsavel'>
+																{getInicial(validade.responsavel)}
+															</span>
+															<span className='card-produto-nome'>
+																{validade.produto}
+															</span>
+														</span>
+													</div>
 
-	return Object.keys(produtosExibidos).map((marca) => (
-		<div key={marca} className='grupo-por-marca'>
-			<h2 className='divisor-marca'>{marca}</h2>
-			<div className='lista-cards'>
-				{produtosExibidos[marca]?.map((validade) => (
-					<div
-						className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
-						key={validade.idvalidades}>
-						{/* Linha 1: Produto e Info Principal */}
-						<div className='card-topo'>
-							<div className='card-produto-info'>
-								<div className='card-detalhes-produto-responsavel'>
-									<span className='card-produto-separador'>
-										<span className='card-produto-responsavel'>
-											{getInicial(validade.responsavel)}
-										</span>
-										<span className='card-produto-nome'>
-											{validade.produto}
-										</span>
-									</span>
-								</div>
+													<span className='card-produto-marca'>
+														{validade.marca_produto}
+													</span>
+													<span className='card-produto-codigo'>
+														PLU:{' '}
+														{validade.codigoInterno ||
+															'Código interno não cadastrado.'}
+													</span>
+												</div>
+												<div className='card-info-badges'>
+													<span className='badge-quantidade'>
+														{validade.quantidade_produto}
+													</span>
+													<span className='badge-validade'>
+														{validade.validadeDiaMes.substring(0, 5)}
+													</span>
+												</div>
+											</div>
 
-								<span className='card-produto-marca'>
-									{validade.marca_produto}
-								</span>
-								<span className='card-produto-codigo'>
-									PLU:{' '}
-									{validade.codigoInterno || 'Código interno não cadastrado.'}
-								</span>
-							</div>
-							<div className='card-info-badges'>
-								<span className='badge-quantidade'>
-									{validade.quantidade_produto}
-								</span>
-								<span className='badge-validade'>
-									{validade.validadeDiaMes.substring(0, 5)}
-								</span>
-							</div>
-						</div>
-
-						{validade.finalizado !== 1 && (
-							<div className='card-base'>
-								<div className='card-restante'>
-									{calcularDiasRestantes(
-										validade.validade,
-										validade.finalizado,
-									)}
-								</div>
-								<div
-									className='card-status-icones'
-									onClick={() => selecionarEEditar(validade.idvalidades)}>
-									<ValidadeVerificada
-										verificado={validade.verificado}
-										dataInserida={validade.data_inserido}
-									/>
-									<ProdutoEmRebaixa
-										Rebaixa={validade.rebaixa}
-										dataRebaixa={validade.data_rebaixa}
-									/>
+											{validade.finalizado !== 1 && (
+												<div className='card-base'>
+													<div className='card-restante'>
+														{calcularDiasRestantes(
+															validade.validade,
+															validade.finalizado,
+														)}
+													</div>
+													<div
+														className='card-status-icones'
+														onClick={() =>
+															selecionarEEditar(validade.idvalidades)
+														}>
+														<ValidadeVerificada
+															verificado={validade.verificado}
+															dataInserida={validade.data_inserido}
+														/>
+														<ProdutoEmRebaixa
+															Rebaixa={validade.rebaixa}
+															dataRebaixa={validade.data_rebaixa}
+														/>
+													</div>
+												</div>
+											)}
+										</div>
+									))}
 								</div>
 							</div>
-						)}
-					</div>
-				))}
-			</div>
-		</div>
-	));
+						))
+					)}
+				</>
+			)}
+		</React.Fragment>
+	);
 };
 
 export default memo(ListaProdutos); // Use memo para evitar re-renderizacoes desnecessarias na listaProdutos;

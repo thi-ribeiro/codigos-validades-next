@@ -199,87 +199,6 @@ button:active {
   }
 }
 
-.loaderContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px; /* Adjust as needed */
-}
-
-/* HTML: <div class="loader"></div> */
-.loader {
-  display: flex;
-  margin: 5px;
-  width: 50px;
-  height: 28px;
-  --_g: no-repeat radial-gradient(farthest-side, #007bff 94%, #0000);
-  background:
-    var(--_g) 50% 0,
-    var(--_g) 100% 0;
-  background-size: 10px 10px;
-  position: relative;
-  animation: l23-0 1.5s linear infinite;
-}
-
-.loader:before {
-  content: "";
-  position: absolute;
-  height: 10px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #007bff;
-  left: 0;
-  top: 0;
-  animation:
-    l23-1 1.5s linear infinite,
-    l23-2 0.5s cubic-bezier(0, 200, 0.8, 200) infinite;
-}
-
-@keyframes l23-0 {
-  0%,
-  31% {
-    background-position:
-      50% 0,
-      100% 0;
-  }
-  33% {
-    background-position:
-      50% 100%,
-      100% 0;
-  }
-  43%,
-  64% {
-    background-position:
-      50% 0,
-      100% 0;
-  }
-  66% {
-    background-position:
-      50% 0,
-      100% 100%;
-  }
-  79% {
-    background-position:
-      50% 0,
-      100% 0;
-  }
-  100% {
-    transform: translateX(calc(-100% / 3));
-  }
-}
-
-@keyframes l23-1 {
-  100% {
-    left: calc(100% + 7px);
-  }
-}
-
-@keyframes l23-2 {
-  100% {
-    top: -0.1px;
-  }
-}
-
 .divisoria {
   height: 1px;
   border: 1px solid #ccc;
@@ -1139,21 +1058,6 @@ button:active {
   background-color: #fcfcfc;
 } */
 
-/* --- HEADER GLASSMORPHISM --- */
-.header-glass-container {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  padding: 10px 15px;
-  /* O SEGREDO DO EFEITO GLASS: */
-  background: rgba(255, 255, 255, 0.7); /* Fundo branco semi-transparente */
-  backdrop-filter: blur(10px); /* Desfoque do que está atrás */
-  -webkit-backdrop-filter: blur(10px); /* Suporte para Safari */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Bordinha de "brilho" */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
 .buscarHeaderUser {
   display: flex;
   align-items: center;
@@ -1196,7 +1100,7 @@ button:active {
 .header-glass-container {
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 1003;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
