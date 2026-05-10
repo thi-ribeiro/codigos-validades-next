@@ -40,7 +40,7 @@ export default function BarraBusca() {
 			<div className='search-container'>
 				<input
 					type='text'
-					placeholder='Buscar por código / nome...'
+					placeholder='Filtrar por PLU / Nome...'
 					value={nomeProduto}
 					onChange={(e) => setNomeProduto(e.target.value)}
 				/>

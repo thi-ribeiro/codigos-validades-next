@@ -136,26 +136,76 @@ function CarregarPagina({}: Props) {
 		}
 	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
 
-	useEffect(() => {
-		const codigo = FormEditData?.codigoProduto;
+	// useEffect(() => {
+	// 	const codigo = FormEditData?.codigoProduto;
 
-		if (
-			codigo &&
-			(codigo.length === 13 || codigo.length === 5) &&
-			!FormEditData?.idRelacionado
-		) {
-			const timer = setTimeout(() => {
-				fetchScanDb(codigo);
-			}, 600); // Aumentei um tiquinho para dar fôlego ao banco
+	// 	if (
+	// 		codigo &&
+	// 		(codigo.length === 13 || codigo.length === 5) &&
+	// 		!FormEditData?.idRelacionado
+	// 	) {
+	// 		const timer = setTimeout(() => {
+	// 			fetchScanDb(codigo);
+	// 		}, 600); // Aumentei um tiquinho para dar fôlego ao banco
 
-			return () => clearTimeout(timer);
-		}
-	}, [FormEditData?.codigoProduto, FormEditData?.idRelacionado]);
+	// 		return () => clearTimeout(timer);
+	// 	}
+	// }, [FormEditData?.codigoProduto, FormEditData?.idRelacionado]);
+
+	// const fetchScanDb = async (codigo: string) => {
+	// 	const codigoLimpo = String(codigo || '').trim();
+
+	// 	// 1. Trava simples de comprimento (evita lixo no banco)
+	// 	if (codigoLimpo.length < 5) return;
+
+	// 	try {
+	// 		setLoadingScanner(true);
+
+	// 		const response = await fetch(
+	// 			`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoLimpo)}`,
+	// 		);
+
+	// 		const data = await response.json();
+
+	// 		if (data.status === 'success') {
+	// 			//console.log(data);
+	// 			setFormEditData((prev) => ({
+	// 				...prev,
+	// 				produto: data.produto.descricao_produto,
+	// 				marca_produto: data.produto.marca_produto,
+	// 				codigoInterno: data.produto.plu_produto,
+	// 				codigoProduto: data.produto.ean_produto,
+	// 				idRelacionado: data.produto.id,
+	// 			}));
+	// 		} else if (data.status === 'not_found') {
+	// 			setFormEditData((prev) => ({
+	// 				...prev,
+	// 				codigoProduto: codigoLimpo,
+	// 				idRelacionado: null, // Novo cadastro
+	// 			}));
+	// 		}
+	// 	} catch (error) {
+	// 		console.error('Erro na busca:', error);
+	// 	} finally {
+	// 		setLoadingScanner(false);
+	// 	}
+	// };
 
 	const fetchScanDb = async (codigo: string) => {
-		const codigoLimpo = String(codigo || '').trim();
+		// 1. Limpeza inicial
+		let codigoLimpo = String(codigo || '').trim();
 
-		// 1. Trava simples de comprimento (evita lixo no banco)
+		// 2. LÓGICA DE FATIAMENTO (Parsing do QR Code/Etiqueta)
+		if (codigoLimpo.includes(':')) {
+			const partes = codigoLimpo.split(':');
+			// Se o formato for :p:12345:d:123
+			// partes[0] = "", partes[1] = "p", partes[2] = "12345"
+			if (partes[2]) {
+				codigoLimpo = partes[2];
+			}
+		}
+
+		// 3. Trava simples de comprimento (evita lixo no banco)
 		if (codigoLimpo.length < 5) return;
 
 		try {
@@ -168,7 +218,6 @@ function CarregarPagina({}: Props) {
 			const data = await response.json();
 
 			if (data.status === 'success') {
-				//console.log(data);
 				setFormEditData((prev) => ({
 					...prev,
 					produto: data.produto.descricao_produto,
@@ -180,8 +229,8 @@ function CarregarPagina({}: Props) {
 			} else if (data.status === 'not_found') {
 				setFormEditData((prev) => ({
 					...prev,
-					codigoProduto: codigoLimpo,
-					idRelacionado: null, // Novo cadastro
+					codigoProduto: codigoLimpo, // Aqui ele já vai estar "limpinho"
+					idRelacionado: null,
 				}));
 			}
 		} catch (error) {

@@ -47,6 +47,7 @@ export default function ModalCeres({
 			// O SEGREDO: Os formatos entram aqui no segundo parâmetro do construtor
 			const html5QrCode = new Html5Qrcode(regionId, {
 				formatsToSupport: [
+					Html5QrcodeSupportedFormats.CODE_128,
 					Html5QrcodeSupportedFormats.EAN_13,
 					Html5QrcodeSupportedFormats.EAN_8,
 					Html5QrcodeSupportedFormats.QR_CODE,
@@ -61,8 +62,16 @@ export default function ModalCeres({
 					{ facingMode: 'environment' },
 					{
 						fps: 30,
-						qrbox: { width: 280, height: 150 },
+						qrbox: { width: 280, height: 100 },
 						aspectRatio: 1.0,
+						videoConstraints: {
+							facingMode: 'environment',
+							focusMode: 'continuous',
+							whiteBalanceMode: 'continuous',
+							// Se o celular permitir, você pode tentar forçar uma resolução maior
+							width: { ideal: 1280 },
+							height: { ideal: 720 },
+						} as any,
 					},
 					(text) => {
 						onResult(text);
