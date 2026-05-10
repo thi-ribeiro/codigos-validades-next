@@ -46,7 +46,7 @@ const ListaProdutos = ({
 			(item) => Number(item.idvalidades) === idSelecionado,
 		);
 
-		console.log(produtoParaEditar);
+		//console.log(produtoParaEditar);
 
 		if (produtoParaEditar) {
 			formIdEditar(produtoParaEditar);
@@ -57,9 +57,7 @@ const ListaProdutos = ({
 	const getInicial = (nome: string) => nome?.charAt(0).toUpperCase() || '?';
 
 	if (!produtosExibidos || Object.keys(produtosExibidos).length === 0) {
-		return (
-			<p className='mensagem-vazia'>Nenhum produto para exibir no momento.</p>
-		);
+		return <h2 className='alertah2'>Nenhum produto para exibir no momento.</h2>;
 	}
 
 	return Object.keys(produtosExibidos).map((marca) => (

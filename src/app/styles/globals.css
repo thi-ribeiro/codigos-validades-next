@@ -446,6 +446,12 @@ button:active {
 .validadesPage {
   padding: 0 0 130px;
 
+  .alertah2 {
+    color: #0056b3;
+    font-weight: bold;
+    text-align: center;
+  }
+
   .tabela-validades {
     width: auto;
     border: 1px solid #ccc;
@@ -645,17 +651,22 @@ button:active {
   width: 95%;
 }
 
-/* Botão de fechar */
-.modal-close {
-  /* position: absolute; */
-  display: flex;
-  justify-content: right;
-  width: 100%;
-  font-size: 24px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0 5px;
+.modal-header-close {
+  /* display: flex;
+  justify-content: flex-end; */
+  position: relative;
+
+  .modal-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    /* display: flex; */
+    font-size: 30px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0 5px;
+  }
 }
 
 .buttonAddContainer {
@@ -677,8 +688,8 @@ button:active {
     color: white;
     border: none;
     border-radius: 100%;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     text-align: center;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -687,8 +698,8 @@ button:active {
   }
 
   .botoes-adicionais {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
   }
 
   /* Quando o mouse passa por cima */
@@ -715,6 +726,14 @@ button:active {
     height: 30px; */
     background-color: #007bff;
   }
+}
+
+.formularioAdicionarValidade input[readonly] {
+  background-color: #f9f9f9 !important;
+  color: #888 !important;
+  border-color: #eee !important;
+  cursor: not-allowed !important;
+  opacity: 0.8 !important;
 }
 
 .formularioAdicionarValidade,
@@ -1037,6 +1056,7 @@ button:active {
     gap: 5px;
     font-size: 0.85rem;
     font-weight: bold;
+    justify-content: flex-end;
 
     /* Badge de Validade com destaque */
     .badge-validade {

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 			return NextResponse.json({
 				success: true,
 				exists: true,
-				message: 'Produto já existe no cadastro. Nada foi alterado.',
+				message: 'EAN ou PLU já cadastrado. Nada foi alterado.',
 			});
 		}
 

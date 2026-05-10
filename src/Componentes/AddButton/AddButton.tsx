@@ -1,7 +1,7 @@
 import { useAuth } from '@/Contexto/AuthContext';
 import React from 'react';
 import { IoMdBarcode, IoMdPersonAdd, IoMdQrScanner } from 'react-icons/io';
-import { IoAdd, IoDocumentTextOutline } from 'react-icons/io5';
+import { IoAdd, IoDocumentTextOutline, IoTimerOutline } from 'react-icons/io5';
 
 type Props = {
 	openFuncion?: () => void;
@@ -61,13 +61,13 @@ const SelectAddButtonOptions = ({
 							className='botoes-adicionais buttonAdd buttonAddUser'
 							title='Cadastrar Usuário'
 							onClick={openModalAddUser}>
-							<IoMdPersonAdd size={15} />
+							<IoMdPersonAdd size={20} />
 						</div>
 						<div
 							className='botoes-adicionais buttonAdd buttonAddCodeBar'
 							title='Adicionar EAN/PLU'
 							onClick={openModalAddEanPlu}>
-							<IoMdBarcode size={15} />
+							<IoMdBarcode size={20} />
 						</div>
 					</>
 				)}
@@ -76,7 +76,7 @@ const SelectAddButtonOptions = ({
 					<div
 						className='buttonAddValidade buttonAdd'
 						onClick={openModalAddBarCode}>
-						<IoDocumentTextOutline size={20} />
+						<IoTimerOutline size={30} />
 					</div>
 				) : (
 					<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
@@ -93,7 +93,7 @@ const SelectAddButtonOptions = ({
 			<div
 				className='buttonAddBarCodeScan buttonAdd'
 				onClick={openModalAddBarCode}>
-				<IoMdQrScanner size={20} />
+				<IoTimerOutline size={30} />
 			</div>
 		);
 	}

@@ -1,12 +1,11 @@
 'use client';
 
 import { useValidades } from '@/Contexto/ValidadesContext';
-import { IoCloseOutline, IoScanOutline } from 'react-icons/io5'; // Adicionei um ícone de scan
+import { IoCloseOutline } from 'react-icons/io5'; // Adicionei um ícone de scan
 import { useAuth } from '@/Contexto/AuthContext';
 import useModal from '../Modal/useModal';
 import React from 'react';
 import ModalCeres from '../ModalCeres/ModalCeres';
-import { IoIosBarcode, IoMdBarcode } from 'react-icons/io';
 import { MdOutlineQrCodeScanner } from 'react-icons/md';
 
 export default function BarraBusca() {

@@ -21,7 +21,11 @@ import {
 	IoIosCloseCircleOutline,
 	IoMdTrendingDown,
 } from 'react-icons/io';
-import { IoShieldCheckmark, IoShieldOutline } from 'react-icons/io5';
+import {
+	IoCheckmarkDoneOutline,
+	IoShieldCheckmark,
+	IoShieldOutline,
+} from 'react-icons/io5';
 
 export interface ProviderProps {
 	children: React.ReactNode;
@@ -202,6 +206,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (!isSilent) setLoading(false);
 		}
 	};
+
 	// useEffect(() => {
 	// 	const eventSource = new EventSource(`${acesso_validades}/events`);
 
@@ -220,85 +225,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 	// 	return () => eventSource.close();
 	// }, [fetchValidades]);
-
-	const fetchValidadesX = async (
-		produtoMarca: string = '',
-		filtro: string = 'validadeDiaMes',
-	) => {
-		setLoading(true);
-		try {
-			// Agora apontamos para a nossa nova API interna do Next.js
-			// Passamos apenas a marca, pois o resto a API resolve via Cookie/JWT
-			const response = await fetch(
-				`${acesso_validades}/listar/?marca=${produtoMarca}`,
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					// Importante manter para o Middleware ler o seu cookie auth_token
-					credentials: 'include',
-				},
-			);
-
-			const data = await response.json();
-
-			// Se a API retornar erro de autenticação (ex: 401)
-			if (response.status === 401) {
-				setLoading(false);
-				logout();
-				return;
-			}
-
-			// data.dados contém os produtos e data.marcas as marcas para o filtro
-			if (data && Array.isArray(data.dados) && Array.isArray(data.marcas)) {
-				setmarcasProdutos(data.marcas);
-				setdataFimIntervalo(data.dataFimIntervalo);
-
-				// const agruparValidade = _.chain(data.dados)
-				// 	.filter((item) => item.finalizado === 1)
-				// 	.groupBy(filtro)
-				// 	.value();
-
-				const [pendentes, finalizados] = _.partition(data.dados, {
-					finalizado: 1,
-				});
-
-				let agrupar = {
-					finalizados: _.groupBy(finalizados, filtro),
-					pendentes: _.groupBy(pendentes, filtro),
-				};
-
-				//setValidadesSeparadas(agrupar);
-
-				//console.log(agrupar);
-
-				//let grupoPendencia = _.groupBy(agrupados[0], filtro);
-
-				//setProdutosValidades(grupoPendencia);
-				//console.log(agrupar);
-				//console.log(agruparValidade);
-
-				if (data.dataFimIntervalo) {
-					setdataFimIntervalo(
-						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
-							locale: ptBR,
-						}),
-					);
-				}
-			} else {
-				// Se for o caso de 'Nenhuma validade encontrada' (status 200 ou 404)
-				setProdutosValidades({});
-				//setValidadesSeparadas({});
-				if (data.marcas) setmarcasProdutos(data.marcas);
-			}
-		} catch (error: any) {
-			console.error('Fetch error:', error);
-			// addToast('Erro ao carregar dados', 'error');
-		} finally {
-			setLoading(false);
-		}
-	};
 
 	const dadosParaExibir = useMemo(() => {
 		// Pegamos a caixa de pendentes que o Lodash já separou para nós
@@ -346,103 +272,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		filtroAtivo,
 		nomeProduto,
 	]); // Importante: depende dos pendentes agora
-
-	//Remova o parâmetro (nomeProduto) da função interna
-	// const dadosParaExibir = useMemo(() => {
-	// 	// 1. Se estiver em 'todos' e NÃO houver busca por nome, mostra tudo
-	// 	if (filtroAtivo === 'todos' && !nomeProduto) {
-	// 		return produtosValidades;
-	// 	}
-
-	// 	const hoje = new Date();
-	// 	hoje.setHours(0, 0, 0, 0);
-
-	// 	const limite5Dias = new Date();
-	// 	limite5Dias.setDate(hoje.getDate() + 5);
-
-	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
-
-	// 	// Percorre as chaves (ex: 'Laticínios', 'Frios', etc.)
-	// 	Object.keys(produtosValidades).forEach((tipoFiltro) => {
-	// 		const itensFiltrados = produtosValidades[tipoFiltro].filter((item) => {
-	// 			const dataVal = new Date(item.validade);
-
-	// 			// Lógica para o filtro de "Vencendo"
-	// 			if (filtroAtivo === 'vencendo') {
-	// 				const estaVencendo = dataVal <= limite5Dias && item.finalizado === 0;
-
-	// 				// Se também houver busca por nome, combinamos as duas regras
-	// 				if (nomeProduto) {
-	// 					const produto = item.produto
-	// 						.toLowerCase()
-	// 						.includes(nomeProduto.toLowerCase());
-	// 					return estaVencendo && produto;
-	// 				}
-
-	// 				return estaVencendo;
-	// 			}
-
-	// 			// Lógica para quando o filtro estiver em 'todos' mas o usuário digitar um nome
-	// 			if (nomeProduto) {
-	// 				return item.produto.toLowerCase().includes(nomeProduto.toLowerCase());
-	// 			}
-
-	// 			return true;
-	// 		});
-
-	// 		if (itensFiltrados.length > 0) {
-	// 			novoObjetoFiltrado[tipoFiltro] = itensFiltrados;
-	// 		}
-	// 	});
-
-	// 	return novoObjetoFiltrado;
-
-	// 	// IMPORTANTE: Adicione nomeProduto nas dependências
-	// }, [produtosValidades, filtroAtivo, nomeProduto]);
-
-	// const dadosParaExibir = useMemo(() => {
-	// 	// Se não tem texto de busca e o filtro está em 'todos', mostra a lista original
-	// 	if (filtroAtivo === 'todos' && !nomeProduto) {
-	// 		return produtosValidades;
-	// 	}
-
-	// 	const hoje = new Date();
-	// 	hoje.setHours(0, 0, 0, 0);
-
-	// 	const limite5Dias = new Date();
-	// 	limite5Dias.setDate(hoje.getDate() + 5);
-
-	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
-
-	// 	Object.keys(produtosValidades).forEach((dataChave) => {
-	// 		const itensFiltrados = produtosValidades[dataChave].filter((item) => {
-	// 			// 1. Lógica da Data (Voltou para esconder o que passa de 5 dias)
-	// 			const dataVal = new Date(item.validade);
-	// 			const dentroDoPrazo = dataVal <= limite5Dias;
-
-	// 			// 2. Filtro por Nome
-	// 			const matchesNome = nomeProduto
-	// 				? item.produto.toLowerCase().includes(nomeProduto.toLowerCase())
-	// 				: true;
-
-	// 			// 3. Filtro por Status "Vencendo"
-	// 			if (filtroAtivo === 'vencendo') {
-	// 				// SÓ passa se: (estiver no prazo de 5 dias) E (não estiver finalizado) E (nome bater)
-	// 				return dentroDoPrazo && item.finalizado === 0 && matchesNome;
-	// 			}
-
-	// 			// Se o filtro for 'todos' mas tiver busca por nome
-	// 			return matchesNome;
-	// 		});
-
-	// 		// Só mostra a data se sobrou algum produto nela
-	// 		if (itensFiltrados.length > 0) {
-	// 			novoObjetoFiltrado[dataChave] = itensFiltrados;
-	// 		}
-	// 	});
-
-	// 	return novoObjetoFiltrado;
-	// }, [produtosValidades, filtroAtivo, nomeProduto]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -633,7 +462,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		if (!!props.verificado) {
 			//NEGACAO DUPLA, QUE LINDO!?! FORçA O BOOLEANO
 			return (
-				<IoShieldCheckmark
+				<IoCheckmarkDoneOutline
 					size={20}
 					color={'green'}
 					title={props.dataInserida}
@@ -641,9 +470,9 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			);
 		} else {
 			return (
-				<IoShieldOutline
+				<IoCheckmarkDoneOutline
 					size={20}
-					color={'red'}
+					color={'#aaa'}
 					title='Aguardando aprovação.'
 				/>
 			);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FuncoesProvider } from '../../Contexto/FuncoesContext';
 import Modal from '@/Componentes/Modal/Modal';
 import { useAuth } from '@/Contexto/AuthContext';
@@ -47,8 +47,6 @@ function CarregarPagina({}: Props) {
 	} = useValidades();
 
 	const { user } = useAuth();
-
-	//const { addToast } = useToast();
 
 	const {
 		isOpen: isOpenModalScanner,

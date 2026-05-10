@@ -162,9 +162,11 @@ export default function Modal({
 			<div className='modal-backdrop' onClick={onClose}></div>
 
 			<div className='modal-content'>
-				<button className='modal-close' onClick={onClose} type='button'>
-					&times;
-				</button>
+				<div className='modal-header-close'>
+					<button className='modal-close' onClick={onClose} type='button'>
+						&times;
+					</button>
+				</div>
 
 				{isUsuario ? (
 					<form
@@ -227,10 +229,13 @@ export default function Modal({
 								placeholder='Código de Barras'
 								required
 								autoComplete='off'
+								readOnly={isEdit}
 							/>
-							<div className='nav-icon-scanner'>
-								<IoBarcodeOutline size={30} onClick={() => onScan()} />
-							</div>
+							{isEdit ? null : (
+								<div className='nav-icon-scanner'>
+									<IoBarcodeOutline size={30} onClick={() => onScan()} />
+								</div>
+							)}
 						</div>
 
 						<label htmlFor='codigoInterno'>Código interno:</label>
@@ -247,6 +252,7 @@ export default function Modal({
 								loadingScanner ? `Carregando ${dots}` : 'Código interno.'
 							}
 							autoComplete='off'
+							readOnly={isEdit}
 						/>
 
 						<label htmlFor='produto'>Produto:</label>
@@ -258,6 +264,7 @@ export default function Modal({
 							}
 							nameInput='produto'
 							required={true}
+							readOnly={isEdit}
 						/>
 
 						<label htmlFor='marca'>Marca:</label>
@@ -273,6 +280,7 @@ export default function Modal({
 								nameInput='marca'
 								required={false}
 								eanplu={true}
+								readOnly={isEdit}
 							/>
 						)}
 
