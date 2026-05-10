@@ -51,59 +51,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	const router = useRouter(); // Instancia o roteador para poder redirecionar
 
 	// Função assíncrona para buscar os dados do usuário do backend PHP
-	const fetchUserData = async () => {
-		setIsLoading(true); // Define loading para true antes de iniciar a busca
-		setError(null); // Limpa qualquer erro anterior
-		try {
-			// Use process.env.NEXT_PUBLIC_API_URL, que deve ser definido no seu arquivo .env.local
-			const response = await fetch(`${acesso_auth}`, {
-				// OU um endpoint específico como /verify-auth.php
-				method: 'POST', // Ou GET, dependendo de como você configura a verificação
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				//body: JSON.stringify({ verifyAuth: true }), // Um indicador para o backend verificar o token
-				//credentials: 'include', // Necessário se seu frontend e backend estiverem em subdomínios diferentes (ex: app.site.com e api.site.com)
-			});
+	// const fetchUserData = async () => {
+	// 	setIsLoading(true); // Define loading para true antes de iniciar a busca
+	// 	setError(null); // Limpa qualquer erro anterior
+	// 	try {
+	// 		// Use process.env.NEXT_PUBLIC_API_URL, que deve ser definido no seu arquivo .env.local
+	// 		const response = await fetch(`${acesso_auth}`, {
+	// 			// OU um endpoint específico como /verify-auth.php
+	// 			method: 'POST', // Ou GET, dependendo de como você configura a verificação
+	// 			headers: {
+	// 				'Content-Type': 'application/json',
+	// 			},
+	// 			//body: JSON.stringify({ verifyAuth: true }), // Um indicador para o backend verificar o token
+	// 			//credentials: 'include', // Necessário se seu frontend e backend estiverem em subdomínios diferentes (ex: app.site.com e api.site.com)
+	// 		});
 
-			const data = await response.json(); // Converte a resposta para JSON
+	// 		const data = await response.json(); // Converte a resposta para JSON
 
-			//console.log(response);
+	// 		//console.log(response);
 
-			if (response.status === 401) {
-				setUser(null); // Se o status for 401, significa que o usuário não está autenticado
-				setError('Usuário não autenticado. Por favor, faça login.');
-				return;
-			}
+	// 		if (response.status === 401) {
+	// 			setUser(null); // Se o status for 401, significa que o usuário não está autenticado
+	// 			setError('Usuário não autenticado. Por favor, faça login.');
+	// 			return;
+	// 		}
 
-			if (!response.ok) {
-				// Se a resposta HTTP não for bem-sucedida (ex: 401, 500)
-				const errorData = await response.json(); // Tenta ler a mensagem de erro do corpo da resposta
+	// 		if (!response.ok) {
+	// 			// Se a resposta HTTP não for bem-sucedida (ex: 401, 500)
+	// 			const errorData = await response.json(); // Tenta ler a mensagem de erro do corpo da resposta
 
-				console.log(errorData);
-				throw new Error(
-					errorData.message || 'Falha ao buscar dados do usuário.',
-				);
-			}
+	// 			console.log(errorData);
+	// 			throw new Error(
+	// 				errorData.message || 'Falha ao buscar dados do usuário.',
+	// 			);
+	// 		}
 
-			if (data.auth === true) {
-				setUser(data.user); // Define os dados do usuário no estado
-			} else {
-				// Se o PHP indicou falha na autenticação (mesmo com status 200)
-				setUser(null); // Limpa os dados do usuário
-				setError(data.message || 'Autenticação falhou.');
-				//router.push('/login'); // Redireciona para a página de login
-			}
-		} catch (err: any) {
-			// Captura erros de rede ou de processamento da requisição
-			setUser(null); // Limpa os dados do usuário em caso de erro
-			setError(err.message); // Define a mensagem de erro
-			console.error('Erro ao buscar dados do usuário:', err);
-			//router.push('/login'); // Redireciona em caso de erro grave (ex: servidor fora do ar)
-		} finally {
-			setIsLoading(false); // Define loading para false após a conclusão (sucesso ou erro)
-		}
-	};
+	// 		if (data.auth === true) {
+	// 			setUser(data.user); // Define os dados do usuário no estado
+	// 		} else {
+	// 			// Se o PHP indicou falha na autenticação (mesmo com status 200)
+	// 			setUser(null); // Limpa os dados do usuário
+	// 			setError(data.message || 'Autenticação falhou.');
+	// 			//router.push('/login'); // Redireciona para a página de login
+	// 		}
+	// 	} catch (err: any) {
+	// 		// Captura erros de rede ou de processamento da requisição
+	// 		setUser(null); // Limpa os dados do usuário em caso de erro
+	// 		setError(err.message); // Define a mensagem de erro
+	// 		console.error('Erro ao buscar dados do usuário:', err);
+	// 		//router.push('/login'); // Redireciona em caso de erro grave (ex: servidor fora do ar)
+	// 	} finally {
+	// 		setIsLoading(false); // Define loading para false após a conclusão (sucesso ou erro)
+	// 	}
+	// };
 
 	useEffect(() => {
 		const checkUser = async () => {

@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
 
     // 1. Defina as rotas que são "Áreas Restritas" (onde o token é obrigatório)
     // Se a sua lista de produtos está na raiz, inclua o '/' aqui.
-    const protectedRoutes = ['/', '/validades', '/admin', '/configuracoes'];
+    const protectedRoutes = ['/validades'];
 
     const isProtectedRoute = protectedRoutes.some(route =>
         pathname === route || pathname.startsWith(route + '/')

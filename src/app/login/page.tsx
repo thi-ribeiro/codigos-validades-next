@@ -12,7 +12,7 @@ export default function page({}: Props) {
 	const { login, logout } = useAuth();
 	const { addToast } = useToast();
 
-	const enviarDados = (e: React.FormEvent<HTMLFormElement>) => {
+	const enviarDados = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const usuario = formData.get('usuario') as string;

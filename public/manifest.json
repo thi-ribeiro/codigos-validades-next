@@ -3,6 +3,7 @@
   "short_name": "Ceres I",
   "description": "Sistema de controle de validades e estoque para o setor de frios.",
   "version": "1.0.0",
+  "start_url": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
