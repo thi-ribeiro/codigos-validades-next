@@ -246,8 +246,8 @@ button:active {
 
   /* Tira o fundo vermelho e coloca o efeito de vidro que a gente curte */
   background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
   border-radius: 40px;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -555,7 +555,10 @@ button:active {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* background-color: rgba(0, 0, 0, 0.5); */
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Conteúdo do modal */

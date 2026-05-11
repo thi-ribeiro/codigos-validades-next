@@ -13,111 +13,64 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ mensagem, loading }) => {
 	return (
 		<>
 			<div className='loaderContainer'>
-				{/* Logo com tamanho travado para não dar susto no carregamento */}
-				<img
-					src='/Ceres1_ncenter.svg'
-					alt='Ceres Loading'
-					className='loading-logo'
-					width={125}
-					height={125}
-				/>
-
-				<span className='loader'></span>
-
-				{/* Texto direto no container, sem firula de card */}
-				{mensagem && <p className='loading-text'>{mensagem}</p>}
+				<div className='minimal-card'>
+					<div className='minimal-spinner'></div>
+					{mensagem && <p className='loading-text'>{mensagem}</p>}
+				</div>
 			</div>
 
 			<style>{`
-                .loaderContainer {
-                    position: fixed;
-                    inset: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    display: flex;
-                    flex-direction: column; /* Um embaixo do outro */
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1002;
-                    background-color: rgba(255, 255, 255, 0.4) !important;
-                    
-                    /* O vidro fosco que a gente acertou */
-                    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-                    backdrop-filter: blur(20px) saturate(160%) !important;
-                }
+        .loaderContainer {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          /* Seu z-index original mantido */
+          z-index: 1002; 
+          background-color: rgba(255, 255, 255, 0.2); 
+          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+        }
 
-                .loading-logo {
-                    /* Impede que o SVG perca a proporção */
-                    height: auto;
-                    animation: pulseCeres 1.2s infinite ease-in-out;
-                    will-change: transform, opacity;
-                }
+        .minimal-card {
+          background: #ffffff; /* Branco sólido para saltar no meio do blur */
+          padding: 40px 60px;
+          border-radius: 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          /* Sombra mais forte para dar profundidade e visibilidade */
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          min-width: 220px;
+        }
 
-                .loading-text {
-                    margin-top: 20px;
-                    font-size: 16px;
-                    color: #222;
-                    font-weight: 700;
-                    font-family: sans-serif;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    /* Um leve contorno branco no texto ajuda a ler se o fundo for colorido */
-                    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-                }
+        .minimal-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid rgba(0, 0, 0, 0.05); 
+          border-top: 4px solid #000; /* Destaque preto total */
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
 
- .loader {
-  width: 48px;
-  height: 48px;
-  display: block;
-  position: absolute;
-  top: 45%;
-  left: 45%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  margin: 15px auto; 
-  color: rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  animation: rotation 2s linear infinite;
-}
-.loader::after,
-.loader::before {
-  content: '';  
-  box-sizing: border-box;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  background-color: #fff;
-  border-radius: 50%;
-  border: none;
-  //animation: animloader 1s infinite ease-in-out;
-}
+        .loading-text {
+          margin-top: 24px;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 14px;
+          color: #000;
+          font-weight: 700;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          text-align: center;
+        }
 
-.loader::after {
-  width: 25px;
-  height: 25px;
-  position: absolute;
-  top: 30%;
-  left: 40%;
-  transform: scale(0.5) translate(0, 15px);
-}
-
-.loader::before {
-  width: 60px;
-  height: 60px;
-  top: 40%;
-  background-color: #000;
-  transform: scale(0.5) translate(-48px, -48px);
-}
-
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-} 
-            `}</style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
 		</>
 	);
 };
