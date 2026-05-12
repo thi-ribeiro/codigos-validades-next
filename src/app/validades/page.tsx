@@ -13,6 +13,7 @@ import ModalCeres from '@/Componentes/ModalCeres/ModalCeres';
 import useModalCeres from '@/Componentes/ModalCeres/useModalCeres';
 import ListaProdutos from '@/Componentes/ListaProdutosMemo/ListaProdutos';
 import useModal from '@/Componentes/Modal/useModal';
+import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
 
 type Props = {};
 
@@ -192,18 +193,10 @@ function CarregarPagina({}: Props) {
 	// };
 
 	const fetchScanDb = async (codigo: string) => {
-		// 1. Limpeza inicial
 		let codigoLimpo = String(codigo || '').trim();
 
-		// 2. LÓGICA DE FATIAMENTO (Parsing do QR Code/Etiqueta)
-		if (codigoLimpo.includes(':')) {
-			const partes = codigoLimpo.split(':');
-			// Se o formato for :p:12345:d:123
-			// partes[0] = "", partes[1] = "p", partes[2] = "12345"
-			if (partes[2]) {
-				codigoLimpo = partes[2];
-			}
-		}
+		let interno = codigoLimpo.includes(':');
+		let codigoTratado = interno ? codigoLimpo.split(':')[2] : codigoLimpo;
 
 		// 3. Trava simples de comprimento (evita lixo no banco)
 		if (codigoLimpo.length < 5) return;
@@ -212,10 +205,12 @@ function CarregarPagina({}: Props) {
 			setLoadingScanner(true);
 
 			const response = await fetch(
-				`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoLimpo)}`,
+				`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoTratado)}`,
 			);
 
 			const data = await response.json();
+
+			//alert(JSON.stringify(data.produto));
 
 			if (data.status === 'success') {
 				setFormEditData((prev) => ({
@@ -226,10 +221,11 @@ function CarregarPagina({}: Props) {
 					codigoProduto: data.produto.ean_produto,
 					idRelacionado: data.produto.id,
 				}));
-			} else if (data.status === 'not_found') {
+			} else {
 				setFormEditData((prev) => ({
 					...prev,
-					codigoProduto: codigoLimpo, // Aqui ele já vai estar "limpinho"
+					codigoProduto: !interno ? codigoTratado : '',
+					codigoInterno: interno ? codigoTratado : '',
 					idRelacionado: null,
 				}));
 			}
@@ -242,7 +238,9 @@ function CarregarPagina({}: Props) {
 
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
 
-	return (
+	return loading ? (
+		<LoadingLogo loading={true} mensagem={'Carregando lista de produtos...'} />
+	) : (
 		<div className='validadesPage'>
 			<React.Fragment>
 				<FiltroValidades

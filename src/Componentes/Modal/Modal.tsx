@@ -321,7 +321,9 @@ export default function Modal({
 									required
 									onChange={handleChange}
 									value={
-										formEditData?.tipoquantidade?.toString().split(' ')[1]
+										formEditData?.quantidade_produto?.toString().includes(' ')
+											? formEditData.quantidade_produto.split(' ')[1]
+											: 'un' // Valor padrão caso não tenha espaço
 									}>
 									<option value='cx'>Caixas</option>
 									<option value='g'>Gramas</option>

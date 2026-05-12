@@ -61,7 +61,6 @@ const ListaProdutos = ({
 
 	return (
 		<React.Fragment>
-			<LoadingLogo loading={loading} />
 			{!loading && (
 				<>
 					{!produtosExibidos || Object.keys(produtosExibidos).length === 0 ? (

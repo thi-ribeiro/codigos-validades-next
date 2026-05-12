@@ -76,6 +76,8 @@ export default function ModalCeres({
 					(text) => {
 						onResult(text);
 						// Opcional: fechar automaticamente após sucesso
+
+						//alert('REsultado da leitura?!');
 						handleFechar();
 					},
 					() => {},
