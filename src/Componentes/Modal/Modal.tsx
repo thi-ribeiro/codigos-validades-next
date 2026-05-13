@@ -297,16 +297,14 @@ export default function Modal({
 									onChange={handleChange}
 								/>
 
-								<label htmlFor='quantidade_produto'>
-									Quantidade: {formEditData?.quantidade_produto}
-								</label>
+								<label htmlFor='quantidade_produto'>Quantidade:</label>
 								<input
 									type='number'
 									id='quantidade_produto'
 									name='quantidade_produto'
 									required
 									onChange={handleChange}
-									placeholder={formEditData?.quantidade_produto}
+									placeholder='Quantidade de produtos...'
 									value={
 										formEditData?.quantidade_produto
 											?.toString()
@@ -321,9 +319,8 @@ export default function Modal({
 									required
 									onChange={handleChange}
 									value={
-										formEditData?.quantidade_produto?.toString().includes(' ')
-											? formEditData.quantidade_produto.split(' ')[1]
-											: 'un' // Valor padrão caso não tenha espaço
+										formEditData?.tipoquantidade ||
+										formEditData?.quantidade_produto?.split(' ')[1]
 									}>
 									<option value='cx'>Caixas</option>
 									<option value='g'>Gramas</option>

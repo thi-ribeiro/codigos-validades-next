@@ -246,8 +246,9 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			const itensFiltrados = listaTotal.pendentes[dataChave].filter((item) => {
 				// 1. Filtro por Nome
 				const matchesNome = nomeProduto
-					? item.produto.toLowerCase().includes(nomeProduto.toLowerCase()) ||
-						item.codigoInterno.toLowerCase().includes(nomeProduto.trim()) //ADD PARA BUSCAR POR CODIGO TAMBEM
+					? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
+						String(item.codigoInterno).includes(nomeProduto.trim()) ||
+						String(item.codigoProduto).includes(nomeProduto.trim())
 					: true;
 
 				// 2. Filtro por Status "Vencendo" (menos de 5 dias)

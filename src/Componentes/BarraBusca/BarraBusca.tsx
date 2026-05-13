@@ -32,6 +32,9 @@ export default function BarraBusca() {
 				setNomeProduto(pluExtraido.trim());
 				fecharModalScanner();
 			}
+		} else {
+			setNomeProduto(decodedText.trim());
+			fecharModalScanner();
 		}
 	};
 

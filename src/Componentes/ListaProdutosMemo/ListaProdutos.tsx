@@ -1,6 +1,7 @@
 import { useValidades, ValidadeProduto } from '@/Contexto/ValidadesContext';
 import React, { memo } from 'react';
 import LoadingLogo from '../LoadingLogo/LoadingLogo';
+import { IoReturnUpBack } from 'react-icons/io5';
 
 export interface produtosInterface {
 	produtosExibidos: Record<string, ValidadeProduto[]>;
@@ -98,6 +99,14 @@ const ListaProdutos = ({
 													</span>
 												</div>
 												<div className='card-info-badges'>
+													{validade.finalizado ? (
+														<IoReturnUpBack
+															size={20}
+															onClick={() =>
+																selecionarEEditar(validade.idvalidades)
+															}
+														/>
+													) : null}
 													<span className='badge-quantidade'>
 														{validade.quantidade_produto}
 													</span>

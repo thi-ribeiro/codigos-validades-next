@@ -223,9 +223,11 @@ function CarregarPagina({}: Props) {
 				}));
 			} else {
 				setFormEditData((prev) => ({
-					...prev,
-					codigoProduto: !interno ? codigoTratado : '',
-					codigoInterno: interno ? codigoTratado : '',
+					...prev, // Aqui você já manteve os dois códigos!
+					// Agora só atualiza o que foi escaneado no momento
+					...(interno
+						? { codigoInterno: codigoTratado }
+						: { codigoProduto: codigoTratado }),
 					idRelacionado: null,
 				}));
 			}
