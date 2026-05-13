@@ -35,15 +35,15 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ mensagem, loading }) => {
 
         .minimal-card {
           background: #ffffff; /* Branco sólido para saltar no meio do blur */
-          padding: 40px 60px;
-          border-radius: 24px;
+          padding: 30px;
+          border-radius: 8px;
           display: flex;
           flex-direction: column;
           align-items: center;
           /* Sombra mais forte para dar profundidade e visibilidade */
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
           border: 1px solid rgba(0, 0, 0, 0.05);
-          min-width: 220px;
+          min-width: 200px;
         }
 
         .minimal-spinner {
@@ -52,7 +52,7 @@ const LoadingLogo: React.FC<LoadingLogoProps> = ({ mensagem, loading }) => {
           border: 4px solid rgba(0, 0, 0, 0.05); 
           border-top: 4px solid #000; /* Destaque preto total */
           border-radius: 50%;
-          animation: spin 0.8s linear infinite;
+          animation: spin 0.5s linear infinite;
         }
 
         .loading-text {

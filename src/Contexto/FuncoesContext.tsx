@@ -9,7 +9,7 @@ import React, {
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
 // @ts-ignore
-import 'balloon-css';
+// import 'balloon-css';
 
 interface FuncoesProviderProps {
 	children: ReactNode;
@@ -97,7 +97,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 			return (
 				<div
 					aria-label={texto}
-					data-balloon-pos='right'
+					// data-balloon-pos='right'
 					className='toogleDescription'>
 					{editado} ...
 				</div>

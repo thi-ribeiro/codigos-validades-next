@@ -21,11 +21,7 @@ import {
 	IoIosCloseCircleOutline,
 	IoMdTrendingDown,
 } from 'react-icons/io';
-import {
-	IoCheckmarkDoneOutline,
-	IoShieldCheckmark,
-	IoShieldOutline,
-} from 'react-icons/io5';
+import { IoCheckmarkDoneOutline } from 'react-icons/io5';
 
 export interface ProviderProps {
 	children: React.ReactNode;
@@ -226,24 +222,71 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	// 	return () => eventSource.close();
 	// }, [fetchValidades]);
 
+	// const dadosParaExibir = useMemo(() => {
+	// 	// Pegamos a caixa de pendentes que o Lodash já separou para nós
+	// 	let listaTotal = validadesSeparadas;
+	// 	// console.log(validadesSeparadas);
+	// 	// Se não tem busca por nome e o filtro está em 'todos', mostra todos os pendentes
+	// 	if (filtroAtivo === 'finalizado' && !nomeProduto) {
+	// 		return validadesSeparadas.finalizados;
+	// 	}
+
+	// 	const hoje = startOfDay(new Date());
+	// 	const limite5Dias = new Date();
+	// 	limite5Dias.setDate(hoje.getDate() + 5);
+
+	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+
+	// 	// Percorremos apenas as datas que têm produtos pendentes
+	// 	Object.keys(listaTotal.pendentes).forEach((dataChave) => {
+	// 		const itensFiltrados = listaTotal.pendentes[dataChave].filter((item) => {
+	// 			// 1. Filtro por Nome
+	// 			const matchesNome = nomeProduto
+	// 				? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
+	// 					String(item.codigoInterno).includes(nomeProduto.trim()) ||
+	// 					String(item.codigoProduto).includes(nomeProduto.trim())
+	// 				: true;
+
+	// 			// 2. Filtro por Status "Vencendo" (menos de 5 dias)
+	// 			if (filtroAtivo === 'vencendo') {
+	// 				const dataVal = parseISO(item.validade.split('T')[0]);
+	// 				const estaPertoDeVencer = dataVal <= limite5Dias;
+	// 				return estaPertoDeVencer && matchesNome;
+	// 			}
+
+	// 			return matchesNome;
+	// 		});
+
+	// 		if (itensFiltrados.length > 0) {
+	// 			novoObjetoFiltrado[dataChave] = itensFiltrados;
+	// 		}
+	// 	});
+
+	// 	return novoObjetoFiltrado;
+	// }, [
+	// 	validadesSeparadas.pendentes,
+	// 	validadesSeparadas,
+	// 	filtroAtivo,
+	// 	nomeProduto,
+	// ]); // Importante: depende dos pendentes agora
+
 	const dadosParaExibir = useMemo(() => {
-		// Pegamos a caixa de pendentes que o Lodash já separou para nós
-		let listaTotal = validadesSeparadas;
-		// console.log(validadesSeparadas);
-		// Se não tem busca por nome e o filtro está em 'todos', mostra todos os pendentes
-		if (filtroAtivo === 'finalizado' && !nomeProduto) {
-			return validadesSeparadas.finalizados;
-		}
+		//Define qual tipo de dados vamos utilizar dependendo do filtro ativo
+		const fonteDados =
+			filtroAtivo === 'finalizado'
+				? validadesSeparadas.finalizados
+				: validadesSeparadas.pendentes;
 
 		const hoje = startOfDay(new Date());
+
 		const limite5Dias = new Date();
 		limite5Dias.setDate(hoje.getDate() + 5);
 
 		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
 
 		// Percorremos apenas as datas que têm produtos pendentes
-		Object.keys(listaTotal.pendentes).forEach((dataChave) => {
-			const itensFiltrados = listaTotal.pendentes[dataChave].filter((item) => {
+		Object.keys(fonteDados).forEach((dataChave) => {
+			const itensFiltrados = fonteDados[dataChave].filter((item) => {
 				// 1. Filtro por Nome
 				const matchesNome = nomeProduto
 					? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
@@ -571,7 +614,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			return (
 				<div
 					aria-label={dataFormatada}
-					data-balloon-pos='right'
+					// data-balloon-pos='right'
 					style={{ color: 'orange', fontWeight: 'bold' }}>
 					{diasRestantes} dia(s)
 				</div>
@@ -582,7 +625,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		return (
 			<div
 				aria-label={dataFormatada}
-				data-balloon-pos='right'
+				// data-balloon-pos='right'
 				className='toogleDescription'>
 				{diasRestantes} dia(s)
 			</div>

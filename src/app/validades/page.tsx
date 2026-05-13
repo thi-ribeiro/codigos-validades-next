@@ -241,7 +241,10 @@ function CarregarPagina({}: Props) {
 	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
 
 	return loading ? (
-		<LoadingLogo loading={true} mensagem={'Carregando lista de produtos...'} />
+		<LoadingLogo
+			loading={loading}
+			mensagem={'Carregando lista de produtos...'}
+		/>
 	) : (
 		<div className='validadesPage'>
 			<React.Fragment>

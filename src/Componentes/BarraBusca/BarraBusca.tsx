@@ -1,12 +1,11 @@
 'use client';
 
 import { useValidades } from '@/Contexto/ValidadesContext';
-import { IoCloseOutline } from 'react-icons/io5'; // Adicionei um ícone de scan
+import { IoCloseOutline, IoScanOutline } from 'react-icons/io5'; // Adicionei um ícone de scan
 import { useAuth } from '@/Contexto/AuthContext';
 import useModal from '../Modal/useModal';
-import React from 'react';
+import React, { useEffect } from 'react';
 import ModalCeres from '../ModalCeres/ModalCeres';
-import { MdOutlineQrCodeScanner } from 'react-icons/md';
 
 export default function BarraBusca() {
 	const { setNomeProduto, nomeProduto } = useValidades();
@@ -17,6 +16,11 @@ export default function BarraBusca() {
 		closeModal: fecharModalScanner,
 		openModal: openModal,
 	} = useModal();
+
+	useEffect(() => {
+		// Sempre que o nome ou o filtro mudar, volta ao topo
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}, [nomeProduto]);
 
 	if (!user?.usuario) return null;
 
@@ -43,7 +47,7 @@ export default function BarraBusca() {
 			<div className='search-container'>
 				<input
 					type='text'
-					placeholder='Filtrar por PLU / Nome...'
+					placeholder='EAN / PLU / Produto'
 					value={nomeProduto}
 					onChange={(e) => setNomeProduto(e.target.value)}
 				/>
@@ -52,12 +56,14 @@ export default function BarraBusca() {
 					onClick={openModal}
 					title='Escanear etiqueta'
 					className='btn-scanner'>
-					<MdOutlineQrCodeScanner size={20} color='#000' />
+					<IoScanOutline size={20} color='#000' />
 				</button>
 
-				<button name='oksearch' onClick={() => setNomeProduto('')}>
-					<IoCloseOutline size={25} />
-				</button>
+				{nomeProduto && (
+					<button name='oksearch' onClick={() => setNomeProduto('')}>
+						<IoCloseOutline size={25} />
+					</button>
+				)}
 			</div>
 
 			<ModalCeres

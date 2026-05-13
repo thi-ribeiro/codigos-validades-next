@@ -383,6 +383,7 @@ button:active {
     bottom: 20px;
     left: 45%; /* Mudado para 50% para facilitar a centralização na tela */
     transform: translateX(-50%); /* Centraliza o container horizontalmente na página */
+    width: 70%;
     /* width: 70%; Ajustado para dar um respiro nas bordas em telas menores */
     max-width: 600px; /* Limite para não ficar largo demais no desktop */
     display: flex;
@@ -409,6 +410,7 @@ button:active {
       outline: none;
       background: transparent;
       font-size: 14px;
+      width: 100%;
     }
 
     button {
