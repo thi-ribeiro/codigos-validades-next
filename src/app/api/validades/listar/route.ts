@@ -102,10 +102,6 @@ import crypto from 'crypto'; // 1. Importe o crypto
 
 export async function GET(request: Request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const marca = searchParams.get('marca') || '';
-        const termoMarca = `%${marca}%`;
-
         const hoje = new Date();
         const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
             .toISOString().split('T')[0];
@@ -114,43 +110,25 @@ export async function GET(request: Request) {
         const dataFimIntervaloFormatada = dataFim.toISOString();
         const fimMesSeguinte = dataFimIntervaloFormatada.split('T')[0];
 
-        const userRole = 1;
-        let query = "";
-        let params: any[] = [];
+        // 1. Defina a query uma única vez
+        const query = `
+    SELECT v.*, p.descricao_produto AS produto, p.marca_produto AS marca_produto,
+           p.plu_produto AS codigoInterno, p.ean_produto AS codigoProduto,
+           p.id AS id_ean_produto, DATE_FORMAT(v.validade, '%d/%m/%Y') AS validadeDiaMes 
+    FROM validades v
+    LEFT JOIN ean_plu_produtos p ON v.idRelacionado = p.id
+    WHERE v.validade BETWEEN ? AND ?
+    ORDER BY v.validade ASC, v.idvalidades ASC`;
 
-        // ... (sua lógica de query permanece igual)
-        if (userRole === 1) {
-            query = `
-                SELECT v.*, p.descricao_produto AS produto, p.marca_produto AS marca_produto,
-                       p.plu_produto AS codigoInterno, p.ean_produto AS codigoProduto,
-                       p.id AS id_ean_produto, DATE_FORMAT(v.validade, '%d/%m/%Y') AS validadeDiaMes 
-                FROM validades v
-                LEFT JOIN ean_plu_produtos p ON v.idRelacionado = p.id
-                WHERE v.validade BETWEEN ? AND ? AND p.marca_produto LIKE ?
-                ORDER BY v.validade ASC, v.idvalidades ASC`;
-            params = [inicioMes, fimMesSeguinte, termoMarca];
-        } else {
-            query = `SELECT v.*, p.descricao_produto AS produto, p.marca_produto AS marca_produto,
-                       p.plu_produto AS codigoInterno, p.ean_produto AS codigoProduto,
-                       p.id AS id_ean_produto, DATE_FORMAT(v.validade, '%d/%m/%Y') AS validadeDiaMes 
-                FROM validades v
-                LEFT JOIN ean_plu_produtos p ON v.idRelacionado = p.id
-                WHERE v.validade BETWEEN ? AND ? AND p.marca_produto LIKE ? 
-                ORDER BY v.validade ASC, v.idvalidades ASC`;
-            params = [inicioMes, fimMesSeguinte, termoMarca];
-        }
+        // 2. Se você nem está filtrando por marca agora, remova o parâmetro também
+        const params = [inicioMes, fimMesSeguinte];
 
+        // 3. Executa direto
         const [resultados] = await pool.execute(query, params);
-        const [marcasBrutas] = await pool.execute(
-            `SELECT DISTINCT marca_produto FROM ean_plu_produtos WHERE marca_produto LIKE ? ORDER BY marca_produto ASC`,
-            [termoMarca]
-        );
-
-        // --- LÓGICA DE ETAG PARA ECONOMIA DE DADOS ---
 
         const respostaFinal = {
             dados: Array.isArray(resultados) && resultados.length > 0 ? resultados : [],
-            marcas: marcasBrutas,
+            //marcas: marcasBrutas,
             dataFimIntervalo: dataFimIntervaloFormatada,
             status: Array.isArray(resultados) && resultados.length > 0 ? undefined : 'info',
             message: Array.isArray(resultados) && resultados.length > 0 ? undefined : 'Nenhuma validade encontrada.'

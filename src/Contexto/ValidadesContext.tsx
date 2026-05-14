@@ -191,7 +191,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		// 1. Verificamos se o SWR já trouxe os dados e se o formato está correto
 		if (data && Array.isArray(data.dados)) {
 			// 2. Alimentamos os estados que o seu useMemo e o resto do app usam
-			setmarcasProdutos(data.marcas);
+			//setmarcasProdutos(data.marcas);
 			setListaBruta(data.dados); // O seu useMemo "acorda" aqui!
 
 			// 3. Formatação da data de intervalo (se existir)
