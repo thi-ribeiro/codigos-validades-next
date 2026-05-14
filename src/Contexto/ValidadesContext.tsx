@@ -183,7 +183,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		revalidateOnFocus: false, // SÓ atualiza se você mudar de app e voltar (útil no mercado)
 		revalidateOnReconnect: true, // SÓ baixa se a internet caiu e voltou
 		revalidateOnMount: true, // Garante que carrega ao abrir o app
-		revalidateIfStale: false, // Garante que carrega se o SWR estiver desatualizado
+		revalidateIfStale: true, // Garante que carrega se o SWR estiver desatualizado
 		dedupingInterval: 10000, // Se houver 2 chamadas em 10s, ele só faz a primeira
 	});
 
