@@ -4,6 +4,7 @@ import React, {
 	useState,
 	useMemo,
 	useCallback,
+	useEffect,
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
@@ -22,6 +23,8 @@ import {
 	IoMdTrendingDown,
 } from 'react-icons/io';
 import { IoCheckmarkDoneOutline } from 'react-icons/io5';
+
+import useSWR from 'swr';
 
 export interface ProviderProps {
 	children: React.ReactNode;
@@ -75,6 +78,9 @@ export interface ValuesInterface {
 	nomeProduto: string;
 	setNomeProduto: (nome: string) => void;
 	listaBruta: ValidadeProduto[];
+	//isLoading: boolean; // Adicione isso SWR
+	isValidating: boolean; // Adicione isso SWR
+	//mutate: () => Promise<any>;
 }
 
 export interface ValidadeProduto {
@@ -122,6 +128,9 @@ const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 const ValidadesContexto = createContext<ValuesInterface | undefined>(undefined);
 
+const fetcher = (url: string) =>
+	fetch(url, { credentials: 'include' }).then((res) => res.json());
+
 export default function ValidadesProvider({ children }: ProviderProps) {
 	const [produtosValidades, setProdutosValidades] = useState<
 		Record<string, ValidadeProduto[]>
@@ -163,6 +172,38 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		};
 	}, [listaBruta]);
 
+	const {
+		data,
+		error,
+		mutate,
+		isValidating,
+		isLoading: swrLoading,
+	} = useSWR(`${acesso_validades}/listar`, fetcher, {
+		refreshInterval: 30000, // DESLIGA o polling (zero tráfego automático)
+		revalidateOnFocus: false, // SÓ atualiza se você mudar de app e voltar (útil no mercado)
+		revalidateOnReconnect: true, // SÓ baixa se a internet caiu e voltou
+		revalidateOnMount: true, // Garante que carrega ao abrir o app
+		dedupingInterval: 10000, // Se você clicar 10x em "atualizar", ele só faz 1 pedido
+	});
+
+	useEffect(() => {
+		// 1. Verificamos se o SWR já trouxe os dados e se o formato está correto
+		if (data && Array.isArray(data.dados)) {
+			// 2. Alimentamos os estados que o seu useMemo e o resto do app usam
+			setmarcasProdutos(data.marcas);
+			setListaBruta(data.dados); // O seu useMemo "acorda" aqui!
+
+			// 3. Formatação da data de intervalo (se existir)
+			if (data.dataFimIntervalo) {
+				setdataFimIntervalo(
+					format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
+						locale: ptBR,
+					}),
+				);
+			}
+		}
+	}, [data]); // IMPORTANTE: O efeito só roda quando o 'data' do SWR mudar
+
 	const fetchValidades = async (
 		produtoMarca: string = '',
 		isSilent = false,
@@ -202,73 +243,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (!isSilent) setLoading(false);
 		}
 	};
-
-	// useEffect(() => {
-	// 	const eventSource = new EventSource(`${acesso_validades}/events`);
-
-	// 	eventSource.onopen = () => console.log('✅ Conectado ao Realtime!');
-
-	// 	eventSource.onmessage = (event) => {
-	// 		console.log('Sinal recebido:', event.data);
-	// 		// Não importa o que venha no texto, se o servidor mandou mensagem, a gente atualiza
-	// 		fetchValidades('', true);
-	// 	};
-
-	// 	eventSource.onerror = (err) => {
-	// 		console.error('Erro no EventSource:', err);
-	// 		eventSource.close();
-	// 	};
-
-	// 	return () => eventSource.close();
-	// }, [fetchValidades]);
-
-	// const dadosParaExibir = useMemo(() => {
-	// 	// Pegamos a caixa de pendentes que o Lodash já separou para nós
-	// 	let listaTotal = validadesSeparadas;
-	// 	// console.log(validadesSeparadas);
-	// 	// Se não tem busca por nome e o filtro está em 'todos', mostra todos os pendentes
-	// 	if (filtroAtivo === 'finalizado' && !nomeProduto) {
-	// 		return validadesSeparadas.finalizados;
-	// 	}
-
-	// 	const hoje = startOfDay(new Date());
-	// 	const limite5Dias = new Date();
-	// 	limite5Dias.setDate(hoje.getDate() + 5);
-
-	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
-
-	// 	// Percorremos apenas as datas que têm produtos pendentes
-	// 	Object.keys(listaTotal.pendentes).forEach((dataChave) => {
-	// 		const itensFiltrados = listaTotal.pendentes[dataChave].filter((item) => {
-	// 			// 1. Filtro por Nome
-	// 			const matchesNome = nomeProduto
-	// 				? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
-	// 					String(item.codigoInterno).includes(nomeProduto.trim()) ||
-	// 					String(item.codigoProduto).includes(nomeProduto.trim())
-	// 				: true;
-
-	// 			// 2. Filtro por Status "Vencendo" (menos de 5 dias)
-	// 			if (filtroAtivo === 'vencendo') {
-	// 				const dataVal = parseISO(item.validade.split('T')[0]);
-	// 				const estaPertoDeVencer = dataVal <= limite5Dias;
-	// 				return estaPertoDeVencer && matchesNome;
-	// 			}
-
-	// 			return matchesNome;
-	// 		});
-
-	// 		if (itensFiltrados.length > 0) {
-	// 			novoObjetoFiltrado[dataChave] = itensFiltrados;
-	// 		}
-	// 	});
-
-	// 	return novoObjetoFiltrado;
-	// }, [
-	// 	validadesSeparadas.pendentes,
-	// 	validadesSeparadas,
-	// 	filtroAtivo,
-	// 	nomeProduto,
-	// ]); // Importante: depende dos pendentes agora
 
 	const dadosParaExibir = useMemo(() => {
 		//Define qual tipo de dados vamos utilizar dependendo do filtro ativo
@@ -379,18 +353,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				const data = await response.json();
 
 				if (data && data.status === 'success') {
+					await mutate();
 					addToast(data.message, data.status);
 
-					const itemVindoDoBanco = data.item; // Objeto completo e organizado
-					console.log(itemVindoDoBanco);
+					// const itemVindoDoBanco = data.item; // Objeto completo e organizado
 
-					// Formata a chave da data para o grupo (Ex: "25/12/2026")
-					//const dataObj = new Date(`${validade}T12:00:00`);
-					//const validadeFormatada = dataObj.toLocaleDateString('pt-BR');
-
-					setListaBruta((prev) => {
-						return [...prev, itemVindoDoBanco];
-					});
+					// setListaBruta((prev) => {
+					// 	return [...prev, itemVindoDoBanco];
+					// });
 
 					callbackSucesso();
 				} else {
@@ -406,7 +376,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				setLoadingButtons(false);
 			}
 		},
-		[user, acesso_validades, setProdutosValidades, fetchValidades],
+		[user, acesso_validades, mutate],
 	);
 
 	const fetchEditarValidade = async (
@@ -465,27 +435,29 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (response.ok && data.status === 'success') {
 				addToast(data.message, 'success');
 
-				setListaBruta((prev) => {
-					return prev.map((item) => {
-						if (item.idvalidades === dadosParaEnviar.id_validade) {
-							// Recriamos a validade formatada caso a data tenha mudado na edição
-							const novaDataFormatada = new Date(
-								`${dadosParaEnviar.validade}T12:00:00`,
-							).toLocaleDateString('pt-BR');
+				await mutate();
 
-							return {
-								...item,
-								...dadosParaEnviar,
-								//marca_produto: dadosParaEnviar.marca,
-								quantidade_produto: dadosParaEnviar.quantidadeDesc,
-								validadeDiaMes: novaDataFormatada,
-								//codigoProduto: String(dadosParaEnviar.codigoProduto),
-								codigoInterno: String(dadosParaEnviar.codigoInterno),
-							} as ValidadeProduto;
-						}
-						return item; // Se não for o ID que editamos, mantém o item como está
-					});
-				});
+				// setListaBruta((prev) => {
+				// 	return prev.map((item) => {
+				// 		if (item.idvalidades === dadosParaEnviar.id_validade) {
+				// 			// Recriamos a validade formatada caso a data tenha mudado na edição
+				// 			const novaDataFormatada = new Date(
+				// 				`${dadosParaEnviar.validade}T12:00:00`,
+				// 			).toLocaleDateString('pt-BR');
+
+				// 			return {
+				// 				...item,
+				// 				...dadosParaEnviar,
+				// 				//marca_produto: dadosParaEnviar.marca,
+				// 				quantidade_produto: dadosParaEnviar.quantidadeDesc,
+				// 				validadeDiaMes: novaDataFormatada,
+				// 				//codigoProduto: String(dadosParaEnviar.codigoProduto),
+				// 				codigoInterno: String(dadosParaEnviar.codigoInterno),
+				// 			} as ValidadeProduto;
+				// 		}
+				// 		return item; // Se não for o ID que editamos, mantém o item como está
+				// 	});
+				// });
 
 				callbackSucesso();
 			} else {
@@ -652,9 +624,11 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			if (data.status === 'success') {
 				addToast(data.message, data.status);
 
-				setListaBruta((prev) => {
-					return prev.filter((item) => item.idvalidades !== id);
-				});
+				await mutate();
+
+				// setListaBruta((prev) => {
+				// 	return prev.filter((item) => item.idvalidades !== id);
+				// });
 
 				callbackSucesso();
 			} else {
@@ -729,13 +703,15 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		marcasProdutos,
 		// validadesSeparadas,
 		dataFimIntervalo,
-		loading,
+		loading: swrLoading,
 		produtosExibidos: dadosParaExibir,
 		setFiltroAtivo,
 		nomeProduto,
 		setNomeProduto,
 		loadingButtons,
-		listaBruta,
+		listaBruta, // <--- Exportar aqui swr
+		isValidating, // <--- Exportar aqui swr
+		//mutate,
 	};
 
 	return (

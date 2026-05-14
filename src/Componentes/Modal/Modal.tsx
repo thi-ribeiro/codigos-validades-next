@@ -38,6 +38,7 @@ interface SimpleModalProps {
 	onDelete?: (id: number) => void;
 	loadingScanner: boolean;
 	loadingButtons: boolean;
+	usuario?: Record<string, string>;
 }
 
 export default function Modal({
@@ -369,10 +370,9 @@ export default function Modal({
 						<div className='functionsButons'>
 							<div className='buttonSubmCanc'>
 								{isEdit ? (
-									// BOTOES MODO EDITAR
-									<>
-										{(formEditData?.responsavel === user?.usuario ||
-											user?.role === 1) && (
+									formEditData?.responsavel === user?.usuario ||
+									user?.role === 1 ? (
+										<>
 											<button
 												type='button'
 												disabled={loadingButtons}
@@ -382,17 +382,20 @@ export default function Modal({
 												}>
 												{loadingButtons ? 'Aguarde...' : 'Remover'}
 											</button>
-										)}
-										<button
-											type='submit'
-											disabled={loadingButtons}
-											style={{
-												backgroundColor: loadingButtons ? '#d32f2f' : '#4CAF50',
-												color: 'white',
-											}}>
-											{loadingButtons ? 'Processando...' : 'Atualizar'}
-										</button>
-									</>
+
+											<button
+												type='submit'
+												disabled={loadingButtons}
+												style={{
+													backgroundColor: loadingButtons
+														? '#d32f2f'
+														: '#4CAF50',
+													color: 'white',
+												}}>
+												{loadingButtons ? 'Processando...' : 'Atualizar'}
+											</button>
+										</>
+									) : null
 								) : (
 									// BOTAO MODO ADICIONAR / EANPLU
 									<button

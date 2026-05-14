@@ -125,7 +125,7 @@ function CarregarPagina({}: Props) {
 		// Se o user existe, eu busco. Se não existe (deslogado ou carregando), não faço nada.
 		if (user) {
 			const empresa = user.role !== 1 ? user.empresa : undefined;
-			fetchValidades(empresa);
+			//fetchValidades(empresa);
 		}
 		// Deixando apenas [user.id] ou [user], o React só dispara quando o usuário loga
 	}, [user?.role]);
