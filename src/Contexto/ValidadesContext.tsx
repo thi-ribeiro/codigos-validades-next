@@ -187,21 +187,21 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		dedupingInterval: 10000, // Se houver 2 chamadas em 10s, ele só faz a primeira
 	});
 
+	const hoje = new Date();
+	const dataFim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
+	const dataFimIntervaloFormatada = dataFim.toISOString();
+
 	useEffect(() => {
 		// 1. Verificamos se o SWR já trouxe os dados e se o formato está correto
 		if (data && Array.isArray(data.dados)) {
 			// 2. Alimentamos os estados que o seu useMemo e o resto do app usam
 			//setmarcasProdutos(data.marcas);
 			setListaBruta(data.dados); // O seu useMemo "acorda" aqui!
-
-			// 3. Formatação da data de intervalo (se existir)
-			if (data.dataFimIntervalo) {
-				setdataFimIntervalo(
-					format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
-						locale: ptBR,
-					}),
-				);
-			}
+			setdataFimIntervalo(
+				format(new Date(dataFimIntervaloFormatada), 'MMMM/yyyy', {
+					locale: ptBR,
+				}),
+			);
 		}
 	}, [data]); // IMPORTANTE: O efeito só roda quando o 'data' do SWR mudar
 
@@ -209,10 +209,12 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		produtoMarca: string = '',
 		isSilent = false,
 	) => {
+		console.log('Passou aqui');
 		if (!isSilent) setLoading(true);
 		try {
 			const response = await fetch(
-				`${acesso_validades}/listar/?marca=${produtoMarca}`,
+				// `${acesso_validades}/listar/?marca=${produtoMarca}`,
+				`${acesso_validades}/listar`,
 				{
 					method: 'GET',
 					headers: {
@@ -225,18 +227,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			const data = await response.json();
 
+			// Dentro do fetchValidades:
 			if (data && Array.isArray(data.dados)) {
-				setmarcasProdutos(data.marcas);
-				// Salva a lista bruta! O useMemo lá em cima vai perceber e agrupar.
 				setListaBruta(data.dados);
 
-				if (data.dataFimIntervalo) {
-					setdataFimIntervalo(
-						format(new Date(data.dataFimIntervalo), 'MMMM/yyyy', {
-							locale: ptBR,
-						}),
-					);
-				}
+				// Opcional: Atualiza o título usando a data local
+				setdataFimIntervalo(
+					format(dataFimIntervaloFormatada, 'MMMM/yyyy', { locale: ptBR }),
+				);
 			}
 		} catch (error) {
 			console.error(error);

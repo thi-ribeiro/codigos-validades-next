@@ -98,7 +98,6 @@
 
 import { NextResponse } from 'next/server';
 import { pool } from '@/app/lib/db';
-import crypto from 'crypto'; // 1. Importe o crypto
 
 export async function GET(request: Request) {
     try {
@@ -110,49 +109,33 @@ export async function GET(request: Request) {
         const dataFimIntervaloFormatada = dataFim.toISOString();
         const fimMesSeguinte = dataFimIntervaloFormatada.split('T')[0];
 
-        // 1. Defina a query uma única vez
         const query = `
-    SELECT v.*, p.descricao_produto AS produto, p.marca_produto AS marca_produto,
-           p.plu_produto AS codigoInterno, p.ean_produto AS codigoProduto,
-           p.id AS id_ean_produto, DATE_FORMAT(v.validade, '%d/%m/%Y') AS validadeDiaMes 
-    FROM validades v
-    LEFT JOIN ean_plu_produtos p ON v.idRelacionado = p.id
-    WHERE v.validade BETWEEN ? AND ?
-    ORDER BY v.validade ASC, v.idvalidades ASC`;
+            SELECT v.*, p.descricao_produto AS produto, p.marca_produto AS marca_produto,
+                   p.plu_produto AS codigoInterno, p.ean_produto AS codigoProduto,
+                   p.id AS id_ean_produto, DATE_FORMAT(v.validade, '%d/%m/%Y') AS validadeDiaMes 
+            FROM validades v
+            LEFT JOIN ean_plu_produtos p ON v.idRelacionado = p.id
+            WHERE v.validade BETWEEN ? AND ?
+            ORDER BY v.validade ASC, v.idvalidades ASC`;
 
-        // 2. Se você nem está filtrando por marca agora, remova o parâmetro também
         const params = [inicioMes, fimMesSeguinte];
 
-        // 3. Executa direto
         const [resultados] = await pool.execute(query, params);
 
         const respostaFinal = {
             dados: Array.isArray(resultados) && resultados.length > 0 ? resultados : [],
-            //marcas: marcasBrutas,
-            dataFimIntervalo: dataFimIntervaloFormatada,
+            //dataFimIntervalo: dataFimIntervaloFormatada,
             status: Array.isArray(resultados) && resultados.length > 0 ? undefined : 'info',
             message: Array.isArray(resultados) && resultados.length > 0 ? undefined : 'Nenhuma validade encontrada.'
         };
 
-        const corpoString = JSON.stringify(respostaFinal);
-
-        // Gera o hash MD5 do conteúdo
-        const etag = `"${crypto.createHash('md5').update(corpoString).digest('hex')}"`;
-
-        // Verifica se o navegador enviou o mesmo ETag no header 'if-none-match'
-        const ifNoneMatch = request.headers.get('if-none-match');
-
-        if (ifNoneMatch === etag) {
-            // RETORNA 304: O navegador usa o cache local, tráfego de rede quase ZERO!
-            return new NextResponse(null, { status: 304, headers: { ETag: etag } });
-        }
-
-        // Se mudou ou é a primeira vez, envia os dados com a nova ETag
+        // Retorno direto e simples
         return NextResponse.json(respostaFinal, {
             status: 200,
             headers: {
-                'ETag': etag,
-                'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=3600'
+                // Força o navegador a buscar sempre a versão mais nova
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
+                'Pragma': 'no-cache'
             }
         });
 

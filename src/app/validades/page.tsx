@@ -35,7 +35,7 @@ const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 function CarregarPagina({}: Props) {
 	const {
-		fetchValidades,
+		//fetchValidades,
 		fetchAddValidade,
 		fetchEditarValidade,
 		fetchDeletarValidade,
@@ -238,7 +238,7 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
-	const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
+	//const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
 
 	return loading ? (
 		<LoadingLogo
@@ -254,9 +254,7 @@ function CarregarPagina({}: Props) {
 					filtrarFinalizados={() => setFiltroAtivo('finalizado')}
 				/>
 
-				<h1>
-					De {mesAtual} até {dataFimIntervalo}
-				</h1>
+				<h1>Validades até {dataFimIntervalo}</h1>
 
 				<ListaProdutos
 					loading={loading}
