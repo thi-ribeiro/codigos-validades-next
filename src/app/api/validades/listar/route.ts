@@ -133,9 +133,14 @@ export async function GET(request: Request) {
         return NextResponse.json(respostaFinal, {
             status: 200,
             headers: {
+<<<<<<< HEAD
                 // Força o navegador a buscar sempre a versão mais nova
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Pragma': 'no-cache'
+=======
+              'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+>>>>>>> 98b1a7b3938e10c575ce1ecfda56407cd017c3ea
             }
         });
 
