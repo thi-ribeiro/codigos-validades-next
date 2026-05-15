@@ -129,18 +129,11 @@ export async function GET(request: Request) {
             message: Array.isArray(resultados) && resultados.length > 0 ? undefined : 'Nenhuma validade encontrada.'
         };
 
-        // Retorno direto e simples
         return NextResponse.json(respostaFinal, {
             status: 200,
             headers: {
-<<<<<<< HEAD
-                // Força o navegador a buscar sempre a versão mais nova
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Pragma': 'no-cache'
-=======
-              'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache'
->>>>>>> 98b1a7b3938e10c575ce1ecfda56407cd017c3ea
             }
         });
 
