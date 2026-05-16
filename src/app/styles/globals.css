@@ -1,12 +1,24 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #007bff;
-  --azul-esc: #0056b3;
+  /* --- Cores de Fundo (Backgrounds) --- */
+  --background: #f4f4f5;
   --bg-app: #f4f7f9;
   --white: #ffffff;
+
+  /* --- Cores de Texto (Typography) --- */
+  --foreground: #171717;
   --text-main: #1d1d1f;
-  --cinza: #666;
+  --cinza: #666666;
+
+  /* --- Identidade e Ações (Brand & Buttons) --- */
+  --primary: #007bff;
+  --azul-esc: #0056b3;
+
+  --status-normal: #4ade80; /* Verde menta lavado, bem suave */
+  --status-critico: #fdba74; /* Laranja pastel desbotado */
+  --status-vencido: #f87171; /* Vermelho fosco, sem agressividade */
+  --status-hoje: #ef4444;
+
+  /* --- Estrutura (Layout) --- */
   --bradius: 8px;
 }
 
@@ -33,14 +45,15 @@ body {
 
 h1 {
   /* text-transform: capitalize; */
-  margin: 15px;
+  margin: 5px;
   font-weight: 700;
   color: #333;
   line-height: 1.2;
-  max-width: 95%;
-  display: block; /* Garante que respeite a largura */
-  white-space: nowrap; /* Impede que o texto quebre linha */
-  max-width: 200px; /* Ajuste conforme a largura do seu card */
+  text-align: center;
+  /* max-width: 95%; */
+  /* display: block; Garante que respeite a largura */
+  /* white-space: nowrap; Impede que o texto quebre linha */
+  /* max-width: 200px; Ajuste conforme a largura do seu card */
 }
 
 * {
@@ -365,10 +378,10 @@ button:active {
 .validadesPage {
   padding: 0 0 130px;
 
-  .alertah2 {
-    color: #0056b3;
-    font-weight: bold;
-    text-align: center;
+  .alerta-cards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .tabela-validades {
@@ -886,34 +899,84 @@ button:active {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* --- TÍTULO DA MARCA (O "HEADER" DO GRUPO) --- */
+/* --- TÍTULO DA MARCA (O "HEADER" DO GRUPO) ---
 .grupo-por-marca {
   margin-bottom: 30px;
-}
+} */
 
-/* --- O CARD REFORMULADO --- */
 .card-validade {
-  /* background: #ffffff; */
-  background-color: rgba(255, 255, 255);
-  border-radius: var(--bradius);
+  background-color: #fff;
   padding: 10px;
   margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  /* gap: 12px; */
+  gap: 8px;
   position: relative;
+
+  /* IMPORTANTE: Mantém o radius em VOLTA DE TUDO */
+  border-radius: var(--bradius);
+
+  /* O SEGREDO: Força tudo que está dentro (inclusive a borda de baixo) a respeitar a curva */
   overflow: hidden;
 
-  box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+
+  /* Espessura base da barra inferior */
+  border-bottom: 4px solid rgba(0, 0, 0, 0.08);
+  transition:
+    background-color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out,
+    border-color 0.3s ease-in-out;
 
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 e Edge */
   user-select: none; /* Padrão (Chrome, Firefox, Opera) */
 }
 
-.card-finalizado {
-  background-color: rgba(35, 170, 64, 0.05) !important;
+/* --- MODIFICADORES DE STATUS (EFEITO YOUTUBE) --- */
+.card-validade.normal {
+  border-bottom-color: var(--status-normal);
+}
+
+.card-validade.critico {
+  border-bottom-color: var(--status-critico);
+}
+
+.card-validade.vencido {
+  border-bottom-color: var(--status-vencido);
+}
+
+.card-validade.hoje {
+  /* Mantém os 4px padrão, mas inicia com a animação */
+  border-bottom: 4px solid var(--status-vencido);
+  /* Chama a animação que mexe SÓ NA COR DA BORDA */
+  animation: pulsar-borda-hoje 2s infinite ease-in-out;
+}
+
+.card-validade.finalizado {
+  /* Fundo verde bem clarinho que você já curtiu */
+  /* background-color: rgba(35, 170, 64, 0.05) !important; */
+  /* Força a bordinha do YouTube a ficar no verde do "Ok" */
+  border-bottom-color: var(--status-normal) !important;
+  /* Mata qualquer animação de pulso caso ele vencesse hoje */
+  animation: none !important;
+}
+
+/* --- Animação que altera apenas a cor da bordinha inferior --- */
+@keyframes pulsar-borda-hoje {
+  0% {
+    border-bottom-color: var(--status-vencido); /* Vermelho vivo padrão */
+  }
+  50% {
+    border-bottom-color: #4c0519; /* Vermelho bem escuro/vinho, dando o efeito de apagar */
+  }
+  100% {
+    border-bottom-color: var(--status-vencido); /* Volta pro vermelho vivo */
+  }
 }
 
 /* --- LINHA 1: PRODUTO --- */
@@ -949,7 +1012,6 @@ button:active {
       flex-direction: column;
       align-items: baseline;
       gap: 5px;
-      /* justify-content: center; */
 
       .card-produto-separador {
         display: flex;
@@ -960,13 +1022,13 @@ button:active {
 
         .card-produto-responsavel {
           display: flex;
-          align-items: center; /* Centraliza verticalmente */
-          justify-content: center; /* Centraliza horizontalmente */
-          width: 18px; /* Defina um tamanho fixo para o círculo/quadrado */
+          align-items: center;
+          justify-content: center;
+          width: 18px;
           height: 18px;
-          line-height: 0; /* Zera a altura da linha para o texto não subir/descer */
-          font-size: 14px; /* O tamanho que você quer deixar fixo */
-          border-radius: 4px; /* Se for arredondado igual na imagem */
+          line-height: 0;
+          font-size: 14px;
+          border-radius: 4px;
           background-color: #000;
           color: #fff;
         }
@@ -984,7 +1046,7 @@ button:active {
 
     /* Badge de Validade com destaque */
     .badge-validade {
-      background: #000; /* Preto total para contraste */
+      background: #000;
       color: #fff;
       border: 1px none rgba(255, 255, 255, 0.1);
       padding: 4px 10px;
@@ -1009,11 +1071,10 @@ button:active {
   color: #1d1d1f;
   line-height: 1.2;
   max-width: 90%;
-  display: block; /* Garante que respeite a largura */
-  white-space: nowrap; /* Impede que o texto quebre linha */
-  overflow: hidden; /* Esconde o que sobrar */
-  text-overflow: ellipsis; /* Adiciona as reticências (...) */
-  /* max-width: 200px; Ajuste conforme a largura do seu card */
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --- LINHA 2: INFO SECUNDÁRIA --- */
@@ -1021,9 +1082,10 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 5px;
+  /* padding-top: 5px; */
 }
 
+/* --- LINHA 2: INFO SECUNDÁRIA (AJUSTADO PARA ACEITAR AS CORES) --- */
 .card-restante {
   display: flex;
   flex-direction: column;
@@ -1032,15 +1094,36 @@ button:active {
 
 .card-restante::before {
   content: "STATUS";
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #bbb;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #bbb; /* Mantém o "STATUS" em cinza discreto */
 }
 
-.card-restante span {
+/* O SEGREDO: Tiramos a cor fixa daqui para o .texto-status conseguir mandar */
+.card-restante .texto-status {
   font-size: 0.9rem;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700; /* Deixei um tiquinho mais grosso para destacar bem a cor lavada */
+}
+
+/* --- SEU CONTROLE DE CORES DO TEXTO (MANTÉM LOGO ABAIXO) --- */
+.card-validade.normal .texto-status {
+  color: #4ade80 !important;
+}
+
+.card-validade.critico .texto-status {
+  color: #fdba74 !important;
+}
+
+.card-validade.hoje .texto-status {
+  color: #ef4444 !important;
+}
+
+.card-validade.vencido .texto-status {
+  color: #f87171 !important;
+}
+
+.card-finalizado .texto-status {
+  color: #4ade80 !important;
 }
 
 /* --- ÍCONES DE STATUS --- */
@@ -1051,17 +1134,7 @@ button:active {
   display: flex;
   gap: 5px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  /* transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out; */
 }
-
-/* Efeito de clique mais "premium"
-.card-status-icones:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  background-color: #fcfcfc;
-} */
 
 .buscarHeaderUser {
   display: flex;
@@ -1152,18 +1225,18 @@ button:active {
   padding: 10px 15px 80px;
 }
 
-.produtosItemsMarca,
+/* .produtosItemsMarca,
 .grupo-por-marca {
   margin-bottom: 25px;
-}
+} */
 
 .marcaDiv,
 .divisor-marca {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding: 0 5px;
+  margin: 10px 0;
+  padding: 0 10px;
 }
 
 .marcaDiv h2,
@@ -1179,8 +1252,9 @@ button:active {
   content: "";
   flex: 1;
   height: 1px;
-  background: #ededed;
-  margin-left: 5px;
+  /* MUDANÇA AQUI: Um cinza que contrasta perfeitamente com o fundo #f4f4f5 */
+  background: rgba(0, 0, 0, 0.12);
+  margin-left: 10px; /* Aumentei um tiquinho o espaço para a linha não colar na data */
 }
 
 .lista-cards {

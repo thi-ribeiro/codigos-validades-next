@@ -1,6 +1,6 @@
 import { useValidades, ValidadeProduto } from '@/Contexto/ValidadesContext';
 import React, { memo } from 'react';
-import LoadingLogo from '../LoadingLogo/LoadingLogo';
+// import LoadingLogo from '../LoadingLogo/LoadingLogo';
 import { IoReturnUpBack } from 'react-icons/io5';
 
 export interface produtosInterface {
@@ -21,6 +21,8 @@ const ListaProdutos = ({
 		ValidadeVerificada,
 		ProdutoEmRebaixa,
 		listaBruta,
+		obterStatusClasse,
+		dataFimIntervalo,
 	} = useValidades();
 
 	const INITIAL_STATE: ValidadeProduto = {
@@ -65,86 +67,93 @@ const ListaProdutos = ({
 			{!loading && (
 				<>
 					{!produtosExibidos || Object.keys(produtosExibidos).length === 0 ? (
-						<h2 className='alertah2'>Nenhum produto para exibir no momento.</h2>
+						<div className='alerta-cards'>
+							<h1>Nenhum produto para exibir no momento.</h1>
+						</div>
 					) : (
-						Object.keys(produtosExibidos).map((marca) => (
-							<div key={marca} className='grupo-por-marca'>
-								<h2 className='divisor-marca'>{marca}</h2>
-								<div className='lista-cards'>
-									{produtosExibidos[marca]?.map((validade) => (
-										<div
-											className={`card-validade ${validade.finalizado === 1 ? 'card-finalizado' : null} `}
-											key={validade.idvalidades}>
-											{/* Linha 1: Produto e Info Principal */}
-											<div className='card-topo'>
-												<div className='card-produto-info'>
-													<div className='card-detalhes-produto-responsavel'>
-														<span className='card-produto-separador'>
-															<span className='card-produto-responsavel'>
-																{getInicial(validade.responsavel)}
+						<>
+							<div className='alerta-cards'>
+								<h1>Validades até {dataFimIntervalo}</h1>
+							</div>
+							{Object.keys(produtosExibidos).map((marca) => (
+								<div key={marca} className='grupo-por-marca'>
+									<h2 className='divisor-marca'>{marca}</h2>
+									<div className='lista-cards'>
+										{produtosExibidos[marca]?.map((validade) => (
+											<div
+												className={`card-validade ${obterStatusClasse(validade.validade, validade.finalizado)}`}
+												key={validade.idvalidades}>
+												{/* Linha 1: Produto e Info Principal */}
+												<div className='card-topo'>
+													<div className='card-produto-info'>
+														<div className='card-detalhes-produto-responsavel'>
+															<span className='card-produto-separador'>
+																<span className='card-produto-responsavel'>
+																	{getInicial(validade.responsavel)}
+																</span>
+																<span className='card-produto-nome'>
+																	{validade.produto}
+																</span>
 															</span>
-															<span className='card-produto-nome'>
-																{validade.produto}
-															</span>
+														</div>
+
+														<span className='card-produto-marca'>
+															{validade.marca_produto}
+														</span>
+														<span className='card-produto-codigo'>
+															PLU:{' '}
+															{validade.codigoInterno ||
+																'Código interno não cadastrado.'}
 														</span>
 													</div>
-
-													<span className='card-produto-marca'>
-														{validade.marca_produto}
-													</span>
-													<span className='card-produto-codigo'>
-														PLU:{' '}
-														{validade.codigoInterno ||
-															'Código interno não cadastrado.'}
-													</span>
+													<div className='card-info-badges'>
+														{validade.finalizado ? (
+															<IoReturnUpBack
+																size={20}
+																onClick={() =>
+																	selecionarEEditar(validade.idvalidades)
+																}
+															/>
+														) : null}
+														<span className='badge-quantidade'>
+															{validade.quantidade_produto}
+														</span>
+														<span className='badge-validade'>
+															{validade.validadeDiaMes.substring(0, 5)}
+														</span>
+													</div>
 												</div>
-												<div className='card-info-badges'>
-													{validade.finalizado ? (
-														<IoReturnUpBack
-															size={20}
+
+												{validade.finalizado !== 1 && (
+													<div className='card-base'>
+														<div className='card-restante'>
+															{calcularDiasRestantes(
+																validade.validade,
+																validade.finalizado,
+															)}
+														</div>
+														<div
+															className='card-status-icones'
 															onClick={() =>
 																selecionarEEditar(validade.idvalidades)
-															}
-														/>
-													) : null}
-													<span className='badge-quantidade'>
-														{validade.quantidade_produto}
-													</span>
-													<span className='badge-validade'>
-														{validade.validadeDiaMes.substring(0, 5)}
-													</span>
-												</div>
+															}>
+															<ValidadeVerificada
+																verificado={validade.verificado}
+																dataInserida={validade.data_inserido}
+															/>
+															<ProdutoEmRebaixa
+																Rebaixa={validade.rebaixa}
+																dataRebaixa={validade.data_rebaixa}
+															/>
+														</div>
+													</div>
+												)}
 											</div>
-
-											{validade.finalizado !== 1 && (
-												<div className='card-base'>
-													<div className='card-restante'>
-														{calcularDiasRestantes(
-															validade.validade,
-															validade.finalizado,
-														)}
-													</div>
-													<div
-														className='card-status-icones'
-														onClick={() =>
-															selecionarEEditar(validade.idvalidades)
-														}>
-														<ValidadeVerificada
-															verificado={validade.verificado}
-															dataInserida={validade.data_inserido}
-														/>
-														<ProdutoEmRebaixa
-															Rebaixa={validade.rebaixa}
-															dataRebaixa={validade.data_rebaixa}
-														/>
-													</div>
-												</div>
-											)}
-										</div>
-									))}
+										))}
+									</div>
 								</div>
-							</div>
-						))
+							))}
+						</>
 					)}
 				</>
 			)}

@@ -40,7 +40,6 @@ function CarregarPagina({}: Props) {
 		fetchEditarValidade,
 		fetchDeletarValidade,
 		loadingButtons,
-		dataFimIntervalo,
 		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
@@ -253,8 +252,6 @@ function CarregarPagina({}: Props) {
 					filtrarEmAberto={() => setFiltroAtivo('Em Aberto')}
 					filtrarFinalizados={() => setFiltroAtivo('finalizado')}
 				/>
-
-				<h1>Validades até {dataFimIntervalo}</h1>
 
 				<ListaProdutos
 					loading={loading}

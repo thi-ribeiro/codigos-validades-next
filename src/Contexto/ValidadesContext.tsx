@@ -81,6 +81,7 @@ export interface ValuesInterface {
 	//isLoading: boolean; // Adicione isso SWR
 	isValidating: boolean; // Adicione isso SWR
 	//mutate: () => Promise<any>;
+	obterStatusClasse: (dataDeValidade: string, finalizado: number) => string;
 }
 
 export interface ValidadeProduto {
@@ -560,14 +561,12 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		const dataAtual = startOfDay(new Date());
 
 		if (finalizado) {
-			return (
-				<div style={{ color: 'green', fontWeight: 'bold' }}>Finalizado</div>
-			);
+			return <div className='texto-status'>Finalizado</div>;
 		}
 
 		// Se a data de hoje passou da expiração
 		if (isAfter(dataAtual, dataExpiracao)) {
-			return <div style={{ color: 'red', fontWeight: 'bold' }}>Vencido</div>;
+			return <div className='texto-status'>Vencido</div>;
 		}
 
 		const diasRestantes = differenceInDays(dataExpiracao, dataAtual);
@@ -575,18 +574,13 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 			locale: ptBR,
 		});
 
-		// --- Sua nova lógica de alertas ---
-
 		if (diasRestantes === 0) {
-			return <div style={{ color: 'red', fontWeight: 'bold' }}>Hoje</div>;
+			return <div className='texto-status'>Hoje</div>;
 		}
 
 		if (diasRestantes > 0 && diasRestantes <= 5) {
 			return (
-				<div
-					aria-label={dataFormatada}
-					// data-balloon-pos='right'
-					style={{ color: 'orange', fontWeight: 'bold' }}>
+				<div aria-label={dataFormatada} className='texto-status'>
 					{diasRestantes} dia(s)
 				</div>
 			);
@@ -596,11 +590,39 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		return (
 			<div
 				aria-label={dataFormatada}
-				// data-balloon-pos='right'
-				className='toogleDescription'>
+				className='texto-status toogleDescription'>
 				{diasRestantes} dia(s)
 			</div>
 		);
+	};
+
+	const obterStatusClasse = (
+		dataDeValidade: string,
+		finalizado: number,
+	): string => {
+		if (finalizado) return 'finalizado'; // Se quiser criar um estilo para finalizados
+
+		const apenasData = dataDeValidade.split('T')[0];
+		const dataExpiracao = parseISO(apenasData);
+		const dataAtual = startOfDay(new Date());
+
+		// Se já passou da data
+		if (isAfter(dataAtual, dataExpiracao)) {
+			return 'vencido';
+		}
+
+		const diasRestantes = differenceInDays(dataExpiracao, dataAtual);
+
+		if (diasRestantes === 0) {
+			return 'hoje';
+		}
+
+		// No seu código você considerou crítico até 5 dias (ou use 15 se preferir o padrão do Atacadão)
+		if (diasRestantes <= 5) {
+			return 'critico';
+		}
+
+		return 'normal';
 	};
 
 	const fetchDeletarValidade = async (
@@ -710,7 +732,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		loadingButtons,
 		listaBruta, // <--- Exportar aqui swr
 		isValidating, // <--- Exportar aqui swr
-		//mutate,
+		obterStatusClasse,
 	};
 
 	return (
