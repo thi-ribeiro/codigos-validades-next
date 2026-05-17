@@ -67,6 +67,7 @@ export default function BarraBusca() {
 			</div>
 
 			<ModalCeres
+				id='ceres-buscar'
 				isOpen={isOpenModalScanner}
 				onClose={fecharModalScanner}
 				onResult={tratarLeitura}

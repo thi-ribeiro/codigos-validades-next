@@ -7,7 +7,7 @@ interface ModalCeresProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onResult: (text: string) => void;
-	id?: string; // ID opcional
+	id?: string;
 }
 
 export default function ModalCeres({
@@ -19,32 +19,46 @@ export default function ModalCeres({
 	const scannerRef = useRef<Html5Qrcode | null>(null);
 	const regionId = id;
 
-	// Função interna para garantir que o hardware pare antes de qualquer coisa
+	// LIMPADOR UNITÁRIO (SÓ NO FECHAMENTO): Para os tracks do vídeo que está na tela
+	const limparTracksDoVideoLocal = () => {
+		if (typeof window !== 'undefined') {
+			const videoElement = document.querySelector(
+				`#${regionId} video`,
+			) as HTMLVideoElement;
+			if (videoElement && videoElement.srcObject) {
+				const stream = videoElement.srcObject as MediaStream;
+				stream.getTracks().forEach((track) => track.stop());
+				videoElement.srcObject = null;
+				console.log('[Ceres] Tracks de vídeo locais interrompidos.');
+			}
+		}
+	};
+
 	const encerrarHardware = async () => {
 		if (scannerRef.current) {
 			try {
-				// Verifica se ainda está escaneando antes de tentar parar
 				if (scannerRef.current.isScanning) {
 					await scannerRef.current.stop();
 				}
-				// O clear() é quem costuma dar o erro de 'removeChild'
-				// Vamos garantir que ele só rode se o scanner ainda existir
 				scannerRef.current.clear();
 			} catch (err) {
-				// Silenciamos o erro de DOM, pois o componente já está sendo desmontado
-				console.warn('Hardware liberado com aviso de DOM (normal no React)');
+				console.warn(
+					'Erro ao limpar via lib, forçando desligamento dos tracks locais...',
+				);
+				limparTracksDoVideoLocal();
 			} finally {
 				scannerRef.current = null;
 			}
+		} else {
+			limparTracksDoVideoLocal();
 		}
 	};
 
 	useEffect(() => {
 		if (isOpen) {
-			// Trava o scroll do body
 			document.body.style.overflow = 'hidden';
 
-			// O SEGREDO: Os formatos entram aqui no segundo parâmetro do construtor
+			// Criamos a instância normalmente
 			const html5QrCode = new Html5Qrcode(regionId, {
 				formatsToSupport: [
 					Html5QrcodeSupportedFormats.CODE_128,
@@ -52,11 +66,12 @@ export default function ModalCeres({
 					Html5QrcodeSupportedFormats.EAN_8,
 					Html5QrcodeSupportedFormats.QR_CODE,
 				],
-				verbose: false, // Opcional: silencia logs desnecessários no console
+				verbose: false,
 			});
 
 			scannerRef.current = html5QrCode;
 
+			// Inicia direto sem disputar o hardware com ninguém antes
 			html5QrCode
 				.start(
 					{ facingMode: 'environment' },
@@ -68,16 +83,12 @@ export default function ModalCeres({
 							facingMode: 'environment',
 							focusMode: 'continuous',
 							whiteBalanceMode: 'continuous',
-							// Se o celular permitir, você pode tentar forçar uma resolução maior
 							width: { ideal: 1280 },
 							height: { ideal: 720 },
 						} as any,
 					},
 					(text) => {
 						onResult(text);
-						// Opcional: fechar automaticamente após sucesso
-
-						//alert('REsultado da leitura?!');
 						handleFechar();
 					},
 					() => {},
@@ -85,17 +96,19 @@ export default function ModalCeres({
 				.catch((err) => console.error('Erro na câmera:', err));
 		} else {
 			document.body.style.overflow = 'unset';
+			return;
 		}
 
 		return () => {
 			document.body.style.overflow = 'unset';
-			encerrarHardware(); // Garante a limpeza se o componente for destruído
+			// Quando desmontar (fechar o modal correndo), limpa o elemento local
+			limparTracksDoVideoLocal();
 		};
 	}, [isOpen]);
 
 	const handleFechar = async () => {
-		await encerrarHardware(); // Para a câmera PRIMEIRO
-		onClose(); // Fecha o modal DEPOIS
+		await encerrarHardware();
+		onClose();
 	};
 
 	if (!isOpen) return null;
@@ -120,7 +133,6 @@ export default function ModalCeres({
 					Escanear Código
 				</h2>
 
-				{/* O Scanner agora é parte nativa do Modal */}
 				<div
 					id={regionId}
 					style={{
