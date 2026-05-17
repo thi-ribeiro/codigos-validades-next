@@ -43,6 +43,7 @@ function CarregarPagina({}: Props) {
 		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
+		//isLoading,
 		setFiltroAtivo,
 	} = useValidades();
 
@@ -119,15 +120,6 @@ function CarregarPagina({}: Props) {
 	// No componente:
 	const [FormEditData, setFormEditData] =
 		useState<ValidadeProduto>(INITIAL_STATE);
-
-	useEffect(() => {
-		// Se o user existe, eu busco. Se não existe (deslogado ou carregando), não faço nada.
-		if (user) {
-			const empresa = user.role !== 1 ? user.empresa : undefined;
-			//fetchValidades(empresa);
-		}
-		// Deixando apenas [user.id] ou [user], o React só dispara quando o usuário loga
-	}, [user?.role]);
 
 	useEffect(() => {
 		// Se NENHUM dos modais estiver aberto, significa que um deles acabou de fechar
@@ -237,14 +229,7 @@ function CarregarPagina({}: Props) {
 		}
 	};
 
-	//const mesAtual = new Date().toLocaleString('pt-BR', { month: 'long' });
-
-	return loading ? (
-		<LoadingLogo
-			loading={loading}
-			mensagem={'Carregando lista de produtos...'}
-		/>
-	) : (
+	return (
 		<div className='validadesPage'>
 			<React.Fragment>
 				<FiltroValidades

@@ -724,7 +724,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		marcasProdutos,
 		// validadesSeparadas,
 		dataFimIntervalo,
-		loading: swrLoading,
+		loading: swrLoading || (!!data?.dados?.length && listaBruta.length === 0), //ja recebe o loading do swr
 		produtosExibidos: dadosParaExibir,
 		setFiltroAtivo,
 		nomeProduto,
