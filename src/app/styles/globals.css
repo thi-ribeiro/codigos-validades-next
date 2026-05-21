@@ -831,6 +831,7 @@ button:active {
 
   .toast {
     display: flex;
+    min-width: 205px; /* Tamanho padrão fixado */
     padding: 10px;
     border-radius: 8px;
     font-size: small;

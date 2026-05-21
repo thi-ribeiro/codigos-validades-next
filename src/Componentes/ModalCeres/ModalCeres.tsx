@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { useToast } from '@/Contexto/Toast';
 
 interface ModalCeresProps {
 	isOpen: boolean;
@@ -18,6 +19,8 @@ export default function ModalCeres({
 }: ModalCeresProps) {
 	const scannerRef = useRef<Html5Qrcode | null>(null);
 	const regionId = id;
+
+	const { addToast } = useToast();
 
 	// LIMPADOR UNITÁRIO (SÓ NO FECHAMENTO): Para os tracks do vídeo que está na tela
 	const limparTracksDoVideoLocal = () => {
@@ -83,17 +86,19 @@ export default function ModalCeres({
 							facingMode: 'environment',
 							focusMode: 'continuous',
 							whiteBalanceMode: 'continuous',
-							width: { ideal: 1280 },
-							height: { ideal: 720 },
+							// width: { ideal: 1280 },
+							// height: { ideal: 720 },
 						} as any,
 					},
 					(text) => {
-						onResult(text);
+						const codigo = text.trim();
+
+						onResult(codigo);
 						handleFechar();
 					},
 					() => {},
 				)
-				.catch((err) => console.error('Erro na câmera:', err));
+				.catch((err) => addToast(err, 'error'));
 		} else {
 			document.body.style.overflow = 'unset';
 			return;

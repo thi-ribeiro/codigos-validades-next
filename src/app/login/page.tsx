@@ -11,52 +11,55 @@ export default function page({}: Props) {
 	const router = useRouter();
 	const { login, logout } = useAuth();
 	const { addToast } = useToast();
-
-	const enviarDados = async (e: React.FormEvent<HTMLFormElement>) => {
+	const enviarDados = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
+
+		// Salva a referência do formulário LOGO NO INÍCIO
+		const formulario = e.currentTarget;
+
+		const formData = new FormData(formulario);
 		const usuario = formData.get('usuario') as string;
 		const senha = formData.get('senha') as string;
 
-		const loginData = {
-			usuario: usuario,
-			senha: senha,
-			login: true, // Indicador para o backend que é um login
-		};
 		if (!usuario || !senha) {
 			addToast('Por favor, preencha todos os campos!', 'error');
 			return;
 		}
+
+		const loginData = { usuario, senha, login: true };
 		const acesso_fetch = process.env.NEXT_PUBLIC_AUTH_API;
 
-		fetch(`${acesso_fetch}/login`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			//credentials: 'include',
-			body: JSON.stringify(loginData),
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				//console.log(data.user);
-				login(data.user);
-				//alert(data.message);
-				addToast(data.message, data.status);
+		addToast('Verificando credenciais...', 'info');
 
-				if (data.status === 'success') {
-					router.push('/');
-				} else if (data.status === 'error') {
-					logout();
-				}
-			})
-			.catch((error) => {
-				//console.error('Error:', error);
-				//alert('Erro ao realizar login.');
-
-				addToast(error, 'error');
+		try {
+			const response = await fetch(`${acesso_fetch}/login`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(loginData),
 			});
-		e.currentTarget.reset(); // Limpa o formulário após o envio
+
+			const data = await response.json();
+
+			if (data.status === 'success') {
+				login(data.user);
+				addToast(data.message || 'Logado com sucesso!', 'success');
+
+				// Agora usamos a variável estável, que nunca fica null!
+				formulario.reset();
+
+				router.push('/validades');
+			} else {
+				logout();
+				addToast(data.message || 'Usuário ou senha incorretos.', 'error');
+			}
+		} catch (error) {
+			logout();
+			addToast(
+				'Erro ao conectar ao servidor. Tente novamente mais tarde.',
+				'error',
+			);
+			console.error(error);
+		}
 	};
 
 	return (
