@@ -1,38 +1,42 @@
-import { useAuth } from '@/Contexto/AuthContext';
-import { useValidades } from '@/Contexto/ValidadesContext';
+import React from 'react';
 import jsPDF from 'jspdf';
-import React, { useContext, useState } from 'react';
-import { IoMdBarcode, IoMdPersonAdd } from 'react-icons/io';
-import { IoAdd, IoDocumentTextOutline, IoTimerOutline } from 'react-icons/io5';
-import QRCode from 'qrcode';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
+import { AiOutlineFilePdf } from 'react-icons/ai'; // Ou o ícone que você escolher
 
-type Props = {
-	openFuncion?: () => void;
-	openModalAddBarCode?: () => void;
-	openModalAddEanPlu?: () => void;
-	openModalAddUser?: () => void;
-	addUser?: boolean;
-	addValidade?: boolean;
-	addBarCode?: boolean;
-};
+// 1. Tipando o formato do produto que o componente vai receber
+export interface ValidadeProduto {
+	idvalidades: number;
+	produto: string;
+	validade: string; // Ou Date, se você for convertê-la no frontend
+	responsavel: string;
+	data_inserido: string; // Ou Date
+	verificado: number; // Ou boolean, se você for convertê-lo
+	data_verificado: string; // Ou Date
+	finalizado: number; // Ou boolean
+	data_finalizado: string; // Ou Date
+	validadeDiaMes: string; // Formato 'dd/mm/yyyy'
+	marca_produto: string; // Adicionando a marca do produto
+	quantidade_produto: string;
+	codigoProduto: string;
+	codigoInterno: string;
+	rebaixa: number;
+	data_rebaixa: string;
+	tipoquantidade: string;
+	descricao_produto: string;
+	idRelacionado?: number | null;
+}
 
-export default function AddButton({
-	openFuncion,
-	openModalAddBarCode,
-	openModalAddEanPlu,
-	openModalAddUser,
-	addUser = false,
-	addBarCode = false,
-	addValidade = false,
-}: Props) {
-	const { user } = useAuth();
-	// Estado apenas para controlar o menu de PDF
-	const [menuPdfAberto, setMenuPdfAberto] = useState(false);
-	const { listaBruta } = useValidades();
+// 2. Definindo que o componente precisa receber a lista de produtos como propriedade (Prop)
+interface BotaoPdfProps {
+	listaProdutos: ValidadeProduto[];
+	mesOffset?: number;
+}
 
+export default function BotaoGerarPdf({ listaProdutos }: BotaoPdfProps) {
+	// 3. A função assíncrona isolada dentro do componente
 	const gerarPdfValidadesMes = async (mesOffset = 0) => {
-		if (!listaBruta || listaBruta.length === 0) {
+		if (!listaProdutos || listaProdutos.length === 0) {
 			alert('Não há produtos disponíveis para gerar o relatório!');
 			return;
 		}
@@ -64,7 +68,7 @@ export default function AddButton({
 		const nomeMes = dataAlvo.toLocaleString('pt-BR', { month: 'long' });
 
 		// Filtra usando o mesNumero calculado
-		const produtosDoMes = listaBruta.filter((item) => {
+		const produtosDoMes = listaProdutos.filter((item) => {
 			return (
 				item.validadeDiaMes.includes(`/${mesNumero}`) ||
 				item.validadeDiaMes.includes(`-${mesNumero}-`)
@@ -160,71 +164,12 @@ export default function AddButton({
 			`validades_${nomeMes.toLowerCase()}_${dataAlvo.getFullYear()}.pdf`,
 		);
 	};
-	const handleGerarPdf = async (offset: number) => {
-		console.log('Gerando PDF com offset:', offset);
-		await gerarPdfValidadesMes(offset);
-		setMenuPdfAberto(false); // Fecha o menu após clicar
-	};
 
+	// 4. O retorno do componente (o botão que aparece na tela)
 	return (
-		<div className='buttonAddContainer'>
-			{/* --- SEU LAYOUT ANTIGO MANTIDO --- */}
-			{[1, 3].includes(Number(user?.role)) && (
-				<>
-					{addUser && [1].includes(Number(user?.role)) && (
-						<>
-							<div
-								className='botoes-adicionais buttonAdd buttonAddUser'
-								title='Cadastrar Usuário'
-								onClick={openModalAddUser}>
-								<IoMdPersonAdd size={20} />
-							</div>
-							<div
-								className='botoes-adicionais buttonAdd buttonAddCodeBar'
-								title='Adicionar EAN/PLU'
-								onClick={openModalAddEanPlu}>
-								<IoMdBarcode size={20} />
-							</div>
-						</>
-					)}
-
-					{/* --- BOTÃO NOVO: Abre e fecha apenas as opções de PDF --- */}
-					<div className='container-pdf-wrapper'>
-						<div
-							className='buttonAdd botoes-adicionais buttonAddUser'
-							onClick={() => setMenuPdfAberto(!menuPdfAberto)}>
-							<IoDocumentTextOutline size={20} />
-						</div>
-
-						{menuPdfAberto && (
-							<div className='menu-bolinhas-esquerda'>
-								<div className='bolinha' onClick={() => handleGerarPdf(0)}>
-									Mês atual
-								</div>
-								<div className='bolinha' onClick={() => handleGerarPdf(1)}>
-									Mês seguinte
-								</div>
-							</div>
-						)}
-					</div>
-				</>
-			)}
-
-			{[1, 2, 3].includes(Number(user?.role)) && (
-				<>
-					{addBarCode ? (
-						<div
-							className='buttonAddValidade buttonAdd'
-							onClick={openModalAddBarCode}>
-							<IoTimerOutline size={30} />
-						</div>
-					) : (
-						<div className='buttonAdd buttonAddIcon' onClick={openFuncion}>
-							<IoAdd size={30} />
-						</div>
-					)}
-				</>
-			)}
+		<div className='container-botoes-gerar-pdf'>
+			<button onClick={() => gerarPdfValidadesMes(0)}>PDF Atual</button>
+			<button onClick={() => gerarPdfValidadesMes(1)}>PDF Próximo</button>
 		</div>
 	);
 }
