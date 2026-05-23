@@ -5,6 +5,8 @@ import { AuthProvider } from '@/Contexto/AuthContext';
 import UserLoginMenuFunctions from '../Componentes/UserLoginMenuFunctions/UserLoginMenuFunctions';
 import React from 'react';
 import { ToastProvider } from '@/Contexto/Toast';
+import { FuncoesProvider } from '@/Contexto/FuncoesContext';
+import ValidadesProvider from '@/Contexto/ValidadesContext';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -32,8 +34,12 @@ export default function RootLayout({
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
 				<ToastProvider>
 					<AuthProvider>
-						<UserLoginMenuFunctions />
-						{children}
+						<FuncoesProvider>
+							<ValidadesProvider>
+								<UserLoginMenuFunctions />
+								{children}
+							</ValidadesProvider>
+						</FuncoesProvider>
 					</AuthProvider>
 				</ToastProvider>
 			</body>

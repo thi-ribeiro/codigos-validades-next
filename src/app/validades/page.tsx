@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { FuncoesProvider } from '../../Contexto/FuncoesContext';
+import React, { useEffect, useState } from 'react';
+//import { FuncoesProvider } from '../../Contexto/FuncoesContext';
 import Modal from '@/Componentes/Modal/Modal';
-import { useAuth } from '@/Contexto/AuthContext';
-import ValidadesProvider, { useValidades } from '@/Contexto/ValidadesContext';
+//import { useAuth } from '@/Contexto/AuthContext';
+import { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
 import FiltroValidades from '@/Componentes/BotaoFiltroValidades/FiltroValidades';
@@ -13,18 +13,25 @@ import ModalCeres from '@/Componentes/ModalCeres/ModalCeres';
 import useModalCeres from '@/Componentes/ModalCeres/useModalCeres';
 import ListaProdutos from '@/Componentes/ListaProdutosMemo/ListaProdutos';
 import useModal from '@/Componentes/Modal/useModal';
-import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
+//import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
 
 type Props = {};
 
+// export default function page() {
+// 	return (
+// 		<FuncoesProvider>
+// 			<ValidadesProvider>
+// 				<CarregarPagina />
+// 			</ValidadesProvider>
+// 		</FuncoesProvider>
+// 	);
+// }
+
 export default function page() {
-	return (
-		<FuncoesProvider>
-			<ValidadesProvider>
-				<CarregarPagina />
-			</ValidadesProvider>
-		</FuncoesProvider>
-	);
+	// Agora, como o layout já proveu os contextos,
+	// o CarregarPagina (e o AddButton dentro dele)
+	// já encontrarão os dados magicamente.
+	return <CarregarPagina />;
 }
 
 export interface scanCode {
@@ -46,7 +53,7 @@ function CarregarPagina({}: Props) {
 		produtosExibidos,
 		//isLoading,
 		setFiltroAtivo,
-		mutate,
+		//mutate,
 	} = useValidades();
 
 	// const { user } = useAuth();
