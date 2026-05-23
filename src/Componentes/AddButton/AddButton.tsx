@@ -15,6 +15,7 @@ type Props = {
 	addUser?: boolean;
 	addValidade?: boolean;
 	addBarCode?: boolean;
+	addCodigo?: boolean;
 };
 
 export default function AddButton({
@@ -25,6 +26,7 @@ export default function AddButton({
 	addUser = false,
 	addBarCode = false,
 	addValidade = false,
+	addCodigo = false,
 }: Props) {
 	const { user } = useAuth();
 	// Estado apenas para controlar o menu de PDF
