@@ -88,7 +88,7 @@ const SelectAddButtonOptions = ({
 	}
 
 	// Operacional
-	if (role === 2 && addValidade) {
+	if ([1, 2, 3].includes(Number(role)) && addValidade) {
 		return (
 			<div
 				className='buttonAddBarCodeScan buttonAdd'

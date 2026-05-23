@@ -965,6 +965,7 @@ button:active {
   border-bottom-color: var(--status-normal) !important;
   /* Mata qualquer animação de pulso caso ele vencesse hoje */
   animation: none !important;
+  background-color: rgba(74, 222, 128, 0.1);
 }
 
 /* --- Animação que altera apenas a cor da bordinha inferior --- */
@@ -985,12 +986,14 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%; /* Garante que o topo ocupe toda a largura do card */
 
   .card-produto-info {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     gap: 5px;
+    min-width: 0; /* SEGREDO 1: Permite que o container de textos encolha */
 
     .card-produtoplu-qrcode {
       display: flex;
@@ -1013,13 +1016,17 @@ button:active {
       flex-direction: column;
       align-items: baseline;
       gap: 5px;
+      width: 100%;
+      min-width: 0; /* SEGREDO 2: Repassa a permissão de encolhimento */
 
       .card-produto-separador {
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start; /* Alinha à esquerda */
         gap: 5px;
+        width: 100%;
+        min-width: 0; /* SEGREDO 3: Chegou no pai direto do texto */
 
         .card-produto-responsavel {
           display: flex;
@@ -1032,6 +1039,21 @@ button:active {
           border-radius: 4px;
           background-color: #000;
           color: #fff;
+          flex-shrink: 0; /* Não deixa a caixinha do "T" esmagar */
+        }
+
+        /* O NOME DO PRODUTO ENTRA AQUI DENTRO DO FLUXO DO SASS */
+        .card-produto-nome {
+          text-transform: capitalize;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #1d1d1f;
+          line-height: 1.2;
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex: 1; /* Ocupa o espaço que sobrar sem estourar */
         }
       }
     }
@@ -1044,6 +1066,7 @@ button:active {
     font-size: 0.85rem;
     font-weight: bold;
     justify-content: flex-end;
+    flex-shrink: 0; /* SEGREDO 4: Bloqueia os badges, impedindo-os de quebrar ou sumir */
 
     /* Badge de Validade com destaque */
     .badge-validade {
@@ -1052,6 +1075,7 @@ button:active {
       border: 1px none rgba(255, 255, 255, 0.1);
       padding: 4px 10px;
       border-radius: var(--bradius);
+      white-space: nowrap;
     }
 
     /* --- BADGE DE QUANTIDADE --- */
@@ -1061,11 +1085,12 @@ button:active {
       border: 1px solid rgba(0, 0, 0, 0.1);
       padding: 3px 8px;
       border-radius: var(--bradius);
+      white-space: nowrap; /* Não quebra o "5 un" de jeito nenhum */
     }
   }
 }
 
-.card-produto-nome {
+/* .card-produto-nome {
   text-transform: capitalize;
   font-size: 1.1rem;
   font-weight: 700;
@@ -1076,7 +1101,7 @@ button:active {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+} */
 
 /* --- LINHA 2: INFO SECUNDÁRIA --- */
 .card-base {

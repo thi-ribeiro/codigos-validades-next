@@ -371,7 +371,7 @@ export default function Modal({
 							<div className='buttonSubmCanc'>
 								{isEdit ? (
 									formEditData?.responsavel === user?.usuario ||
-									user?.role === 1 ? (
+									[1, 3].includes(Number(user?.role)) ? (
 										<>
 											<button
 												type='button'

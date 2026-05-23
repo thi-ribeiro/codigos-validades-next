@@ -31,7 +31,8 @@ export interface ProviderProps {
 }
 
 export interface ValuesInterface {
-	fetchValidades: (produtoMarca?: string) => Promise<void>;
+	// fetchValidades: (produtoMarca?: string) => Promise<void>;
+	fetchHistorico: () => Promise<void>;
 	fetchAddValidade: (
 		e: React.FormEvent,
 		callbackSucesso: () => void,
@@ -67,11 +68,14 @@ export interface ValuesInterface {
 		e: React.FormEvent,
 		callbackSucesso: () => void,
 	) => Promise<void>;
-	produtosValidades: Record<string, ValidadeProduto[]>;
+	//produtosValidades: Record<string, ValidadeProduto[]>;
 	produtosExibidos: Record<string, ValidadeProduto[]>;
 	setFiltroAtivo: (filtro: string) => void;
 	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
-	// validadesSeparadas: Record<string, ValidadeProduto[]>;
+	validadesSeparadas: {
+		pendentes: Record<string, ValidadeProduto[]>;
+		finalizados: Record<string, ValidadeProduto[]>;
+	} | null; // Começa como null enquanto o fetch não termina
 	loading: boolean;
 	loadingButtons: boolean;
 	dataFimIntervalo: string | 'Indefinido';
@@ -82,6 +86,9 @@ export interface ValuesInterface {
 	isValidating: boolean; // Adicione isso SWR
 	//mutate: () => Promise<any>;
 	obterStatusClasse: (dataDeValidade: string, finalizado: number) => string;
+	mutate: (data?: any, opts?: any) => Promise<any>;
+	filtroAtivo: string;
+	listaHistorico: ValidadeProduto[];
 }
 
 export interface ValidadeProduto {
@@ -129,13 +136,10 @@ const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 const ValidadesContexto = createContext<ValuesInterface | undefined>(undefined);
 
-const fetcher = (url: string) =>
-	fetch(url, { credentials: 'include' }).then((res) => res.json());
-
 export default function ValidadesProvider({ children }: ProviderProps) {
-	const [produtosValidades, setProdutosValidades] = useState<
-		Record<string, ValidadeProduto[]>
-	>({});
+	// const [produtosValidades, setProdutosValidades] = useState<
+	// 	Record<string, ValidadeProduto[]>
+	// >({});
 
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
 	const [marcasProdutos, setmarcasProdutos] = useState<
@@ -150,28 +154,26 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const [loadingButtons, setLoadingButtons] = useState(false);
 
 	const [listaBruta, setListaBruta] = useState<ValidadeProduto[]>([]);
+	const [listaHistorico, setListaHistorico] = useState<ValidadeProduto[]>([]);
+	const [historicoLoading, setHistoricoLoading] = useState(false);
 
 	const { user, logout } = useAuth();
 	const { addToast } = useToast();
 
-	// Isso aqui fica "solto" no corpo do seu componente ValidadesProvider
-	//FICA OBSERVANDO O ESTADO DE LISTA BRUTA E ORGANIZANDO OS DADOS
 	const validadesSeparadas = useMemo(() => {
-		// 1. ORDENAÇÃO: Garante que tudo esteja em ordem cronológica antes de separar
-		// Usamos o campo 'validade' (que deve ser YYYY-MM-DD) para ordenar corretamente
 		const listaOrdenada = _.sortBy(listaBruta, ['validade']);
-
-		// 2. Separa o que é finalizado do que é pendente (usando a lista já ordenada)
 		const [finalizados, pendentes] = _.partition(listaOrdenada, {
 			finalizado: 1,
 		});
 
-		// 3. Agrupa os dois. Como a lista já veio ordenada, os grupos ficarão na ordem certa
 		return {
 			finalizados: _.groupBy(finalizados, 'validadeDiaMes'),
 			pendentes: _.groupBy(pendentes, 'validadeDiaMes'),
 		};
 	}, [listaBruta]);
+
+	const fetcher = (url: string) =>
+		fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 	const {
 		data,
@@ -195,101 +197,132 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	useEffect(() => {
 		// 1. Verificamos se o SWR já trouxe os dados e se o formato está correto
 		if (data && Array.isArray(data.dados)) {
-			// 2. Alimentamos os estados que o seu useMemo e o resto do app usam
-			//setmarcasProdutos(data.marcas);
-			setListaBruta(data.dados); // O seu useMemo "acorda" aqui!
-			setdataFimIntervalo(
-				format(new Date(dataFimIntervaloFormatada), 'MMMM/yyyy', {
-					locale: ptBR,
-				}),
-			);
-		}
-	}, [data]); // IMPORTANTE: O efeito só roda quando o 'data' do SWR mudar
+			setListaBruta(data.dados);
 
-	const fetchValidades = async (
-		produtoMarca: string = '',
-		isSilent = false,
-	) => {
-		console.log('Passou aqui');
-		if (!isSilent) setLoading(true);
+			// Cálculo do intervalo movido para cá para evitar processamento a cada render
+			const hoje = new Date();
+			const dataFim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
+			setdataFimIntervalo(format(dataFim, 'MMMM/yyyy', { locale: ptBR }));
+		}
+	}, [data]);
+
+	const fetchHistorico = async () => {
+		setHistoricoLoading(true);
 		try {
-			const response = await fetch(
-				// `${acesso_validades}/listar/?marca=${produtoMarca}`,
-				`${acesso_validades}/listar`,
-				{
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					// Importante manter para o Middleware ler o seu cookie auth_token
-					credentials: 'include',
-				},
-			);
+			// 1. Busca os dados na nova rota do histórico (os 30 dias que conversamos)
+			const response = await fetch(`${acesso_validades}/historico`, {
+				method: 'GET',
+				credentials: 'include',
+			});
 
 			const data = await response.json();
 
-			// Dentro do fetchValidades:
 			if (data && Array.isArray(data.dados)) {
-				setListaBruta(data.dados);
-
-				// Opcional: Atualiza o título usando a data local
-				setdataFimIntervalo(
-					format(dataFimIntervaloFormatada, 'MMMM/yyyy', { locale: ptBR }),
-				);
+				setListaHistorico(data.dados);
+				setFiltroAtivo('finalizado');
+				//setdataFimIntervalo('Histórico 30 dias');
 			}
 		} catch (error) {
 			console.error(error);
 		} finally {
-			if (!isSilent) setLoading(false);
+			setHistoricoLoading(false);
+		}
+	};
+
+	const atualizarDadosAtuais = async () => {
+		if (filtroAtivo === 'finalizado') {
+			await fetchHistorico();
+		} else {
+			await mutate();
 		}
 	};
 
 	const dadosParaExibir = useMemo(() => {
-		//Define qual tipo de dados vamos utilizar dependendo do filtro ativo
-		const fonteDados =
-			filtroAtivo === 'finalizado'
-				? validadesSeparadas.finalizados
-				: validadesSeparadas.pendentes;
+		const produtosAlvo =
+			filtroAtivo === 'finalizado' ? listaHistorico : listaBruta;
+
+		if (!produtosAlvo || produtosAlvo.length === 0) return {};
 
 		const hoje = startOfDay(new Date());
-
 		const limite5Dias = new Date();
 		limite5Dias.setDate(hoje.getDate() + 5);
 
 		const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
 
-		// Percorremos apenas as datas que têm produtos pendentes
-		Object.keys(fonteDados).forEach((dataChave) => {
-			const itensFiltrados = fonteDados[dataChave].filter((item) => {
-				// 1. Filtro por Nome
-				const matchesNome = nomeProduto
-					? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
-						String(item.codigoInterno).includes(nomeProduto.trim()) ||
-						String(item.codigoProduto).includes(nomeProduto.trim())
-					: true;
+		produtosAlvo.forEach((item) => {
+			const buscaMinuscula = nomeProduto.toLowerCase().trim();
+			const matchesNome = nomeProduto
+				? item.produto?.toLowerCase().includes(buscaMinuscula) ||
+					String(item.codigoInterno).includes(buscaMinuscula) ||
+					String(item.codigoProduto).includes(buscaMinuscula)
+				: true;
 
-				// 2. Filtro por Status "Vencendo" (menos de 5 dias)
-				if (filtroAtivo === 'vencendo') {
-					const dataVal = parseISO(item.validade.split('T')[0]);
-					const estaPertoDeVencer = dataVal <= limite5Dias;
-					return estaPertoDeVencer && matchesNome;
+			let matchesFiltro = matchesNome;
+			if (filtroAtivo === 'vencendo') {
+				if (!item.validade) return;
+				const dataVal = parseISO(item.validade.split('T')[0]);
+				matchesFiltro = dataVal <= limite5Dias && matchesNome;
+			}
+
+			if (matchesFiltro) {
+				const dataChave = item.validadeDiaMes || item.validade.split('T')[0];
+				if (!novoObjetoFiltrado[dataChave]) {
+					novoObjetoFiltrado[dataChave] = [];
 				}
-
-				return matchesNome;
-			});
-
-			if (itensFiltrados.length > 0) {
-				novoObjetoFiltrado[dataChave] = itensFiltrados;
+				novoObjetoFiltrado[dataChave].push(item);
 			}
 		});
 
 		return novoObjetoFiltrado;
-	}, [
-		validadesSeparadas.pendentes,
-		validadesSeparadas,
-		filtroAtivo,
-		nomeProduto,
-	]); // Importante: depende dos pendentes agora
+	}, [listaBruta, listaHistorico, filtroAtivo, nomeProduto]);
+
+	// const dadosParaExibir = useMemo(() => {
+	// 	// 1. Escolhe a lista bruta correta dependendo do botão ativo
+	// 	const produtosAlvo =
+	// 		filtroAtivo === 'finalizado' ? listaHistorico : listaBruta;
+
+	// 	if (!produtosAlvo || produtosAlvo.length === 0) {
+	// 		return {};
+	// 	}
+
+	// 	const hoje = startOfDay(new Date());
+	// 	const limite5Dias = new Date();
+	// 	limite5Dias.setDate(hoje.getDate() + 5);
+
+	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
+
+	// 	// 2. Passa o pente fino e agrupa por data ao mesmo tempo!
+	// 	produtosAlvo.forEach((item) => {
+	// 		// Filtro 1: Nome/Código
+	// 		const matchesNome = nomeProduto
+	// 			? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
+	// 				String(item.codigoInterno).includes(nomeProduto.trim()) ||
+	// 				String(item.codigoProduto).includes(nomeProduto.trim())
+	// 			: true;
+
+	// 		// Filtro 2: Vencendo
+	// 		let matchesFiltro = matchesNome;
+	// 		if (filtroAtivo === 'vencendo') {
+	// 			if (!item.validade) return;
+	// 			const dataVal = parseISO(item.validade.split('T')[0]);
+	// 			const estaPertoDeVencer = dataVal <= limite5Dias;
+	// 			matchesFiltro = estaPertoDeVencer && matchesNome;
+	// 		}
+
+	// 		// 3. Se passou nos filtros, agrupa na chave da data correspondente
+	// 		if (matchesFiltro) {
+	// 			// Use a chave de data que você usa no layout (ex: item.validadeDiaMes ou item.validade)
+	// 			const dataChave = item.validadeDiaMes || item.validade.split('T')[0];
+
+	// 			if (!novoObjetoFiltrado[dataChave]) {
+	// 				novoObjetoFiltrado[dataChave] = [];
+	// 			}
+	// 			novoObjetoFiltrado[dataChave].push(item);
+	// 		}
+	// 	});
+
+	// 	return novoObjetoFiltrado;
+	// }, [listaBruta, listaHistorico, filtroAtivo, nomeProduto]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -353,15 +386,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				const data = await response.json();
 
 				if (data && data.status === 'success') {
-					await mutate();
+					await atualizarDadosAtuais();
 					addToast(data.message, data.status);
-
-					// const itemVindoDoBanco = data.item; // Objeto completo e organizado
-
-					// setListaBruta((prev) => {
-					// 	return [...prev, itemVindoDoBanco];
-					// });
-
 					callbackSucesso();
 				} else {
 					addToast(data.message || 'Erro ao cadastrar', data.status || 'error');
@@ -434,30 +460,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 			if (response.ok && data.status === 'success') {
 				addToast(data.message, 'success');
-
-				await mutate();
-
-				// setListaBruta((prev) => {
-				// 	return prev.map((item) => {
-				// 		if (item.idvalidades === dadosParaEnviar.id_validade) {
-				// 			// Recriamos a validade formatada caso a data tenha mudado na edição
-				// 			const novaDataFormatada = new Date(
-				// 				`${dadosParaEnviar.validade}T12:00:00`,
-				// 			).toLocaleDateString('pt-BR');
-
-				// 			return {
-				// 				...item,
-				// 				...dadosParaEnviar,
-				// 				//marca_produto: dadosParaEnviar.marca,
-				// 				quantidade_produto: dadosParaEnviar.quantidadeDesc,
-				// 				validadeDiaMes: novaDataFormatada,
-				// 				//codigoProduto: String(dadosParaEnviar.codigoProduto),
-				// 				codigoInterno: String(dadosParaEnviar.codigoInterno),
-				// 			} as ValidadeProduto;
-				// 		}
-				// 		return item; // Se não for o ID que editamos, mantém o item como está
-				// 	});
-				// });
+				await atualizarDadosAtuais();
 
 				callbackSucesso();
 			} else {
@@ -471,47 +474,62 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		}
 	};
 
+	const fetchDeletarValidade = async (
+		id: string | number,
+		callbackSucesso: () => void,
+	) => {
+		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
+
+		try {
+			setLoadingButtons(true);
+
+			const response = await fetch(`${acesso_validades}/deletar`, {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id_validade: id }),
+			});
+
+			const data = await response.json();
+
+			if (data.status === 'success') {
+				addToast(data.message, data.status);
+				await atualizarDadosAtuais();
+				callbackSucesso();
+			} else {
+				addToast(data.message, 'error');
+			}
+		} catch (error) {
+			console.error(error);
+			addToast('Erro ao deletar', 'error');
+		} finally {
+			setLoadingButtons(false);
+		}
+	};
+
 	const ValidadeVerificada = (props: {
 		verificado: number;
 		dataInserida: string;
 	}) => {
-		if (!!props.verificado) {
-			//NEGACAO DUPLA, QUE LINDO!?! FORçA O BOOLEANO
-			return (
-				<IoCheckmarkDoneOutline
-					size={20}
-					color={'green'}
-					title={props.dataInserida}
-				/>
-			);
-		} else {
-			return (
-				<IoCheckmarkDoneOutline
-					size={20}
-					color={'#aaa'}
-					title='Aguardando aprovação.'
-				/>
-			);
-		}
+		return (
+			<IoCheckmarkDoneOutline
+				size={20}
+				color={props.verificado ? '#4CAF50' : '#aaa'}
+				title={props.verificado ? props.dataInserida : 'Aguardando aprovação.'}
+			/>
+		);
 	};
 
 	const ProdutoEmRebaixa = (props: {
 		Rebaixa: number;
 		dataRebaixa: string;
 	}) => {
-		if (!!props.Rebaixa) {
-			return (
-				<IoMdTrendingDown size={20} color={'green'} title={props.dataRebaixa} />
-			);
-		} else {
-			return (
-				<IoMdTrendingDown
-					size={20}
-					color={'#aaa'}
-					title={'Aguardando rebaixa...'}
-				/>
-			);
-		}
+		return (
+			<IoMdTrendingDown
+				size={20}
+				color={props.Rebaixa ? '#4CAF50' : '#aaa'}
+				title={props.Rebaixa ? props.dataRebaixa : 'Aguardando rebaixa...'}
+			/>
+		);
 	};
 
 	const ValidadeFinalizada = (props: {
@@ -524,7 +542,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 				return (
 					<IoIosCheckmarkCircleOutline
 						size={20}
-						color={'green'}
+						color={'#4CAF50'}
 						title={props.dataFinalizado}
 					/>
 				);
@@ -600,67 +618,19 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		dataDeValidade: string,
 		finalizado: number,
 	): string => {
-		if (finalizado) return 'finalizado'; // Se quiser criar um estilo para finalizados
+		if (finalizado) return 'finalizado';
 
-		const apenasData = dataDeValidade.split('T')[0];
-		const dataExpiracao = parseISO(apenasData);
+		const dataExpiracao = parseISO(dataDeValidade.split('T')[0]);
 		const dataAtual = startOfDay(new Date());
 
-		// Se já passou da data
-		if (isAfter(dataAtual, dataExpiracao)) {
-			return 'vencido';
-		}
+		if (isAfter(dataAtual, dataExpiracao)) return 'vencido';
 
 		const diasRestantes = differenceInDays(dataExpiracao, dataAtual);
 
-		if (diasRestantes === 0) {
-			return 'hoje';
-		}
-
-		// No seu código você considerou crítico até 5 dias (ou use 15 se preferir o padrão do Atacadão)
-		if (diasRestantes <= 5) {
-			return 'critico';
-		}
+		if (diasRestantes === 0) return 'hoje';
+		if (diasRestantes <= 5) return 'critico';
 
 		return 'normal';
-	};
-
-	const fetchDeletarValidade = async (
-		id: string | number,
-		callbackSucesso: () => void,
-	) => {
-		if (!confirm('Tem certeza que deseja remover esta validade?')) return;
-
-		try {
-			setLoadingButtons(true);
-
-			const response = await fetch(`${acesso_validades}/deletar`, {
-				method: 'DELETE',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ id_validade: id }),
-			});
-
-			const data = await response.json();
-
-			if (data.status === 'success') {
-				addToast(data.message, data.status);
-
-				await mutate();
-
-				// setListaBruta((prev) => {
-				// 	return prev.filter((item) => item.idvalidades !== id);
-				// });
-
-				callbackSucesso();
-			} else {
-				addToast(data.message, 'error');
-			}
-		} catch (error) {
-			console.error(error);
-			addToast('Erro ao deletar', 'error');
-		} finally {
-			setLoadingButtons(false);
-		}
 	};
 
 	const fetchAddCodeEanPlu = async (
@@ -710,7 +680,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	};
 
 	const contextValues: ValuesInterface = {
-		fetchValidades,
+		fetchHistorico,
 		fetchAddValidade,
 		fetchEditarValidade,
 		fetchDeletarValidade,
@@ -720,11 +690,14 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		ValidadeFinalizada,
 		ProdutoEmRebaixa,
 		fetchAddCodeEanPlu,
-		produtosValidades,
+		//produtosValidades,
 		marcasProdutos,
-		// validadesSeparadas,
+		validadesSeparadas,
 		dataFimIntervalo,
-		loading: swrLoading || (!!data?.dados?.length && listaBruta.length === 0), //ja recebe o loading do swr
+		loading:
+			historicoLoading ||
+			swrLoading ||
+			(!!data?.dados?.length && listaBruta.length === 0), //ja recebe o loading do swr
 		produtosExibidos: dadosParaExibir,
 		setFiltroAtivo,
 		nomeProduto,
@@ -733,6 +706,9 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		listaBruta, // <--- Exportar aqui swr
 		isValidating, // <--- Exportar aqui swr
 		obterStatusClasse,
+		mutate,
+		filtroAtivo,
+		listaHistorico,
 	};
 
 	return (

@@ -36,6 +36,7 @@ const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 function CarregarPagina({}: Props) {
 	const {
 		//fetchValidades,
+		fetchHistorico,
 		fetchAddValidade,
 		fetchEditarValidade,
 		fetchDeletarValidade,
@@ -45,9 +46,10 @@ function CarregarPagina({}: Props) {
 		produtosExibidos,
 		//isLoading,
 		setFiltroAtivo,
+		mutate,
 	} = useValidades();
 
-	const { user } = useAuth();
+	// const { user } = useAuth();
 
 	const {
 		isOpen: isOpenModalScanner,
@@ -234,8 +236,8 @@ function CarregarPagina({}: Props) {
 			<React.Fragment>
 				<FiltroValidades
 					filtrarVencimentos={() => setFiltroAtivo('vencendo')}
-					filtrarEmAberto={() => setFiltroAtivo('Em Aberto')}
-					filtrarFinalizados={() => setFiltroAtivo('finalizado')}
+					filtrarEmAberto={() => setFiltroAtivo('pendentes')}
+					filtrarFinalizados={() => fetchHistorico()}
 				/>
 
 				<ListaProdutos

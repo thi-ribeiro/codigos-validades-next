@@ -32,19 +32,17 @@ export default function UserLoginMenuFunctions() {
 				<div className='userLoginTokenDiv'>
 					<div className='userLoginFunctions'>
 						{/* Validades: Só aparece para Admin (1) ou Operador (2) */}
-						{!isLoading &&
-							user &&
-							(Number(user.role) === 1 || Number(user.role) === 2) && (
-								<div className='nav-icon-wrapper'>
-									<IoIosTime
-										size={24}
-										onClick={() => navigate('/validades')}
-										className={
-											pathname.startsWith('/validades') ? 'active-icon' : ''
-										}
-									/>
-								</div>
-							)}
+						{!isLoading && user && (
+							<div className='nav-icon-wrapper'>
+								<IoIosTime
+									size={24}
+									onClick={() => navigate('/validades')}
+									className={
+										pathname.startsWith('/validades') ? 'active-icon' : ''
+									}
+								/>
+							</div>
+						)}
 
 						{/* Ícone de Perfil/Login Dinâmico */}
 						<div className='nav-icon-wrapper'>
