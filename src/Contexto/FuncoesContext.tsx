@@ -10,8 +10,6 @@ import React, {
 } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './Toast';
-// @ts-ignore
-// import 'balloon-css';
 
 interface FuncoesProviderProps {
 	children: ReactNode;
@@ -19,7 +17,7 @@ interface FuncoesProviderProps {
 
 interface ValuesInterface {
 	deletarProduto: (id: number, callbackSucesso: () => void) => Promise<void>; // Função para deletar um produto
-	fetchProds: (e?: React.FormEvent, prodName?: string) => Promise<void>; // Função para buscar produtos
+	fetchProds: (e?: React.SubmitEvent, prodName?: string) => Promise<void>; // Função para buscar produtos
 	produto: Record<string, BuscaCodigosProdutos[]>;
 	loading: boolean;
 	buscar: string;
@@ -29,11 +27,11 @@ interface ValuesInterface {
 	formatarDataParaMySQL: (data: Date) => string;
 	limitaTexto: (texto: string, quantidade?: number) => React.JSX.Element;
 	cadastroCodigo: (
-		e: React.FormEvent<HTMLFormElement>,
+		e: React.SubmitEvent<HTMLFormElement>,
 		callbackSucesso: () => void,
 	) => Promise<void>;
 	editarCodigo: (
-		e: React.FormEvent<HTMLFormElement>,
+		e: React.SubmitEvent<HTMLFormElement>,
 		callbackSucesso: () => void,
 	) => Promise<void>;
 	leftZeros: (num: string | number) => JSX.Element;
@@ -68,11 +66,8 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		Record<string, number>
 	>({});
 	const [loading, setLoading] = useState(false);
-	//const [isModalAddProdutoOpen, setisModalAddProdutoOpen] = useState(false);
 	const [modalState, setModalState] = useState(false);
 	const [TotalRegistros, setTotalRegistros] = useState(0);
-
-	//const router = useRouter();
 
 	const checkCampos = (
 		nomeProduto: string,
@@ -137,7 +132,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 		}
 	};
 	const cadastroCodigo = async (
-		e: React.FormEvent<HTMLFormElement>,
+		e: React.SubmitEvent<HTMLFormElement>,
 		callbackSucesso: () => void,
 	) => {
 		//setLoading(true);
@@ -247,7 +242,7 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 	};
 
 	const editarCodigo = async (
-		e: React.FormEvent<HTMLFormElement>,
+		e: React.SubmitEvent<HTMLFormElement>,
 		callbackSucesso: () => void,
 	) => {
 		e.preventDefault();
@@ -290,13 +285,6 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 
 			const responseData = await response.json();
 
-			// if (responseData?.auth === false) {
-			// 	//setLoading(false); // Desativa o loading antes de sair
-			// 	logout();
-			// 	return;
-			// }
-			//CORRIGIR NOVO METODO USUANDO SERVER DO NEXTJS
-
 			if (responseData.status === 'info') {
 				addToast(responseData.message, responseData.status);
 				//setLoading(false);
@@ -313,11 +301,6 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 	};
 
 	const deletarProduto = async (id: number, callbackSucesso: () => void) => {
-		// const confirma = confirm(`Tem certeza que deseja deletar o ${id}?`);
-
-		// if (!confirma) {
-		// 	return;
-		// } else {
 		try {
 			const response = await fetch(`${acesso_fetch}/remover`, {
 				//method: 'DELETE', //FIX PARA UTILIZAR NO INFINITY FREE
@@ -330,12 +313,6 @@ export function FuncoesProvider({ children }: FuncoesProviderProps) {
 			});
 
 			const resposta = await response.json();
-
-			// if (resposta?.auth === false) {
-			// 	setLoading(false); // Desativa o loading antes de sair
-			// 	logout();
-			// 	return;
-			// }
 
 			if (!response.ok) {
 				addToast(resposta.message, resposta.status);

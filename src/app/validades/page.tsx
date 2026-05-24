@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-//import { FuncoesProvider } from '../../Contexto/FuncoesContext';
 import Modal from '@/Componentes/Modal/Modal';
-//import { useAuth } from '@/Contexto/AuthContext';
 import { useValidades } from '@/Contexto/ValidadesContext';
 import { ValidadeProduto } from '@/Contexto/ValidadesContext';
 import AddButton from '@/Componentes/AddButton/AddButton';
@@ -13,36 +11,13 @@ import ModalCeres from '@/Componentes/ModalCeres/ModalCeres';
 import useModalCeres from '@/Componentes/ModalCeres/useModalCeres';
 import ListaProdutos from '@/Componentes/ListaProdutosMemo/ListaProdutos';
 import useModal from '@/Componentes/Modal/useModal';
-//import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
 
 type Props = {};
 
-// export default function page() {
-// 	return (
-// 		<FuncoesProvider>
-// 			<ValidadesProvider>
-// 				<CarregarPagina />
-// 			</ValidadesProvider>
-// 		</FuncoesProvider>
-// 	);
-// }
-
-export default function page() {
-	// Agora, como o layout já proveu os contextos,
-	// o CarregarPagina (e o AddButton dentro dele)
-	// já encontrarão os dados magicamente.
-	return <CarregarPagina />;
-}
-
-export interface scanCode {
-	fetchScanDb: (codigo: number | string) => void;
-}
-
 const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
-function CarregarPagina({}: Props) {
+export default function page({}: Props) {
 	const {
-		//fetchValidades,
 		fetchHistorico,
 		fetchAddValidade,
 		fetchEditarValidade,
@@ -51,12 +26,8 @@ function CarregarPagina({}: Props) {
 		fetchAddCodeEanPlu,
 		loading,
 		produtosExibidos,
-		//isLoading,
 		setFiltroAtivo,
-		//mutate,
 	} = useValidades();
-
-	// const { user } = useAuth();
 
 	const {
 		isOpen: isOpenModalScanner,
@@ -136,61 +107,6 @@ function CarregarPagina({}: Props) {
 			setFormEditData(INITIAL_STATE);
 		}
 	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
-
-	// useEffect(() => {
-	// 	const codigo = FormEditData?.codigoProduto;
-
-	// 	if (
-	// 		codigo &&
-	// 		(codigo.length === 13 || codigo.length === 5) &&
-	// 		!FormEditData?.idRelacionado
-	// 	) {
-	// 		const timer = setTimeout(() => {
-	// 			fetchScanDb(codigo);
-	// 		}, 600); // Aumentei um tiquinho para dar fôlego ao banco
-
-	// 		return () => clearTimeout(timer);
-	// 	}
-	// }, [FormEditData?.codigoProduto, FormEditData?.idRelacionado]);
-
-	// const fetchScanDb = async (codigo: string) => {
-	// 	const codigoLimpo = String(codigo || '').trim();
-
-	// 	// 1. Trava simples de comprimento (evita lixo no banco)
-	// 	if (codigoLimpo.length < 5) return;
-
-	// 	try {
-	// 		setLoadingScanner(true);
-
-	// 		const response = await fetch(
-	// 			`${acesso_validades}/procurar?codigo=${encodeURIComponent(codigoLimpo)}`,
-	// 		);
-
-	// 		const data = await response.json();
-
-	// 		if (data.status === 'success') {
-	// 			//console.log(data);
-	// 			setFormEditData((prev) => ({
-	// 				...prev,
-	// 				produto: data.produto.descricao_produto,
-	// 				marca_produto: data.produto.marca_produto,
-	// 				codigoInterno: data.produto.plu_produto,
-	// 				codigoProduto: data.produto.ean_produto,
-	// 				idRelacionado: data.produto.id,
-	// 			}));
-	// 		} else if (data.status === 'not_found') {
-	// 			setFormEditData((prev) => ({
-	// 				...prev,
-	// 				codigoProduto: codigoLimpo,
-	// 				idRelacionado: null, // Novo cadastro
-	// 			}));
-	// 		}
-	// 	} catch (error) {
-	// 		console.error('Erro na busca:', error);
-	// 	} finally {
-	// 		setLoadingScanner(false);
-	// 	}
-	// };
 
 	const fetchScanDb = async (codigo: string) => {
 		let codigoLimpo = String(codigo || '').trim();

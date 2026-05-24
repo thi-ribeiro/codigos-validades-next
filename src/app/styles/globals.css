@@ -649,25 +649,53 @@ button:active {
   .buttonAdd:hover {
     /* opacity: 1; */
     /* background-color: #218838; Um verde um pouco mais escuro */
-    transform: scale(1.1); /* Dá um leve aumento, fica bem moderno */
+    /* transform: scale(1.1); Dá um leve aumento, fica bem moderno */
   }
 
   /* Quando você clica (segura o clique) */
   .buttonAdd:active {
-    transform: scale(0.95); /* Efeito de "afundar" o botão ao clicar */
+    transform: scale(0.7); /* Efeito de "afundar" o botão ao clicar */
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
-  .buttonAddCodeBar {
+  .buttonAddCodeBar,
+  .buttonAddUser {
     background-color: #007bff;
-    /* width: 35px;
-    height: 35px; */
   }
 
-  .buttonAddUser {
-    /* width: 30px;
-    height: 30px; */
-    background-color: #007bff;
+  /* O wrapper precisa ser flexível e alinhar ao centro */
+  .container-pdf-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center; /* ALINHA O ÍCONE E AS BOLINHAS NO EIXO VERTICAL */
+    justify-content: flex-end; /* Garante que tudo esteja ancorado à direita */
+  }
+
+  .menu-bolinhas-esquerda {
+    position: absolute;
+    right: 120%;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center; /* ALINHA AS BOLINHAS VERTICALMENTE ENTRE SI */
+    z-index: 9999;
+  }
+
+  .bolinha {
+    padding: 0 16px; /* Removi o padding vertical daqui */
+    height: 32px; /* Altura fixa para manter o alinhamento */
+    display: flex;
+    align-items: center; /* ISSO CENTRALIZA O TEXTO VERTICALMENTE DENTRO DA BOLINHA */
+    justify-content: center;
+    background: #007bff;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px; /* Tamanho ajustado */
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
   }
 }
 
@@ -1329,39 +1357,4 @@ button:active {
   gap: 15px;
   align-items: center;
   color: #555;
-}
-/* O wrapper precisa ser flexível e alinhar ao centro */
-.container-pdf-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center; /* ALINHA O ÍCONE E AS BOLINHAS NO EIXO VERTICAL */
-  justify-content: flex-end; /* Garante que tudo esteja ancorado à direita */
-}
-
-.menu-bolinhas-esquerda {
-  position: absolute;
-  right: 120%;
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  align-items: center; /* ALINHA AS BOLINHAS VERTICALMENTE ENTRE SI */
-  z-index: 9999;
-}
-
-.bolinha {
-  padding: 0 16px; /* Removi o padding vertical daqui */
-  height: 40px; /* Altura fixa para manter o alinhamento */
-  display: flex;
-  align-items: center; /* ISSO CENTRALIZA O TEXTO VERTICALMENTE DENTRO DA BOLINHA */
-  justify-content: center;
-
-  background: #2563eb;
-  color: white;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 13px; /* Tamanho ajustado */
-  font-weight: 500;
-  white-space: nowrap;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
 }

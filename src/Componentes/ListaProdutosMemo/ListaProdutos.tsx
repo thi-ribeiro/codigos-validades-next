@@ -2,7 +2,6 @@ import { useValidades, ValidadeProduto } from '@/Contexto/ValidadesContext';
 import React, { memo } from 'react';
 import { IoReturnUpBack } from 'react-icons/io5';
 import LoadingLogo from '../LoadingLogo/LoadingLogo';
-//import BotaoGerarPdf from '../GerarPdf/gerarPdfValidadesMes';
 
 export interface produtosInterface {
 	produtosExibidos: Record<string, ValidadeProduto[]>;
@@ -26,7 +25,6 @@ const ListaProdutos = ({
 		listaHistorico,
 		nomeProduto,
 		dataFimIntervalo,
-		//validadesSeparadas,
 	} = useValidades();
 
 	const selecionarEEditar = (idSelecionado: number) => {

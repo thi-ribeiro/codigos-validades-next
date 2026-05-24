@@ -74,10 +74,10 @@ export interface ValuesInterface {
 	produtosExibidos: Record<string, ValidadeProduto[]>;
 	setFiltroAtivo: (filtro: string) => void;
 	marcasProdutos: Record<string, MarcaProdutoInterface[]>;
-	validadesSeparadas: {
-		pendentes: Record<string, ValidadeProduto[]>;
-		finalizados: Record<string, ValidadeProduto[]>;
-	} | null; // Começa como null enquanto o fetch não termina
+	// validadesSeparadas: {
+	// 	pendentes: Record<string, ValidadeProduto[]>;
+	// 	finalizados: Record<string, ValidadeProduto[]>;
+	// } | null; // Começa como null enquanto o fetch não termina
 	loading: boolean;
 	loadingButtons: boolean;
 	dataFimIntervalo: string | 'Indefinido';
@@ -119,36 +119,16 @@ export interface MarcaProdutoInterface {
 	marca_produto: string;
 }
 
-interface ResponseData {
-	auth?: boolean; // 'auth' é opcional aqui, pois pode não vir em todas as respostas
-	status?: string; // 'status' também é opcional, caso venha para mensagens de info/erro
-	message?: string; // 'message' também é opcional
-	marcas?: any[]; // Melhor ainda: string[]
-	dados?: any[]; // Melhor ainda: ValidadeProduto[]
-	dataFimIntervalo?: Date;
-}
-
-interface EstoqueOrganizado {
-	finalizados?: Record<string, ValidadeProduto[]>;
-	pendentes?: Record<string, ValidadeProduto[]>;
-	[key: string]: any; //pra evitar erro ... a chave vai ser sempre uma string...
-}
-
 const acesso_validades = process.env.NEXT_PUBLIC_VALIDADES_API;
 
 const ValidadesContexto = createContext<ValuesInterface | undefined>(undefined);
 
 export default function ValidadesProvider({ children }: ProviderProps) {
-	// const [produtosValidades, setProdutosValidades] = useState<
-	// 	Record<string, ValidadeProduto[]>
-	// >({});
-
 	const [dataFimIntervalo, setdataFimIntervalo] = useState<string>('');
 	const [marcasProdutos, setmarcasProdutos] = useState<
 		Record<string, MarcaProdutoInterface[]>
 	>({});
-	// const [validadesSeparadas, setValidadesSeparadas] =
-	// 	useState<EstoqueOrganizado>({ finalizados: {}, pendentes: {} });
+
 	const [filtroAtivo, setFiltroAtivo] = useState('todos'); // Pode ser 'todos' ou 'vencendo'
 	const [nomeProduto, setNomeProduto] = useState<string>('');
 
@@ -162,17 +142,17 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 	const { user, logout } = useAuth();
 	const { addToast } = useToast();
 
-	const validadesSeparadas = useMemo(() => {
-		const listaOrdenada = _.sortBy(listaBruta, ['validade']);
-		const [finalizados, pendentes] = _.partition(listaOrdenada, {
-			finalizado: 1,
-		});
+	// const validadesSeparadas = useMemo(() => {
+	// 	const listaOrdenada = _.sortBy(listaBruta, ['validade']);
+	// 	const [finalizados, pendentes] = _.partition(listaOrdenada, {
+	// 		finalizado: 1,
+	// 	});
 
-		return {
-			finalizados: _.groupBy(finalizados, 'validadeDiaMes'),
-			pendentes: _.groupBy(pendentes, 'validadeDiaMes'),
-		};
-	}, [listaBruta]);
+	// 	return {
+	// 		finalizados: _.groupBy(finalizados, 'validadeDiaMes'),
+	// 		pendentes: _.groupBy(pendentes, 'validadeDiaMes'),
+	// 	};
+	// }, [listaBruta]);
 
 	const fetcher = (url: string) =>
 		fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -191,10 +171,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		revalidateIfStale: true, // Garante que carrega se o SWR estiver desatualizado
 		dedupingInterval: 10000, // Se houver 2 chamadas em 10s, ele só faz a primeira
 	});
-
-	const hoje = new Date();
-	const dataFim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0);
-	const dataFimIntervaloFormatada = dataFim.toISOString();
 
 	useEffect(() => {
 		// 1. Verificamos se o SWR já trouxe os dados e se o formato está correto
@@ -277,54 +253,6 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 
 		return novoObjetoFiltrado;
 	}, [listaBruta, listaHistorico, filtroAtivo, nomeProduto]);
-
-	// const dadosParaExibir = useMemo(() => {
-	// 	// 1. Escolhe a lista bruta correta dependendo do botão ativo
-	// 	const produtosAlvo =
-	// 		filtroAtivo === 'finalizado' ? listaHistorico : listaBruta;
-
-	// 	if (!produtosAlvo || produtosAlvo.length === 0) {
-	// 		return {};
-	// 	}
-
-	// 	const hoje = startOfDay(new Date());
-	// 	const limite5Dias = new Date();
-	// 	limite5Dias.setDate(hoje.getDate() + 5);
-
-	// 	const novoObjetoFiltrado: Record<string, ValidadeProduto[]> = {};
-
-	// 	// 2. Passa o pente fino e agrupa por data ao mesmo tempo!
-	// 	produtosAlvo.forEach((item) => {
-	// 		// Filtro 1: Nome/Código
-	// 		const matchesNome = nomeProduto
-	// 			? item.produto?.toLowerCase().includes(nomeProduto.toLowerCase()) ||
-	// 				String(item.codigoInterno).includes(nomeProduto.trim()) ||
-	// 				String(item.codigoProduto).includes(nomeProduto.trim())
-	// 			: true;
-
-	// 		// Filtro 2: Vencendo
-	// 		let matchesFiltro = matchesNome;
-	// 		if (filtroAtivo === 'vencendo') {
-	// 			if (!item.validade) return;
-	// 			const dataVal = parseISO(item.validade.split('T')[0]);
-	// 			const estaPertoDeVencer = dataVal <= limite5Dias;
-	// 			matchesFiltro = estaPertoDeVencer && matchesNome;
-	// 		}
-
-	// 		// 3. Se passou nos filtros, agrupa na chave da data correspondente
-	// 		if (matchesFiltro) {
-	// 			// Use a chave de data que você usa no layout (ex: item.validadeDiaMes ou item.validade)
-	// 			const dataChave = item.validadeDiaMes || item.validade.split('T')[0];
-
-	// 			if (!novoObjetoFiltrado[dataChave]) {
-	// 				novoObjetoFiltrado[dataChave] = [];
-	// 			}
-	// 			novoObjetoFiltrado[dataChave].push(item);
-	// 		}
-	// 	});
-
-	// 	return novoObjetoFiltrado;
-	// }, [listaBruta, listaHistorico, filtroAtivo, nomeProduto]);
 
 	const formatarDataParaMySQL = (data: Date): string => {
 		const pad = (num: number) => String(num).padStart(2, '0');
@@ -692,9 +620,7 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		ValidadeFinalizada,
 		ProdutoEmRebaixa,
 		fetchAddCodeEanPlu,
-		//produtosValidades,
 		marcasProdutos,
-		validadesSeparadas,
 		dataFimIntervalo,
 		loading:
 			historicoLoading ||
@@ -705,8 +631,8 @@ export default function ValidadesProvider({ children }: ProviderProps) {
 		nomeProduto,
 		setNomeProduto,
 		loadingButtons,
-		listaBruta, // <--- Exportar aqui swr
-		isValidating, // <--- Exportar aqui swr
+		listaBruta,
+		isValidating,
 		obterStatusClasse,
 		mutate,
 		filtroAtivo,
