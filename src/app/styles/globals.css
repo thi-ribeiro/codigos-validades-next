@@ -1255,11 +1255,19 @@ button:active {
 }
 
 .nav-icon-wrapper {
-  /* padding: 8px; */
-  cursor: pointer;
   display: flex;
-  align-items: center;
-  border-radius: 8px;
+  flex-direction: column; /* Coloca o texto abaixo do ícone */
+  align-items: center; /* Centraliza tudo */
+  justify-content: center;
+  gap: 2px; /* Espaçamento bem pequeno entre ícone e texto */
+  cursor: pointer;
+  padding: 4px;
+  font-size: 10px; /* Fonte pequena para manter o design clean */
+  color: #333;
+}
+
+.active-icon {
+  color: #007bff; /* Cor que destaca o item ativo */
 }
 
 .nav-icon-wrapper:active {

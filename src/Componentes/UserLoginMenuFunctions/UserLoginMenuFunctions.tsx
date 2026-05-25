@@ -27,41 +27,54 @@ export default function UserLoginMenuFunctions() {
 						onClick={() => navigate('/')}
 						className={pathname === '/' ? 'active-icon' : ''}
 					/>
+					<span>Home</span>
 				</div>
 
 				<div className='userLoginTokenDiv'>
 					<div className='userLoginFunctions'>
-						{/* Validades: Só aparece para Admin (1) ou Operador (2) */}
-						{!isLoading && user && (
-							<div className='nav-icon-wrapper'>
-								<IoIosTime
-									size={24}
-									onClick={() => navigate('/validades')}
-									className={
-										pathname.startsWith('/validades') ? 'active-icon' : ''
-									}
-								/>
-							</div>
-						)}
+						{/* Validades */}
 
-						{/* Ícone de Perfil/Login Dinâmico */}
+						<div
+							className='nav-icon-wrapper'
+							onClick={() => navigate('/validades')}>
+							<IoIosTime
+								size={24}
+								className={
+									pathname.startsWith('/validades') ? 'active-icon' : ''
+								}
+							/>
+							<span>Validades</span>
+						</div>
+
+						{/* Ícone de Perfil/Logout */}
 						<div className='nav-icon-wrapper'>
-							{user ? (
-								// Se estiver logado, o ícone pode deslogar ou ir para perfil
-								<IoMdLogOut
-									size={24}
-									onClick={() => {
-										if (confirm('Efetuar logout??')) logout();
+							{user || isLoading ? (
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'column',
+										alignItems: 'center',
 									}}
-									title='Sair'
-								/>
+									onClick={async () => {
+										if (confirm('Efetuar logout??')) await logout();
+									}}>
+									<IoMdLogOut size={24} />
+									<span>Sair</span>
+								</div>
 							) : (
-								// Se deslogado, leva para o login
-								<IoMdPerson
-									size={24}
-									onClick={() => navigate('/login')}
-									className={pathname === '/login' ? 'active-icon' : ''}
-								/>
+								<div
+									style={{
+										display: 'flex',
+										flexDirection: 'column',
+										alignItems: 'center',
+									}}
+									onClick={() => navigate('/login')}>
+									<IoMdPerson
+										size={24}
+										className={pathname === '/login' ? 'active-icon' : ''}
+									/>
+									<span>Entrar</span>
+								</div>
 							)}
 						</div>
 					</div>
