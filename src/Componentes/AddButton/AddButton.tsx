@@ -189,28 +189,27 @@ export default function AddButton({
 								onClick={openModalAddEanPlu}>
 								<IoMdBarcode size={20} />
 							</div>
+
+							<div className='container-pdf-wrapper'>
+								<div
+									className='buttonAdd botoes-adicionais buttonAddUser'
+									onClick={() => setMenuPdfAberto(!menuPdfAberto)}>
+									<IoDocumentTextOutline size={20} />
+								</div>
+
+								{menuPdfAberto && (
+									<div className='menu-bolinhas-esquerda'>
+										<div className='bolinha' onClick={() => handleGerarPdf(0)}>
+											Mês atual
+										</div>
+										<div className='bolinha' onClick={() => handleGerarPdf(1)}>
+											Mês seguinte
+										</div>
+									</div>
+								)}
+							</div>
 						</>
 					)}
-
-					{/* --- BOTÃO NOVO: Abre e fecha apenas as opções de PDF --- */}
-					<div className='container-pdf-wrapper'>
-						<div
-							className='buttonAdd botoes-adicionais buttonAddUser'
-							onClick={() => setMenuPdfAberto(!menuPdfAberto)}>
-							<IoDocumentTextOutline size={20} />
-						</div>
-
-						{menuPdfAberto && (
-							<div className='menu-bolinhas-esquerda'>
-								<div className='bolinha' onClick={() => handleGerarPdf(0)}>
-									Mês atual
-								</div>
-								<div className='bolinha' onClick={() => handleGerarPdf(1)}>
-									Mês seguinte
-								</div>
-							</div>
-						)}
-					</div>
 				</>
 			)}
 
