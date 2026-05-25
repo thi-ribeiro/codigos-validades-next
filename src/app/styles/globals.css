@@ -623,6 +623,11 @@ button:active {
   right: 20px;
   z-index: 1001;
 
+  * {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
+
   .buttonAdd {
     display: flex;
     align-items: center;
@@ -636,10 +641,11 @@ button:active {
     text-align: center;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    transition: transform 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
 
     &:active {
-      transform: scale(0.7);
+      transform: scale(0.9);
+      opacity: 0.8;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
     &:focus {
@@ -664,6 +670,7 @@ button:active {
     display: flex;
     align-items: center; /* ALINHA O ÍCONE E AS BOLINHAS NO EIXO VERTICAL */
     justify-content: flex-end; /* Garante que tudo esteja ancorado à direita */
+    user-select: none;
 
     .menu-bolinhas-esquerda {
       position: absolute;
@@ -1292,6 +1299,7 @@ button:active {
   align-items: center;
   margin: 10px 0;
   padding: 0 10px;
+  user-select: none;
 }
 
 .marcaDiv h2,

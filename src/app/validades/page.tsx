@@ -36,9 +36,9 @@ export default function page({}: Props) {
 	} = useModalCeres();
 
 	const {
-		isOpen: isOpenAdicionar,
-		openModal: openModalAdicionar,
-		closeModal: closeModalAdicionar,
+		isOpen: isOpenAdicionarUsuario,
+		openModal: openModalAdicionarUsuario,
+		closeModal: closeModalAdicionarUsuario,
 	} = useModal();
 
 	const {
@@ -64,7 +64,7 @@ export default function page({}: Props) {
 		setFormEditData(INITIAL_STATE);
 
 		// 2. O "mordomo" passando e fechando todas as portas
-		closeModalAdicionar();
+		closeModalAdicionarUsuario();
 		closeModalEditar();
 		closeModalAddCodeBar();
 		closeModalAddEanPlu();
@@ -103,10 +103,10 @@ export default function page({}: Props) {
 
 	useEffect(() => {
 		// Se NENHUM dos modais estiver aberto, significa que um deles acabou de fechar
-		if (!isOpenAdicionar && !isOpenEditar && !isOpenModalAddCodeBar) {
+		if (!isOpenAdicionarUsuario && !isOpenEditar && !isOpenModalAddCodeBar) {
 			setFormEditData(INITIAL_STATE);
 		}
-	}, [isOpenAdicionar, isOpenEditar, isOpenModalAddCodeBar]);
+	}, [isOpenAdicionarUsuario, isOpenEditar, isOpenModalAddCodeBar]);
 
 	const fetchScanDb = async (codigo: string) => {
 		let codigoLimpo = String(codigo || '').trim();
@@ -172,11 +172,9 @@ export default function page({}: Props) {
 			</React.Fragment>
 
 			<Modal
-				isOpen={isOpenAdicionar}
+				isOpen={isOpenAdicionarUsuario}
 				onClose={handleFecharGeral}
-				loadingScanner={loadingScanner}
 				onSubmit={(e) => fetchAddValidade(e, handleFecharGeral)}
-				onScan={openModalScanner}
 				tipoModal='usuario'
 				loadingButtons={loadingButtons}
 			/>
@@ -230,7 +228,7 @@ export default function page({}: Props) {
 			{/* BOTOES DE ADICIONAR */}
 			<AddButton
 				openModalAddBarCode={openModalAddCodeBar}
-				openModalAddUser={openModalAdicionar}
+				openModalAddUser={openModalAdicionarUsuario}
 				openModalAddEanPlu={openModalAddEanPlu}
 				addUser
 				addBarCode={true}

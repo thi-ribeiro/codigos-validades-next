@@ -91,7 +91,7 @@ export default function AddButton({
 		doc.setDrawColor(220, 220, 220);
 		doc.line(14, 32, 196, 32);
 
-		const colunas = ['QR Code - Plu', 'Produto', 'Vencimento'];
+		const colunas = ['QR Code - Plu', 'Produto', 'Marca', 'Vencimento'];
 
 		// Pré-geração dos QR Codes em Base64
 		const listaQrCodesBase64: string[] = [];
@@ -107,6 +107,7 @@ export default function AddButton({
 		const linhas = produtosDoMes.map((item) => [
 			'',
 			item.produto,
+			item.marca_produto,
 			item.validadeDiaMes,
 		]);
 
@@ -128,8 +129,9 @@ export default function AddButton({
 					valign: 'middle', //  'middle' centraliza o QR Code verticalmente na célula
 					minCellHeight: 15,
 				},
-				1: { cellWidth: 'auto', halign: 'left' },
-				2: { cellWidth: 30, halign: 'center' },
+				1: { cellWidth: 'auto', valign: 'middle' },
+				2: { cellWidth: 'auto', halign: 'left' },
+				3: { cellWidth: 30, halign: 'center' },
 			},
 
 			didDrawCell: (data) => {
@@ -163,7 +165,7 @@ export default function AddButton({
 		);
 	};
 	const handleGerarPdf = async (offset: number) => {
-		console.log('Gerando PDF com offset:', offset);
+		//console.log('Gerando PDF com offset:', offset);
 		await gerarPdfValidadesMes(offset);
 		setMenuPdfAberto(false); // Fecha o menu após clicar
 	};

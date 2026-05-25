@@ -7,7 +7,7 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         // Aqui pegamos os nomes exatamente como você definiu no loginData do frontend
-        const { usuario, senha, empresa } = body;
+        const { usuario, senha, empresa, role } = body;
 
         // 1. Validação (mesma que você fez no front, mas garantindo no back)
         if (!usuario || !senha) {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
         // 4. Inserção no banco da Aiven
         const query = "INSERT INTO usuarios (nome_usuario, senha_usuario, role_usuario, empresa_usuario) VALUES (?, ?, ?, ?)";
-        await pool.execute(query, [usuario, senhaCripto, 2, empresa]);
+        await pool.execute(query, [usuario, senhaCripto, role, empresa]);
 
         return NextResponse.json(
             { status: 'success', message: 'Usuário cadastrado com sucesso!' },

@@ -31,12 +31,12 @@ interface SimpleModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	dadosIniciais?: ValidadeProduto | null;
-	onScan: () => void;
+	onScan?: () => void;
 	fetchScan?: (code: number) => void;
 	tipoModal: 'novo' | 'editar' | 'eanplu' | 'add_codigo' | 'usuario';
-	onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+	onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
 	onDelete?: (id: number) => void;
-	loadingScanner: boolean;
+	loadingScanner?: boolean;
 	loadingButtons: boolean;
 	usuario?: Record<string, string>;
 }
@@ -49,7 +49,7 @@ export default function Modal({
 	onDelete,
 	onScan,
 	onSubmit,
-	loadingScanner,
+	loadingScanner = true,
 	loadingButtons,
 	tipoModal,
 }: SimpleModalProps) {
@@ -111,43 +111,44 @@ export default function Modal({
 	const isEdit = tipoModal === 'editar';
 	const isUsuario = tipoModal === 'usuario';
 
-	const fetchAddusuario = (e: React.FormEvent<HTMLFormElement>) => {
+	const fetchAddusuario = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget);
-		const usuarioNome = formData.get('usuarioNome') as string;
-		const usuarioSenha = formData.get('usuarioSenha') as string;
-		const usuarioEmpresa = formData.get('usuarioEmpresa') as string;
 
+		// Extração direta do objeto
 		const loginData = {
-			usuario: usuarioNome,
-			senha: usuarioSenha,
-			empresa: usuarioEmpresa,
-			cadastro: true, // Indicador para o backend que é um login
+			usuario: formData.get('usuarioNome'),
+			senha: formData.get('usuarioSenha'),
+			empresa: formData.get('usuarioEmpresa'),
+			role: formData.get('usuarioRole'),
+			cadastro: true,
 		};
 
-		if (!usuarioNome || !usuarioSenha) {
-			console.log('Por favor, preencha todos os campos!');
+		// Validação robusta (verificando campos obrigatórios de forma mais limpa)
+		if (!loginData.usuario || !loginData.senha) {
+			addToast('Por favor, preencha os campos obrigatórios!', 'info');
 			return;
 		}
 
-		fetch('/api/usuarios', {
-			// O Next.js já sabe que é no seu próprio servidor
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(loginData),
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				addToast(data.message, data.status);
-			})
-			.catch((error) => {
-				console.error('Error:', error);
+		try {
+			const response = await fetch('/api/usuarios', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(loginData),
 			});
 
-		onClose();
+			const data = await response.json();
+
+			// Trata o toast baseado no sucesso da resposta
+			addToast(data.message, response.ok ? 'success' : 'error');
+
+			if (response.ok) {
+				onClose(); // Só fecha se o cadastro deu certo
+			}
+		} catch (error) {
+			addToast('Erro ao conectar ao servidor', 'error');
+		}
 	};
 
 	const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -174,24 +175,30 @@ export default function Modal({
 						className='formularioAdicionarValidade'
 						onSubmit={fetchAddusuario}
 						method='POST'>
-						<h2>Cadastrar Usuário</h2>
+						<h2>{titulos[tipoModal]}</h2>
 						<input
 							name='usuarioNome'
 							type='text'
 							placeholder='Usuário'
-							required
+							//required
 						/>
 						<input
 							name='usuarioSenha'
 							type='password'
 							placeholder='Senha'
-							required
+							//required
 						/>
 						<input
 							name='usuarioEmpresa'
 							type='text'
 							placeholder='Marca / Empresa'
 						/>
+
+						<select name='usuarioRole' id='usuarioRole'>
+							<option value='2'>Usuário Padrão</option>
+							<option value='3'>Sub Admin</option>
+						</select>
+
 						<div className='buttonSubmCanc'>
 							<input
 								type='submit'
@@ -234,7 +241,10 @@ export default function Modal({
 							/>
 							{isEdit ? null : (
 								<div className='nav-icon-scanner'>
-									<IoBarcodeOutline size={30} onClick={() => onScan()} />
+									<IoBarcodeOutline
+										size={30}
+										onClick={() => !loadingScanner && onScan?.()}
+									/>
 								</div>
 							)}
 						</div>
