@@ -81,11 +81,15 @@ export default function AddButton({
 		// Cabeçalho do documento
 		doc.setFont('helvetica', 'bold');
 		doc.setFontSize(16);
-		doc.text(`Ceres App - Relatório de Validades`, 14, 15);
+		doc.text(`Ceres I App - Relatório de Validades`, 14, 15);
 
 		doc.setFont('helvetica', 'normal');
 		doc.setFontSize(11);
-		doc.text(`Mês de Referência: ${nomeMes}`, 14, 22);
+		doc.text(
+			`Mês de Referência: ${nomeMes} - ${produtosDoMes.length} validades encontradas.`,
+			14,
+			22,
+		);
 		doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
 
 		doc.setDrawColor(220, 220, 220);
@@ -125,9 +129,8 @@ export default function AddButton({
 			columnStyles: {
 				0: {
 					cellWidth: 30,
-					halign: 'center', // 'center' centraliza o QR Code horizontalmente na célula
 					valign: 'middle', //  'middle' centraliza o QR Code verticalmente na célula
-					minCellHeight: 15,
+					minCellHeight: 10,
 				},
 				1: { cellWidth: 'auto', valign: 'middle' },
 				2: { cellWidth: 'auto', halign: 'left' },
