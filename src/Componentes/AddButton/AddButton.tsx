@@ -1,7 +1,7 @@
 import { useAuth } from '@/Contexto/AuthContext';
 import { useValidades } from '@/Contexto/ValidadesContext';
 import jsPDF from 'jspdf';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { IoMdBarcode, IoMdPersonAdd } from 'react-icons/io';
 import { IoAdd, IoDocumentTextOutline, IoTimerOutline } from 'react-icons/io5';
 import QRCode from 'qrcode';
@@ -32,6 +32,8 @@ export default function AddButton({
 	// Estado apenas para controlar o menu de PDF
 	const [menuPdfAberto, setMenuPdfAberto] = useState(false);
 	const { listaBruta } = useValidades();
+
+	const menuPdfRef = useRef<HTMLDivElement>(null);
 
 	const gerarPdfValidadesMes = async (mesOffset = 0) => {
 		if (!listaBruta || listaBruta.length === 0) {
@@ -173,6 +175,29 @@ export default function AddButton({
 		setMenuPdfAberto(false); // Fecha o menu após clicar
 	};
 
+	useEffect(() => {
+		// Só adiciona o listener se o menu estiver aberto
+		if (!menuPdfAberto) return;
+
+		const listener = (event: MouseEvent | TouchEvent) => {
+			if (
+				!menuPdfRef.current ||
+				menuPdfRef.current.contains(event.target as Node)
+			) {
+				return;
+			}
+			setMenuPdfAberto(false);
+		};
+
+		document.addEventListener('mousedown', listener);
+		document.addEventListener('touchstart', listener);
+
+		return () => {
+			document.removeEventListener('mousedown', listener);
+			document.removeEventListener('touchstart', listener);
+		};
+	}, [menuPdfAberto, menuPdfRef]); // Agora escuta também quando o estado muda
+
 	return (
 		<div className='buttonAddContainer'>
 			{[1, 3].includes(Number(user?.role)) && (
@@ -200,7 +225,7 @@ export default function AddButton({
 								</div>
 
 								{menuPdfAberto && (
-									<div className='menu-bolinhas-esquerda'>
+									<div className='menu-bolinhas-esquerda' ref={menuPdfRef}>
 										<div className='bolinha' onClick={() => handleGerarPdf(0)}>
 											Mês atual
 										</div>
