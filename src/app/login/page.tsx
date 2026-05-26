@@ -41,16 +41,18 @@ export default function page({}: Props) {
 			const data = await response.json();
 
 			if (data.status === 'success') {
-				login(data.user);
-				addToast(data.message || 'Logado com sucesso!', 'success');
-
-				// Agora usamos a variável estável, que nunca fica null!
-				formulario.reset();
+				await login(data.user);
+				addToast(data.message, 'success');
 
 				router.push('/validades');
+
+				// Agora usamos a variável estável, que nunca fica null!
+				//formulario.reset();
+
+				window.location.href = '/validades';
 			} else {
 				logout();
-				addToast(data.message || 'Usuário ou senha incorretos.', 'error');
+				addToast(data.message, 'error');
 			}
 		} catch (error) {
 			logout();

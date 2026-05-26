@@ -172,7 +172,6 @@ export default function AddButton({
 
 	return (
 		<div className='buttonAddContainer'>
-			{/* --- SEU LAYOUT ANTIGO MANTIDO --- */}
 			{[1, 3].includes(Number(user?.role)) && (
 				<>
 					{addUser && [1].includes(Number(user?.role)) && (
