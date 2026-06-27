@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# Pastas a ignorar do thiago
+src/Contexto/older/
+src/app/api/older/
+
 # next.js
 /.next/
 /out/
