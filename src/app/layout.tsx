@@ -1,48 +1,48 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import './styles/globals.css';
-import { AuthProvider } from '@/Contexto/AuthContext';
-import UserLoginMenuFunctions from '../Componentes/UserLoginMenuFunctions/UserLoginMenuFunctions';
-import React from 'react';
-import { ToastProvider } from '@/Contexto/Toast';
-import { FuncoesProvider } from '@/Contexto/FuncoesContext';
-import ValidadesProvider from '@/Contexto/ValidadesContext';
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./styles/globals.css";
+import { AuthProvider } from "@/Contexto/AuthContext";
+import UserLoginMenuFunctions from "../Componentes/UserLoginMenuFunctions/UserLoginMenuFunctions";
+import React from "react";
+import { ToastProvider } from "@/Contexto/Toast";
+import { FuncoesProvider } from "@/Contexto/FuncoesContext";
+import ValidadesProvider from "@/Contexto/ValidadesContext";
 
 const geistSans = Geist({
-	variable: '--font-geist-sans',
-	subsets: ['latin'],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin'],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-	title: 'Ceres I - Gestão de Validades',
-	description: 'Controle de validades e códigos de produtos - Thiago',
-	manifest: '/manifest.json',
+  title: "Ceres I - Gestão de Validades",
+  description: "Controle de validades e códigos de produtos - Thiago",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<html lang='pt-BR'>
-			<body className={`${geistSans.variable} ${geistMono.variable}`}>
-				<ToastProvider>
-					<AuthProvider>
-						<FuncoesProvider>
-							<ValidadesProvider>
-								<UserLoginMenuFunctions />
-								{children}
-							</ValidadesProvider>
-						</FuncoesProvider>
-					</AuthProvider>
-				</ToastProvider>
-			</body>
-		</html>
-	);
+  return (
+    <html lang="pt-BR">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ToastProvider>
+          <AuthProvider>
+        
+              <ValidadesProvider>
+                <UserLoginMenuFunctions />
+                {children}
+              </ValidadesProvider>
+      
+          </AuthProvider>
+        </ToastProvider>
+      </body>
+    </html>
+  );
 }

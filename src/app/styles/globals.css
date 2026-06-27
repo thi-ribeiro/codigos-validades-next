@@ -3,6 +3,7 @@
   --background: #f4f4f5;
   --bg-app: #f4f7f9;
   --white: #ffffff;
+  --bg-transparent-white: rgba(255, 255, 255, 0.9);
 
   /* --- Cores de Texto (Typography) --- */
   --foreground: #171717;
@@ -132,15 +133,16 @@ button:active {
 
 .totalRegistros {
   display: flex;
-  align-items: end;
-  /* margin: 0 10px; */
+  align-items: center;
   justify-content: flex-end;
   font-weight: bold;
   font-size: x-small;
+}
 
-  .qntCodigosSpan {
-    color: #007bff;
-  }
+.qntCodigosSpan {
+  color: var(--primary);
+  font-weight: bold;
+  font-size: x-small;
 }
 
 .cadastroProdutos,
@@ -1199,14 +1201,6 @@ button:active {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.buscarHeaderUser {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
 /* Wrapper para os ícones terem área de toque melhor no mobile */
 .nav-icon-wrapper {
   display: flex;
@@ -1242,10 +1236,10 @@ button:active {
   position: sticky;
   top: 0;
   z-index: 1003;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-transparent-white);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  /* border-bottom: 1px solid rgba(0, 0, 0, 0.05); */
   padding: 10px 15px;
 }
 
@@ -1254,6 +1248,14 @@ button:active {
   justify-content: space-between;
   align-items: center;
 }
+
+/* .buscarHeaderUser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+} */
 
 .nav-icon-wrapper {
   display: flex;
@@ -1279,9 +1281,13 @@ button:active {
 
 /* --- FORMULÁRIOS DE BUSCA --- */
 .buscarHeader {
-  padding: 15px;
-  background: var(--white);
-  margin-bottom: 10px;
+  position: sticky;
+  z-index: 1002;
+  background: var(--bg-transparent-white);
+  /* border-bottom: 1px solid rgba(0, 0, 0, 0.05); */
+  padding: 10px 15px;
+  top: 65px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .formBuscarProdutos {
@@ -1296,11 +1302,6 @@ button:active {
   padding: 10px 15px 80px;
 }
 
-/* .produtosItemsMarca,
-.grupo-por-marca {
-  margin-bottom: 25px;
-} */
-
 .marcaDiv,
 .divisor-marca {
   display: flex;
@@ -1313,10 +1314,10 @@ button:active {
 
 .marcaDiv h2,
 .divisor-marca {
-  font-size: 1.15rem;
-  /*font-weight: 800; */
+  font-size: 1rem;
+  font-weight: bold;
   text-transform: uppercase;
-  color: #888;
+  color: var(--primary);
   letter-spacing: 1px;
 }
 
@@ -1336,8 +1337,8 @@ button:active {
 /* O "Card" de Produto na Consulta */
 .produtosItems {
   background: var(--white);
-  padding: 5px;
-  border-radius: 12px;
+  padding: 5px 10px;
+  border-radius: var(--bradius);
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -1359,7 +1360,7 @@ button:active {
 }
 
 .codigo-prod-label {
-  font-size: 0.85rem;
+  font-size: 1.2rem;
   color: var(--azul-esc);
   font-family: monospace;
 }

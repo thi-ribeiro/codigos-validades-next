@@ -1,267 +1,173 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import _ from 'lodash';
-import { IoRemoveCircleOutline } from 'react-icons/io5';
-import { useAuth } from '@/Contexto/AuthContext';
-import { FuncoesProvider, useFuncoes } from '@/Contexto/FuncoesContext';
-import Modal from '@/Componentes/ModalCodigoProdutos/Modal';
-import AutoComplete from '@/Componentes/AutoComplete/AutoComplete';
-import AddButton from '@/Componentes/AddButton/AddButton';
-
-import { useModal } from '@/Componentes/ModalCodigoProdutos/useModal';
-import { IoIosSwap } from 'react-icons/io';
-import LoadingLogo from '@/Componentes/LoadingLogo/LoadingLogo';
+import React, { useCallback, useEffect, useState } from "react";
+import _ from "lodash";
+import { IoRemoveCircleOutline } from "react-icons/io5";
+import { useAuth } from "@/Contexto/AuthContext";
+import Modal from "@/Componentes/ModalCodigoProdutos/Modal";
+import AddButton from "@/Componentes/AddButton/AddButton";
+import { IoIosSwap } from "react-icons/io";
+import LoadingLogo from "@/Componentes/LoadingLogo/LoadingLogo";
+import { ConsultaProvider, useConsulta } from "@/Contexto/ConsultaContext";
 
 export interface Props {}
 
 export default function page() {
-	return (
-		<FuncoesProvider>
-			<Pagina />
-		</FuncoesProvider>
-	);
+  return (
+    <ConsultaProvider>
+      <Pagina />
+    </ConsultaProvider>
+  );
 }
 
+const ItemProduto = React.memo(
+  ({ p, userEdit, leftZeros, onEdit, onDelete }: any) => {
+    return (
+      <div className="produtosItems">
+        <div className="info-produto-col">
+          <span className="nome-prod-label">{p.nome_produto}</span>
+          <span className="codigo-prod-label">
+            {leftZeros(p.codigo_produto)}
+          </span>
+        </div>
+
+        {userEdit && (
+          <div className="acoes-produto-row">
+            <IoIosSwap size={20} onClick={() => onEdit(p)} />
+            <IoRemoveCircleOutline size={20} onClick={() => onDelete(p)} />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
 function Pagina({}: Props) {
-	const { user } = useAuth();
-	const {
-		fetchProds,
-		deletarProduto,
-		produto,
-		loading,
-		buscar,
-		setBuscar,
-		cadastroCodigo,
-		editarCodigo,
-		leftZeros,
-		qntCodigosMarca,
-		TotalRegistros,
-	} = useFuncoes();
+  interface ProdutoDetails {
+    id: number;
+    produto: string;
+    marca: string;
+    codigo?: number;
+  }
 
-	const {
-		isOpen: isOpenModalAdd,
-		openModal: openModalAdd,
-		closeModal: closeModalAdd,
-	} = useModal();
+  const { user } = useAuth();
 
-	const {
-		isOpen: isOpenModalRemove,
-		openModal: openModalRemove,
-		closeModal: closeModalRemove,
-	} = useModal();
+  const {
+    loading,
+    fetchProdutos,
+    deletarProduto,
+    textoBusca,
+    setTextoBusca,
+    produtosFiltrados,
+    leftZeros,
+  } = useConsulta();
 
-	const {
-		isOpen: isOpenModalEdit,
-		openModal: openModalEdit,
-		closeModal: closeModalEdit,
-	} = useModal();
+  const [produtoSelected, setprodutoSelected] = useState<ProdutoDetails>({
+    id: 0,
+    produto: "",
+    marca: "",
+    codigo: 0,
+  });
 
-	interface ProdutoDetails {
-		id: number;
-		produto: string;
-		marca: string;
-		codigo?: number;
-	}
+  const [tipoModal, setTipoModal] = useState<"add" | "edit" | "remove" | null>(
+    null,
+  );
 
-	const [produtoSelected, setprodutoSelected] = useState<ProdutoDetails>({
-		id: 0,
-		produto: '',
-		marca: '',
-		codigo: 0,
-	});
+  useEffect(() => {
+    fetchProdutos();
+  }, []);
 
-	const deletarModal = (id: number, produto: string, marca: string) => {
-		setprodutoSelected({ id: id, produto: produto, marca: marca });
-		openModalRemove();
-	};
+  const usuarioEditor = user?.role === 1;
 
-	const editarModal = (
-		id: number,
-		produto: string,
-		marca: string,
-		codigo: number,
-	) => {
-		setprodutoSelected({
-			id: id,
-			produto: produto,
-			marca: marca,
-			codigo: codigo,
-		});
-		openModalEdit();
-	};
+  // Use useCallback para que a função NUNCA mude a menos que suas dependências mudem
+  const handleEdit = useCallback((p: any) => {
+    setprodutoSelected({
+      id: p.idcodigo,
+      produto: p.nome_produto,
+      marca: p.marca_produto,
+      codigo: p.codigo_produto,
+    });
+    setTipoModal("edit");
+  }, []); // Array de dependências vazio se não usar variáveis externas aqui dentro
 
-	return (
-		<React.Fragment>
-			<div className='buscarHeader'>
-				<h1>Consulta de Produtos</h1>
-				<form
-					className='formBuscarProdutos'
-					onSubmit={(e) => fetchProds(e, buscar)}>
-					<input
-						type='text'
-						placeholder='Buscar	por Produto ou Marca'
-						onChange={(e) => setBuscar(e.target.value)}
-					/>
-					<input type='submit' value='Buscar Produto' />
-					{TotalRegistros !== 0 ? (
-						<div className='totalRegistros'>
-							Total listado:
-							<span className='qntCodigosSpan'>
-								&nbsp; {TotalRegistros}
-								&nbsp; código(s)
-							</span>
-						</div>
-					) : null}
-				</form>
-			</div>
+  const handleDelete = useCallback((p: any) => {
+    setprodutoSelected({
+      id: p.idcodigo,
+      produto: p.nome_produto,
+      marca: p.marca_produto,
+      codigo: p.codigo_produto,
+    });
+    setTipoModal("remove");
+  }, []);
 
-			<LoadingLogo loading={loading} />
+  return (
+    <React.Fragment>
+      <div className="buscarHeader">
+        <h1>Consulta de Produtos</h1>
+        <div className="formBuscarProdutos">
+          <input
+            type="text"
+            placeholder="Buscar por Produto ou Marca"
+            value={textoBusca}
+            onChange={(e) => setTextoBusca(e.target.value)}
+          />
+          {Object.keys(produtosFiltrados).length > 0 && (
+            <div className="totalRegistros">
+              Total marca(s): {Object.keys(produtosFiltrados).length}&nbsp;
+              {" - "}
+              <span className="qntCodigosSpan">
+                &nbsp;{" "}
+                {Object.values(produtosFiltrados).reduce(
+                  (acc, curr) => acc + curr.length,
+                  0,
+                )}
+                &nbsp; código(s)
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
 
-			<div className='produtosBusca'>
-				{produto &&
-					Object.keys(produto).map((marca, id) => (
-						<div key={id} className='produtosItemsMarca'>
-							<div className='marcaDiv'>
-								<h2>{marca || 'Verificar marca'}</h2>
-								<span className='qntCodigosSpan'>
-									{qntCodigosMarca[marca]} Código(s)
-								</span>
-							</div>
-							{produto[marca].map((p, index) => (
-								<div key={index} className='produtosItems'>
-									<div className='info-produto-col'>
-										<span className='nome-prod-label'>{p.nome_produto}</span>
-										<span className='codigo-prod-label'>
-											{leftZeros(p.codigo_produto)}
-										</span>
-									</div>
+      <LoadingLogo
+        loading={loading}
+        mensagem="Carregando lista de códigos..."
+      />
 
-									{user?.role === 1 && (
-										<div className='acoes-produto-row'>
-											<IoIosSwap
-												size={20}
-												onClick={() =>
-													editarModal(
-														p.idcodigo,
-														p.nome_produto,
-														p.marca_produto,
-														p.codigo_produto,
-													)
-												}
-											/>
-											<IoRemoveCircleOutline
-												size={20}
-												onClick={() =>
-													deletarModal(
-														p.idcodigo,
-														p.nome_produto,
-														p.marca_produto,
-													)
-												}
-											/>
-										</div>
-									)}
-								</div>
-							))}
-						</div>
-					))}
-			</div>
+      <div className="produtosBusca">
+        {produtosFiltrados &&
+          Object.keys(produtosFiltrados).map((marca, id) => (
+            <div key={marca} className="produtosItemsMarca">
+              <div className="marcaDiv">
+                <h2>{marca || "Verificar marca"}</h2>
+                <span className="qntCodigosSpan">
+                  {produtosFiltrados[marca].length} Código(s)
+                </span>
+              </div>
+              {produtosFiltrados[marca].map((p) => (
+                <ItemProduto
+                  key={p.idcodigo}
+                  p={p}
+                  userEdit={usuarioEditor}
+                  leftZeros={leftZeros}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          ))}
+      </div>
 
-			<AddButton openFuncion={openModalAdd} addCodigo={true} />
-
-			<Modal isOpen={isOpenModalAdd} onClose={closeModalAdd}>
-				<div className='cadastroProdutos headerGenerico'>
-					<h1>Cadastrar Produto</h1>
-					<form
-						className='formProdutos'
-						onSubmit={(e) => cadastroCodigo(e, closeModalAdd)}
-						method='POST'>
-						<AutoComplete
-							nameInput='nomeProduto'
-							placeholder='Nome do Produto'
-							nome={true}
-						/>
-						<AutoComplete
-							nameInput='marcaProduto'
-							placeholder='Marca do Produto'
-							marca={true}
-						/>
-
-						<input
-							name='codigoProduto'
-							type='text'
-							placeholder='Código do Produto'
-						/>
-						<input type='submit' value='Cadastrar Produto' disabled={loading} />
-					</form>
-				</div>
-			</Modal>
-
-			<Modal isOpen={isOpenModalRemove} onClose={closeModalRemove}>
-				<div className='removerCodigoProdutos headerGenerico'>
-					<h1>Deletar produto</h1>
-					<div className='removerCodigoProdutosContent'>
-						Deseja deletar o produto: {produtoSelected.produto} da marca{' '}
-						{produtoSelected.marca}?
-					</div>
-					<div className='buttonsCodigoProdutos'>
-						<button
-							name='deletar'
-							onClick={() =>
-								deletarProduto(produtoSelected.id, closeModalRemove)
-							}>
-							Deletar
-						</button>
-						<button onClick={closeModalRemove} name='fechar'>
-							Fechar
-						</button>
-					</div>
-				</div>
-			</Modal>
-
-			<Modal isOpen={isOpenModalEdit} onClose={closeModalEdit}>
-				<div className='editarCodigoProdutos headerGenerico'>
-					<h1> Editar código de produto </h1>
-					<form
-						className='formProdutos'
-						onSubmit={(e) => editarCodigo(e, closeModalEdit)}
-						method='POST'>
-						<input type='hidden' name='idProduto' value={produtoSelected?.id} />
-
-						<AutoComplete
-							nameInput='nomeProduto'
-							placeholder='Nome do Produto'
-							nome={true}
-							valorPadrao={produtoSelected?.produto}
-						/>
-
-						<AutoComplete
-							nameInput='marcaProduto'
-							placeholder='Marca do Produto'
-							marca={true}
-							valorPadrao={produtoSelected?.marca}
-						/>
-
-						<input
-							name='codigoProduto'
-							type='text'
-							placeholder='Código do Produto'
-							defaultValue={produtoSelected?.codigo}
-						/>
-						<div className='buttonsCodigoProdutos'>
-							<input
-								type='submit'
-								value='Finalizar edição'
-								disabled={loading}
-							/>
-							<button onClick={closeModalEdit} name='cancelar'>
-								Fechar
-							</button>
-						</div>
-					</form>
-				</div>
-			</Modal>
-		</React.Fragment>
-	);
+      <AddButton
+        openFuncion={() => {
+          setTipoModal("add");
+        }}
+        addCodigo={true}
+      />
+      <Modal
+        tipo={tipoModal}
+        dados={produtoSelected}
+        onClose={() => setTipoModal(null)}
+      />
+    </React.Fragment>
+  );
 }
