@@ -28,7 +28,6 @@ interface ConsultaContextData {
   textoBusca: string;
   setTextoBusca: React.Dispatch<React.SetStateAction<string>>;
   produtosFiltrados: Record<string, BuscaCodigosProdutos[]>;
-  leftZeros: (num: string | number) => JSX.Element;
 }
 
 interface ProdutoDetails {
@@ -252,21 +251,6 @@ export function ConsultaProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const leftZeros = (num: string | number): JSX.Element => {
-    let codigo = num.toString();
-
-    if (codigo.length > 4) {
-      return <span>{codigo}</span>;
-    } else {
-      return (
-        <React.Fragment>
-          <span style={{ color: "red" }}>0</span>
-          {codigo}
-        </React.Fragment>
-      );
-    }
-  };
-
   const todosOsProdutos = useMemo(() => {
     if (!produto || typeof produto !== "object") return [];
     return Object.values(produto).flat();
@@ -294,7 +278,6 @@ export function ConsultaProvider({ children }: { children: React.ReactNode }) {
       textoBusca,
       setTextoBusca,
       produtosFiltrados,
-      leftZeros,
     }),
     [produto, loading, fetchProdutos, deletarProduto],
   );

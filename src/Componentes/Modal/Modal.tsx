@@ -282,7 +282,7 @@ export default function Modal({
             />
 
             <label htmlFor="marca">Marca:</label>
-            {user?.empresa ? (
+            {user?.empresa && user?.empresa !== "Atacadão" ? (
               <input type="text" name="marca" value={user?.empresa} readOnly />
             ) : (
               <AutoComplete

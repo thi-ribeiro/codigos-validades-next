@@ -42,13 +42,16 @@ export default function ModalCodigoProdutos({
   return (
     <div className="modal-container">
       <div className="modal-backdrop" onClick={onClose}></div>
+
       <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>
-          &times;
-        </button>
+        <div className="modal-header-close">
+          <button className="modal-close" onClick={onClose} type="button">
+            &times;
+          </button>
+        </div>
 
         {tipo === "add" && (
-          <div className="cadastroProdutos headerGenerico">
+          <div className="cadastroProdutos">
             <h1>Cadastrar Produto</h1>
             <form
               className="formProdutos"
@@ -60,6 +63,7 @@ export default function ModalCodigoProdutos({
                 placeholder="Nome do Produto"
                 nome={true}
               />
+
               <AutoComplete
                 nameInput="marcaProduto"
                 placeholder="Marca do Produto"
@@ -68,7 +72,7 @@ export default function ModalCodigoProdutos({
 
               <input
                 name="codigoProduto"
-                type="text"
+                type="number"
                 placeholder="Código do Produto"
               />
               <input
@@ -81,7 +85,7 @@ export default function ModalCodigoProdutos({
         )}
 
         {tipo === "edit" && (
-          <div className="editarCodigoProdutos headerGenerico">
+          <div className="cadastroProdutos">
             <h1> Editar código de produto </h1>
             <form
               className="formProdutos"
@@ -125,7 +129,7 @@ export default function ModalCodigoProdutos({
         )}
 
         {tipo === "remove" && (
-          <div className="removerCodigoProdutos headerGenerico">
+          <div className="cadastroProdutos">
             <h1>Deletar produto</h1>
             <div className="removerCodigoProdutosContent">
               Deseja deletar o produto: {dados.produto} da marca {dados.marca}?

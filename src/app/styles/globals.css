@@ -162,12 +162,12 @@ button:active {
     padding: 10px;
   }
 
-  input[type="text"],
+  /* input[type="text"],
   input[type="password"] {
     padding: 5px;
     border: 1px solid #ccc;
     width: 100%;
-  }
+  } */
 
   .buttonsCodigoProdutos {
     display: flex;
@@ -713,7 +713,8 @@ button:active {
 }
 
 .formularioAdicionarValidade,
-.formularioEditarValidade {
+.formularioEditarValidade,
+.cadastroProdutos {
   display: flex;
   flex-direction: column;
   gap: 10px;

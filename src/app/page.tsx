@@ -2,12 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
-import { IoRemoveCircleOutline } from "react-icons/io5";
 import { useAuth } from "@/Contexto/AuthContext";
 import Modal from "@/Componentes/ModalCodigoProdutos/Modal";
 import AddButton from "@/Componentes/AddButton/AddButton";
-import { IoIosSwap } from "react-icons/io";
 import LoadingLogo from "@/Componentes/LoadingLogo/LoadingLogo";
+import { ItemProduto } from "@/Componentes/ItemProduto/ItemProduto";
 import { ConsultaProvider, useConsulta } from "@/Contexto/ConsultaContext";
 
 export interface Props {}
@@ -19,28 +18,6 @@ export default function page() {
     </ConsultaProvider>
   );
 }
-
-const ItemProduto = React.memo(
-  ({ p, userEdit, leftZeros, onEdit, onDelete }: any) => {
-    return (
-      <div className="produtosItems">
-        <div className="info-produto-col">
-          <span className="nome-prod-label">{p.nome_produto}</span>
-          <span className="codigo-prod-label">
-            {leftZeros(p.codigo_produto)}
-          </span>
-        </div>
-
-        {userEdit && (
-          <div className="acoes-produto-row">
-            <IoIosSwap size={20} onClick={() => onEdit(p)} />
-            <IoRemoveCircleOutline size={20} onClick={() => onDelete(p)} />
-          </div>
-        )}
-      </div>
-    );
-  },
-);
 
 function Pagina({}: Props) {
   interface ProdutoDetails {
@@ -59,15 +36,11 @@ function Pagina({}: Props) {
     textoBusca,
     setTextoBusca,
     produtosFiltrados,
-    leftZeros,
   } = useConsulta();
 
-  const [produtoSelected, setprodutoSelected] = useState<ProdutoDetails>({
-    id: 0,
-    produto: "",
-    marca: "",
-    codigo: 0,
-  });
+  const [produtoSelected, setprodutoSelected] = useState<ProdutoDetails | null>(
+    null,
+  );
 
   const [tipoModal, setTipoModal] = useState<"add" | "edit" | "remove" | null>(
     null,
@@ -148,7 +121,6 @@ function Pagina({}: Props) {
                   key={p.idcodigo}
                   p={p}
                   userEdit={usuarioEditor}
-                  leftZeros={leftZeros}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
